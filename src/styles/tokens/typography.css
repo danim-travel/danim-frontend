@@ -1,0 +1,15 @@
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+
+  /* ── Font Size ──────────────────────────────── */
+  /* --font-size-xs, sm, base, lg, xl, 2xl 등 추가 예정 */
+
+  /* ── Font Weight ────────────────────────────── */
+  /* --font-weight-normal, medium, semibold, bold 등 추가 예정 */
+
+  /* ── Line Height ────────────────────────────── */
+  /* --leading-tight, normal, relaxed 등 추가 예정 */
+
+  /* ── Letter Spacing ─────────────────────────── */
+  /* --tracking-tight, normal, wide 등 추가 예정 */
+}
