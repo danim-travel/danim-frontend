@@ -1,0 +1,115 @@
+/* =================================================================
+   Danim · Component State Tokens
+   모든 값은 기존 토큰(color/radius/shadow)을 var()로만 참조
+   naming: --{component}-{variant}-{state}-{property}
+   property: bg / fg / border / shadow / radius
+   ================================================================= */
+
+:root {
+  /* ---------- Button · primary ---------- */
+  --button-primary-default-bg:     var(--color-button-primary);
+  --button-primary-default-fg:     var(--color-text-inverse);
+  --button-primary-default-shadow: var(--shadow-button-primary);
+  --button-primary-default-radius: var(--radius-button);
+  --button-primary-hover-bg:       var(--color-button-primary-hover);
+  --button-primary-active-bg:      var(--color-button-primary-active);
+  --button-primary-focus-shadow:   var(--shadow-focus-ring);
+  --button-primary-disabled-bg:    var(--color-button-disabled);
+  --button-primary-disabled-fg:    var(--color-text-disabled);
+
+  /* ---------- Button · secondary (white) ---------- */
+  --button-secondary-default-bg:     var(--color-bg-card);
+  --button-secondary-default-fg:     var(--color-text-secondary);
+  --button-secondary-default-border: var(--color-border);
+  --button-secondary-default-radius: var(--radius-button);
+  --button-secondary-hover-bg:       var(--color-bg-subtle);
+  --button-secondary-disabled-bg:    var(--color-bg-subtle);
+  --button-secondary-disabled-fg:    var(--color-text-disabled);
+
+  /* ---------- Button · outline (mint) ---------- */
+  --button-outline-default-bg:     var(--color-bg-card);
+  --button-outline-default-fg:     var(--color-primary);
+  --button-outline-default-border: var(--color-primary);
+  --button-outline-default-radius: var(--radius-button);
+  --button-outline-hover-bg:       var(--color-primary-soft);
+
+  /* ---------- InputField ---------- */
+  --input-default-bg:      var(--color-input-bg);
+  --input-default-fg:      var(--color-text);
+  --input-default-border:  var(--color-input-border);
+  --input-default-radius:  var(--radius-input);
+  --input-placeholder-fg:  var(--color-text-disabled);
+  --input-focus-border:    var(--color-input-focus);
+  --input-focus-shadow:    var(--shadow-focus-ring);
+  --input-error-border:    var(--color-input-error);
+  --input-error-fg:        var(--color-error);
+  --input-disabled-bg:     var(--color-bg-subtle);
+  --input-disabled-fg:     var(--color-text-disabled);
+
+  /* ---------- SearchBar ---------- */
+  --search-default-bg:     var(--color-bg-subtle);
+  --search-default-fg:     var(--color-text);
+  --search-default-radius: var(--radius-pill);
+  --search-focus-border:   var(--color-border-focus);
+  --search-focus-shadow:   var(--shadow-focus-ring);
+
+  /* ---------- FilterChip ---------- */
+  --chip-default-bg:     var(--color-bg-card);
+  --chip-default-fg:     var(--color-text-secondary);
+  --chip-default-border: var(--color-border);
+  --chip-default-radius: var(--radius-pill);
+  --chip-selected-bg:    var(--color-primary);
+  --chip-selected-fg:    var(--color-text-inverse);
+
+  /* ---------- SidebarNav ---------- */
+  --sidebar-nav-default-fg: var(--color-text-muted);
+  --sidebar-nav-active-bg:  var(--color-selected-bg);
+  --sidebar-nav-active-fg:  var(--color-selected-text);
+
+  /* ---------- BottomTabBar ---------- */
+  --tab-default-fg: var(--color-text-muted);
+  --tab-active-fg:  var(--color-primary);
+
+  /* ---------- PostActionBar (like / save icon) ---------- */
+  --post-action-default-fg: var(--color-text-muted);
+  --post-action-active-fg:  var(--color-primary);
+
+  /* ---------- PostCard ---------- */
+  --post-card-default-bg:     var(--color-bg-card);
+  --post-card-default-shadow: var(--shadow-card);
+  --post-card-default-radius: var(--radius-card-comp);
+  --post-card-hover-shadow:   var(--shadow-card-hover);
+
+  /* ---------- GridThumbnail ---------- */
+  --thumbnail-default-radius: var(--radius-card-comp);
+  --thumbnail-hover-shadow:   var(--shadow-card-hover);
+
+  /* ---------- Avatar ---------- */
+  --avatar-default-border: var(--color-bg-card);
+  --avatar-default-radius: var(--radius-avatar);
+  --avatar-story-border:   var(--color-primary);
+
+  /* ---------- CourseStepper ---------- */
+  --stepper-default-fg:     var(--color-text-disabled);
+  --stepper-default-border: var(--color-border);
+  --stepper-active-bg:      var(--color-primary);
+  --stepper-active-fg:      var(--color-text-inverse);
+  --stepper-completed-bg:   var(--color-primary-soft);
+  --stepper-completed-fg:   var(--color-primary-active);
+
+  /* ---------- Modal ---------- */
+  --modal-surface-bg:     var(--color-bg-card);
+  --modal-surface-shadow: var(--shadow-modal);
+  --modal-surface-radius: var(--radius-modal-comp);
+
+  /* ---------- BottomSheet ---------- */
+  --sheet-surface-bg:     var(--color-bg-card);
+  --sheet-surface-shadow: var(--shadow-bottom-sheet);
+  --sheet-surface-radius: var(--radius-bottom-sheet);
+
+  /* ---------- Toast ---------- */
+  --toast-default-bg: var(--color-text);
+  --toast-default-fg: var(--color-text-inverse);
+  --toast-success-bg: var(--color-success);
+  --toast-error-bg:   var(--color-error);
+}
