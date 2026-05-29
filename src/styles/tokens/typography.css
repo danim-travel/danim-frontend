@@ -1,15 +1,90 @@
 @theme inline {
   --font-sans: var(--font-geist-sans);
 
-  /* ── Font Size ──────────────────────────────── */
-  /* --font-size-xs, sm, base, lg, xl, 2xl 등 추가 예정 */
+  /* ── Font family ─────────────────────────────── */
+  --font-family-base: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
 
-  /* ── Font Weight ────────────────────────────── */
-  /* --font-weight-normal, medium, semibold, bold 등 추가 예정 */
+  /* ── Font weight ─────────────────────────────── */
+  --font-weight-regular:  400;
+  --font-weight-medium:   500;
+  --font-weight-semibold: 600;
+  --font-weight-bold:     700;
 
-  /* ── Line Height ────────────────────────────── */
-  /* --leading-tight, normal, relaxed 등 추가 예정 */
+  /* ── Display (login hero / 큰 강조) ─────────── */
+  --text-display-size:    44px;
+  --text-display-weight:  var(--font-weight-bold);
+  --text-display-line:    1.15;
+  --text-display-spacing: -0.02em;
 
-  /* ── Letter Spacing ─────────────────────────── */
-  /* --tracking-tight, normal, wide 등 추가 예정 */
+  /* ── Page title (페이지 헤더 H1) ─────────────── */
+  --text-page-title-size:    28px;
+  --text-page-title-weight:  var(--font-weight-bold);
+  --text-page-title-line:    1.25;
+  --text-page-title-spacing: -0.02em;
+
+  /* ── Section title (섹션 헤더 / 모달 제목) ───── */
+  --text-section-title-size:    22px;
+  --text-section-title-weight:  var(--font-weight-bold);
+  --text-section-title-line:    1.3;
+  --text-section-title-spacing: -0.01em;
+
+  /* ── Card title (카드 제목 / 리스트 항목 제목) ── */
+  --text-card-title-size:    16px;
+  --text-card-title-weight:  var(--font-weight-semibold);
+  --text-card-title-line:    1.4;
+  --text-card-title-spacing: -0.01em;
+
+  /* ── Body (기본 본문) ─────────────────────────── */
+  --text-body-size:    14px;
+  --text-body-weight:  var(--font-weight-regular);
+  --text-body-line:    1.6;
+  --text-body-spacing: 0;
+
+  /* ── Body small (보조 본문 / 게시글 미리보기) ─── */
+  --text-body-sm-size:    13px;
+  --text-body-sm-weight:  var(--font-weight-regular);
+  --text-body-sm-line:    1.6;
+  --text-body-sm-spacing: 0;
+
+  /* ── Caption (메타 정보 / 시간 / 위치) ──────── */
+  --text-caption-size:    12px;
+  --text-caption-weight:  var(--font-weight-regular);
+  --text-caption-line:    1.5;
+  --text-caption-spacing: 0;
+
+  /* ── Label (폼 라벨 / 칩 텍스트) ─────────────── */
+  --text-label-size:    13px;
+  --text-label-weight:  var(--font-weight-semibold);
+  --text-label-line:    1.4;
+  --text-label-spacing: 0;
+
+  /* ── Button text ─────────────────────────────── */
+  --text-button-size:    14px;
+  --text-button-weight:  var(--font-weight-semibold);
+  --text-button-line:    1;
+  --text-button-spacing: -0.01em;
+
+  /* ── Nav text (사이드바 / 탭바 라벨) ─────────── */
+  --text-nav-size:    11px;
+  --text-nav-weight:  var(--font-weight-semibold);
+  --text-nav-line:    1.3;
+  --text-nav-spacing: 0;
+
+  /* ── Placeholder (= body, 색만 다름) ─────────── */
+  --text-placeholder-size:    var(--text-body-size);
+  --text-placeholder-weight:  var(--text-body-weight);
+  --text-placeholder-line:    var(--text-body-line);
+  --text-placeholder-spacing: var(--text-body-spacing);
+
+  /* ── Helper (인풋 하단 안내, = caption) ──────── */
+  --text-helper-size:    var(--text-caption-size);
+  --text-helper-weight:  var(--text-caption-weight);
+  --text-helper-line:    var(--text-caption-line);
+  --text-helper-spacing: var(--text-caption-spacing);
+
+  /* ── Error (인풋 하단 에러, caption + medium) ── */
+  --text-error-size:    var(--text-caption-size);
+  --text-error-weight:  var(--font-weight-medium);
+  --text-error-line:    var(--text-caption-line);
+  --text-error-spacing: var(--text-caption-spacing);
 }
