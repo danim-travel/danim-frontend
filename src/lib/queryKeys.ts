@@ -10,9 +10,9 @@ export const queryKeys = {
     explore: (search?: string) => ['posts', 'explore', search] as const,
   },
   users: {
-    profile: (userId: number | string) => ['users', userId, 'profile'] as const,
-    followers: (userId: number | string) => ['users', userId, 'followers'] as const,
-    following: (userId: number | string) => ['users', userId, 'following'] as const,
+    profile: (userId: string) => ['users', userId, 'profile'] as const,
+    followers: (userId: string) => ['users', userId, 'followers'] as const,
+    following: (userId: string) => ['users', userId, 'following'] as const,
   },
   bookmarks: ['bookmarks'] as const,
   comments: {

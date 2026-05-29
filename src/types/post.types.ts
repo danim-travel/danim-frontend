@@ -1,6 +1,6 @@
 export type PostImage = {
   img_url: string
-  original_image_url: string
+  original_img: string
   img_order: number
 }
 
@@ -26,9 +26,10 @@ export type PostDetail = {
     title: string
     content: string
     thumbnail: string
+    created_at: string
   }
   user: {
-    user_id: number
+    user_id: string
     nickname: string
     profile_img: string
   }

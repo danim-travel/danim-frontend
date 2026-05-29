@@ -10,9 +10,10 @@ const mockPostDetail: PostDetail = {
     title: '제주도 동쪽 드라이브',
     content: '성산일출봉부터 섭지코지까지 이어지는 코스예요.',
     thumbnail: 'https://picsum.photos/seed/jeju/480/320',
+    created_at: '2026-05-28T11:45:00Z',
   },
   user: {
-    user_id: 1,
+    user_id: '01KSHF7EQEGJRVED7VSHJQWBYX',
     nickname: '다님이',
     profile_img: 'https://picsum.photos/seed/user1/100/100',
   },
@@ -29,12 +30,12 @@ const mockPostDetail: PostDetail = {
       images: [
         {
           img_url: 'https://picsum.photos/seed/jeju1/480/480',
-          original_image_url: 'https://picsum.photos/seed/jeju1/1080/1080',
+          original_img: 'https://picsum.photos/seed/jeju1/1080/1080',
           img_order: 1,
         },
         {
           img_url: 'https://picsum.photos/seed/jeju2/480/480',
-          original_image_url: 'https://picsum.photos/seed/jeju2/1080/1080',
+          original_img: 'https://picsum.photos/seed/jeju2/1080/1080',
           img_order: 2,
         },
       ],
@@ -53,7 +54,7 @@ const mockPostDetail: PostDetail = {
       images: [
         {
           img_url: 'https://picsum.photos/seed/jeju3/480/480',
-          original_image_url: 'https://picsum.photos/seed/jeju3/1080/1080',
+          original_img: 'https://picsum.photos/seed/jeju3/1080/1080',
           img_order: 1,
         },
       ],
