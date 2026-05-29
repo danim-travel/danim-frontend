@@ -6,7 +6,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 interface AuthUser {
-  userId: number
+  userId: string
   nickname: string
   profileImg: string | null
 }
