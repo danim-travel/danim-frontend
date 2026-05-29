@@ -7,7 +7,7 @@
   --shadow-lg:   0 12px 32px rgba(15, 23, 32, 0.08);
   --shadow-xl:   0 20px 48px rgba(15, 23, 32, 0.12);
 
-  --shadow-ring-mint: 0 0 0 3px rgba(62, 203, 160, 0.35);
+  --shadow-mint-ring: 0 0 0 3px rgba(62, 203, 160, 0.35);
   --shadow-mint-sm:   0 4px 14px rgba(62, 203, 160, 0.35);
   --shadow-mint-md:   0 6px 20px rgba(62, 203, 160, 0.45);
   --shadow-mint-lg:   0 10px 20px -8px rgba(62, 203, 160, 0.55);
@@ -17,7 +17,7 @@
   --shadow-raised:       var(--shadow-md);
   --shadow-overlay:      var(--shadow-lg);
   --shadow-floating:     var(--shadow-xl);
-  --shadow-focus:        var(--shadow-ring-mint);
+  --shadow-focus:        var(--shadow-mint-ring);
   --shadow-brand:        var(--shadow-mint-sm);
   --shadow-brand-strong: var(--shadow-mint-md);
 
@@ -29,6 +29,5 @@
   --shadow-popover:         var(--shadow-lg);
   --shadow-bottom-sheet:    var(--shadow-floating);
   --shadow-floating-button: var(--shadow-brand-strong);
-  --shadow-button-primary:  var(--shadow-brand);
   --shadow-focus-ring:      var(--shadow-focus);
 }
