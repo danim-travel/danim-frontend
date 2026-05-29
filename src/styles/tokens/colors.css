@@ -66,20 +66,4 @@
   --color-error:      var(--color-red-500);
   --color-error-bg:   var(--color-red-50);
 
-  /* ── Component: Button ──────────────────────── */
-  --color-button-primary:        var(--color-primary);
-  --color-button-primary-hover:  var(--color-primary-hover);
-  --color-button-primary-active: var(--color-primary-active);
-  --color-button-disabled:       var(--color-border);
-
-  /* ── Component: Input ───────────────────────── */
-  --color-input-bg:     var(--color-bg-subtle);
-  --color-input-border: var(--color-border);
-  --color-input-focus:  var(--color-border-focus);
-  --color-input-error:  var(--color-border-error);
-
-  /* ── Component: Selected ────────────────────── */
-  --color-selected-bg:     var(--color-primary-soft);
-  --color-selected-border: var(--color-primary);
-  --color-selected-text:   var(--color-primary-active);
 }

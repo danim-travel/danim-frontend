@@ -1,115 +1,116 @@
 /* =================================================================
    Danim · Component State Tokens
-   모든 값은 기존 토큰(color/radius/shadow)을 var()로만 참조
-   naming: --{component}-{variant}-{state}-{property}
-   property: bg / fg / border / shadow / radius
+   naming: --{component}-{variant?}-{property}-{state?}
+   - default 상태는 state 생략
+   - property: bg / text / border / shadow / radius / opacity
+   - 모든 값은 semantic 토큰을 var()로 참조
    ================================================================= */
 
 :root {
-  /* ---------- Button · primary ---------- */
-  --button-primary-default-bg:     var(--color-button-primary);
-  --button-primary-default-fg:     var(--color-text-inverse);
-  --button-primary-default-shadow: var(--shadow-button-primary);
-  --button-primary-default-radius: var(--radius-button);
-  --button-primary-hover-bg:       var(--color-button-primary-hover);
-  --button-primary-active-bg:      var(--color-button-primary-active);
-  --button-primary-focus-shadow:   var(--shadow-focus-ring);
-  --button-primary-disabled-bg:    var(--color-button-disabled);
-  --button-primary-disabled-fg:    var(--color-text-disabled);
+  /* ── Button · primary ─────────────────────── */
+  --button-primary-bg:            var(--color-primary);
+  --button-primary-text:          var(--color-text-inverse);
+  --button-primary-shadow:        var(--shadow-brand);
+  --button-primary-radius:        var(--radius-button);
+  --button-primary-bg-hover:      var(--color-primary-hover);
+  --button-primary-bg-active:     var(--color-primary-active);
+  --button-primary-shadow-focus:  var(--shadow-focus-ring);
+  --button-primary-bg-disabled:   var(--color-border);
+  --button-primary-text-disabled: var(--color-text-disabled);
 
-  /* ---------- Button · secondary (white) ---------- */
-  --button-secondary-default-bg:     var(--color-bg-card);
-  --button-secondary-default-fg:     var(--color-text-secondary);
-  --button-secondary-default-border: var(--color-border);
-  --button-secondary-default-radius: var(--radius-button);
-  --button-secondary-hover-bg:       var(--color-bg-subtle);
-  --button-secondary-disabled-bg:    var(--color-bg-subtle);
-  --button-secondary-disabled-fg:    var(--color-text-disabled);
+  /* ── Button · secondary ──────────────────── */
+  --button-secondary-bg:            var(--color-bg-card);
+  --button-secondary-text:          var(--color-text-secondary);
+  --button-secondary-border:        var(--color-border);
+  --button-secondary-radius:        var(--radius-button);
+  --button-secondary-bg-hover:      var(--color-bg-subtle);
+  --button-secondary-bg-disabled:   var(--color-bg-subtle);
+  --button-secondary-text-disabled: var(--color-text-disabled);
 
-  /* ---------- Button · outline (mint) ---------- */
-  --button-outline-default-bg:     var(--color-bg-card);
-  --button-outline-default-fg:     var(--color-primary);
-  --button-outline-default-border: var(--color-primary);
-  --button-outline-default-radius: var(--radius-button);
-  --button-outline-hover-bg:       var(--color-primary-soft);
+  /* ── Button · outline ────────────────────── */
+  --button-outline-bg:        var(--color-bg-card);
+  --button-outline-text:      var(--color-primary);
+  --button-outline-border:    var(--color-primary);
+  --button-outline-radius:    var(--radius-button);
+  --button-outline-bg-hover:  var(--color-primary-soft);
 
-  /* ---------- InputField ---------- */
-  --input-default-bg:      var(--color-input-bg);
-  --input-default-fg:      var(--color-text);
-  --input-default-border:  var(--color-input-border);
-  --input-default-radius:  var(--radius-input);
-  --input-placeholder-fg:  var(--color-text-disabled);
-  --input-focus-border:    var(--color-input-focus);
-  --input-focus-shadow:    var(--shadow-focus-ring);
-  --input-error-border:    var(--color-input-error);
-  --input-error-fg:        var(--color-error);
-  --input-disabled-bg:     var(--color-bg-subtle);
-  --input-disabled-fg:     var(--color-text-disabled);
+  /* ── Input ───────────────────────────────── */
+  --input-bg:               var(--color-bg-subtle);
+  --input-text:             var(--color-text);
+  --input-border:           var(--color-border);
+  --input-radius:           var(--radius-input);
+  --input-text-placeholder: var(--color-text-disabled);
+  --input-border-focus:     var(--color-border-focus);
+  --input-shadow-focus:     var(--shadow-focus-ring);
+  --input-border-error:     var(--color-border-error);
+  --input-text-error:       var(--color-error);
+  --input-bg-disabled:      var(--color-bg-subtle);
+  --input-text-disabled:    var(--color-text-disabled);
 
-  /* ---------- SearchBar ---------- */
-  --search-default-bg:     var(--color-bg-subtle);
-  --search-default-fg:     var(--color-text);
-  --search-default-radius: var(--radius-pill);
-  --search-focus-border:   var(--color-border-focus);
-  --search-focus-shadow:   var(--shadow-focus-ring);
+  /* ── SearchBar ───────────────────────────── */
+  --search-bg:            var(--color-bg-subtle);
+  --search-text:          var(--color-text);
+  --search-radius:        var(--radius-pill);
+  --search-border-focus:  var(--color-border-focus);
+  --search-shadow-focus:  var(--shadow-focus-ring);
 
-  /* ---------- FilterChip ---------- */
-  --chip-default-bg:     var(--color-bg-card);
-  --chip-default-fg:     var(--color-text-secondary);
-  --chip-default-border: var(--color-border);
-  --chip-default-radius: var(--radius-pill);
-  --chip-selected-bg:    var(--color-primary);
-  --chip-selected-fg:    var(--color-text-inverse);
+  /* ── FilterChip ──────────────────────────── */
+  --chip-bg:            var(--color-bg-card);
+  --chip-text:          var(--color-text-secondary);
+  --chip-border:        var(--color-border);
+  --chip-radius:        var(--radius-pill);
+  --chip-bg-selected:   var(--color-primary);
+  --chip-text-selected: var(--color-text-inverse);
 
-  /* ---------- SidebarNav ---------- */
-  --sidebar-nav-default-fg: var(--color-text-muted);
-  --sidebar-nav-active-bg:  var(--color-selected-bg);
-  --sidebar-nav-active-fg:  var(--color-selected-text);
+  /* ── Nav (SidebarNav) ────────────────────── */
+  --nav-text:        var(--color-text-muted);
+  --nav-bg-active:   var(--color-primary-soft);
+  --nav-text-active: var(--color-primary-active);
 
-  /* ---------- BottomTabBar ---------- */
-  --tab-default-fg: var(--color-text-muted);
-  --tab-active-fg:  var(--color-primary);
+  /* ── Tab (BottomTabBar) ──────────────────── */
+  --tab-text:        var(--color-text-muted);
+  --tab-text-active: var(--color-primary);
 
-  /* ---------- PostActionBar (like / save icon) ---------- */
-  --post-action-default-fg: var(--color-text-muted);
-  --post-action-active-fg:  var(--color-primary);
+  /* ── PostAction (like / save icon) ──────── */
+  --post-action-text:        var(--color-text-muted);
+  --post-action-text-active: var(--color-primary);
 
-  /* ---------- PostCard ---------- */
-  --post-card-default-bg:     var(--color-bg-card);
-  --post-card-default-shadow: var(--shadow-card);
-  --post-card-default-radius: var(--radius-card-comp);
-  --post-card-hover-shadow:   var(--shadow-card-hover);
+  /* ── PostCard ────────────────────────────── */
+  --post-card-bg:           var(--color-bg-card);
+  --post-card-shadow:       var(--shadow-card);
+  --post-card-radius:       var(--radius-card);
+  --post-card-shadow-hover: var(--shadow-card-hover);
 
-  /* ---------- GridThumbnail ---------- */
-  --thumbnail-default-radius: var(--radius-card-comp);
-  --thumbnail-hover-shadow:   var(--shadow-card-hover);
+  /* ── Thumbnail ───────────────────────────── */
+  --thumbnail-radius:       var(--radius-card);
+  --thumbnail-shadow-hover: var(--shadow-card-hover);
 
-  /* ---------- Avatar ---------- */
-  --avatar-default-border: var(--color-bg-card);
-  --avatar-default-radius: var(--radius-avatar);
-  --avatar-story-border:   var(--color-primary);
+  /* ── Avatar ──────────────────────────────── */
+  --avatar-border:       var(--color-bg-card);
+  --avatar-radius:       var(--radius-avatar);
+  --avatar-story-border: var(--color-primary);
 
-  /* ---------- CourseStepper ---------- */
-  --stepper-default-fg:     var(--color-text-disabled);
-  --stepper-default-border: var(--color-border);
-  --stepper-active-bg:      var(--color-primary);
-  --stepper-active-fg:      var(--color-text-inverse);
-  --stepper-completed-bg:   var(--color-primary-soft);
-  --stepper-completed-fg:   var(--color-primary-active);
+  /* ── Stepper ─────────────────────────────── */
+  --stepper-text:          var(--color-text-disabled);
+  --stepper-border:        var(--color-border);
+  --stepper-bg-active:     var(--color-primary);
+  --stepper-text-active:   var(--color-text-inverse);
+  --stepper-bg-completed:  var(--color-primary-soft);
+  --stepper-text-completed: var(--color-primary-active);
 
-  /* ---------- Modal ---------- */
-  --modal-surface-bg:     var(--color-bg-card);
-  --modal-surface-shadow: var(--shadow-modal);
-  --modal-surface-radius: var(--radius-modal-comp);
+  /* ── Modal ───────────────────────────────── */
+  --modal-bg:     var(--color-bg-card);
+  --modal-shadow: var(--shadow-modal);
+  --modal-radius: var(--radius-modal);
 
-  /* ---------- BottomSheet ---------- */
-  --sheet-surface-bg:     var(--color-bg-card);
-  --sheet-surface-shadow: var(--shadow-bottom-sheet);
-  --sheet-surface-radius: var(--radius-bottom-sheet);
+  /* ── BottomSheet ─────────────────────────── */
+  --sheet-bg:     var(--color-bg-card);
+  --sheet-shadow: var(--shadow-bottom-sheet);
+  --sheet-radius: var(--radius-sheet);
 
-  /* ---------- Toast ---------- */
-  --toast-default-bg: var(--color-text);
-  --toast-default-fg: var(--color-text-inverse);
-  --toast-success-bg: var(--color-success);
-  --toast-error-bg:   var(--color-error);
+  /* ── Toast ───────────────────────────────── */
+  --toast-bg:         var(--color-text);
+  --toast-text:       var(--color-text-inverse);
+  --toast-bg-success: var(--color-success);
+  --toast-bg-error:   var(--color-error);
 }
