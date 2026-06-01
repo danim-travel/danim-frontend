@@ -23,7 +23,7 @@
 
   /* ── Component ───────────────────────────────── */
   --shadow-card:            var(--shadow-raised);
-  --shadow-card-hover:      var(--shadow-lg);
+  --shadow-card-hover:      var(--shadow-overlay);
   --shadow-modal:           var(--shadow-overlay);
   --shadow-dropdown:        var(--shadow-raised);
   --shadow-popover:         var(--shadow-lg);

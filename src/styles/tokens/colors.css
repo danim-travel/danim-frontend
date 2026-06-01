@@ -52,18 +52,18 @@
   --color-text-placeholder: var(--color-gray-300);
   --color-text-inverse:     var(--color-white);
 
-  /* ── Semantic: Border ───────────────────────── */
-  --color-border-subtle: var(--color-gray-100);
-  --color-border:        var(--color-gray-200);
-  --color-border-strong: var(--color-gray-300);
-  --color-border-focus:  var(--color-primary);
-  --color-border-error:  var(--color-error);
-
   /* ── Semantic: Status ───────────────────────── */
   --color-success:    var(--color-mint-600);
   --color-warning:    var(--color-yellow-500);
   --color-warning-bg: var(--color-yellow-50);
   --color-error:      var(--color-red-500);
   --color-error-bg:   var(--color-red-50);
+
+  /* ── Semantic: Border ───────────────────────── */
+  --color-border-subtle: var(--color-gray-100);
+  --color-border:        var(--color-gray-200);
+  --color-border-strong: var(--color-gray-300);
+  --color-border-focus:  var(--color-primary);
+  --color-border-error:  var(--color-error);
 
 }
