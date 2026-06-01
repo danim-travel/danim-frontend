@@ -10,6 +10,11 @@
   --font-weight-semibold: 600;
   --font-weight-bold:     700;
 
+  /* ── Letter spacing ──────────────────────────── */
+  --letter-spacing-tight:  -0.02em;  /* display · page-title */
+  --letter-spacing-snug:   -0.01em;  /* section-title · card-title · button */
+  --letter-spacing-normal:  0em;     /* body · caption · label · nav */
+
   /* ── Type scale (size / line-height) ─────────── */
   --text-display:       44px / 1.15;
   --text-page-title:    28px / 1.25;

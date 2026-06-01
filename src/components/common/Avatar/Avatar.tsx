@@ -11,27 +11,21 @@ export interface AvatarProps {
   color?: string;
 }
 
-const sizeClasses: Record<AvatarSize, { box: string; text: string }> = {
-  sm: { box: "w-8 h-8",   text: "text-[13px]" },
-  md: { box: "w-11 h-11", text: "text-[18px]" },
-  lg: { box: "w-14 h-14", text: "text-[22px]" },
-  xl: { box: "w-28 h-28", text: "text-[45px]" },
-};
-
 export function Avatar({ src, initial, size = "md", ring, color }: AvatarProps) {
-  const { box, text } = sizeClasses[size];
   const inner = (
     <div
       className={cn(
-        "grid place-items-center rounded-avatar font-bold border-2 border-bg-card text-text-inverse shrink-0",
-        box,
-        text
+        "grid place-items-center rounded-avatar font-bold border-2 border-bg-card text-text-inverse shrink-0"
       )}
-      style={
-        src
+      style={{
+        width:    `var(--avatar-size-${size})`,
+        height:   `var(--avatar-size-${size})`,
+        fontSize: `var(--avatar-font-${size})`,
+        ...(src
           ? { backgroundImage: `url(${src})`, backgroundSize: "cover", backgroundPosition: "center" }
           : { backgroundColor: color ?? "var(--color-primary)" }
-      }
+        ),
+      }}
     >
       {!src && initial}
     </div>
