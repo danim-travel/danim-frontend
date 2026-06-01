@@ -1,4 +1,5 @@
 import React from "react";
+import { bgCoverStyle } from "@/lib/utils";
 
 export interface CourseStepProps { index: number; place: string; memo?: string; image?: string; last?: boolean; }
 
@@ -17,7 +18,7 @@ export function CourseStep({ index, place, memo, image, last }: CourseStepProps)
         {image && (
           <div
             className="mt-3 h-[140px] rounded-control"
-            style={{ backgroundImage: `url(${image})`, backgroundSize: "cover", backgroundPosition: "center" }}
+            style={bgCoverStyle(image)}
           />
         )}
       </div>

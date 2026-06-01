@@ -1,5 +1,5 @@
 import React from "react";
-import { cn } from "@/lib/utils";
+import { cn, bgCoverStyle } from "@/lib/utils";
 
 export interface ChatBubbleProps { side: "me" | "peer"; type?: "text" | "photo"; text?: string; image?: string; }
 
@@ -10,7 +10,7 @@ export function ChatBubble({ side, type = "text", text, image }: ChatBubbleProps
       {type === "photo" ? (
         <div
           className="w-[200px] h-[260px] rounded-card bg-bg-subtle"
-          style={image ? { backgroundImage: `url(${image})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
+          style={bgCoverStyle(image)}
         />
       ) : (
         <div

@@ -1,4 +1,5 @@
 import React from "react";
+import { bgCoverStyle } from "@/lib/utils";
 import Avatar from "../../common/Avatar/Avatar";
 import Button from "../../common/Button/Button";
 
@@ -30,7 +31,7 @@ export function NotificationItem({ actor, type, message, time, thumbnail, follow
       {(type === "like" || type === "comment" || type === "mention") && thumbnail && (
         <div
           className="w-11 h-11 rounded-sm shrink-0"
-          style={{ backgroundImage: `url(${thumbnail})`, backgroundSize: "cover", backgroundPosition: "center" }}
+          style={bgCoverStyle(thumbnail)}
         />
       )}
     </div>

@@ -1,5 +1,5 @@
 import React from "react";
-import { cn } from "@/lib/utils";
+import { cn, bgCoverStyle } from "@/lib/utils";
 
 export type AvatarSize = "sm" | "md" | "lg" | "xl";
 
@@ -27,11 +27,7 @@ export function Avatar({ src, initial, size = "md", ring, color }: AvatarProps) 
         box,
         text
       )}
-      style={
-        src
-          ? { backgroundImage: `url(${src})`, backgroundSize: "cover", backgroundPosition: "center" }
-          : { backgroundColor: color ?? "var(--color-primary)" }
-      }
+      style={bgCoverStyle(src) ?? { backgroundColor: color ?? "var(--color-primary)" }}
     >
       {!src && initial}
     </div>

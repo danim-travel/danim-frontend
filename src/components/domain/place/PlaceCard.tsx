@@ -1,4 +1,5 @@
 import React from "react";
+import { bgCoverStyle } from "@/lib/utils";
 import Card from "../../common/Card/Card";
 import Badge from "../../common/Badge/Badge";
 
@@ -9,7 +10,7 @@ export function PlaceCard({ name, category, thumbnail, rating, distance }: Place
     <Card padding="none" interactive className="overflow-hidden flex gap-3">
       <div
         className="w-24 shrink-0 bg-bg-subtle"
-        style={thumbnail ? { backgroundImage: `url(${thumbnail})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
+        style={bgCoverStyle(thumbnail)}
       />
       <div className="py-3 pr-3 flex-1 min-w-0">
         <div className="flex items-center gap-2">

@@ -1,4 +1,5 @@
 import React from "react";
+import { bgCoverStyle } from "@/lib/utils";
 import Card from "../../common/Card/Card";
 import Avatar from "../../common/Avatar/Avatar";
 import Badge from "../../common/Badge/Badge";
@@ -21,7 +22,7 @@ export function PostCard({ author, location, coverImage, text, likeCount, liked,
     <Card padding="none" interactive className="overflow-hidden">
       <div
         className="h-[200px] relative bg-bg-subtle"
-        style={coverImage ? { backgroundImage: `url(${coverImage})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
+        style={bgCoverStyle(coverImage)}
       >
         <span className="absolute top-3 left-3">
           <Badge variant="tag" leftIcon={<span aria-hidden>📍</span>}>{location}</Badge>
