@@ -1,15 +1,7 @@
 import React from "react";
+import { cn } from "@/lib/utils";
 
-/**
- * Toggle — 설정 on/off 스위치
- * state: default · checked · disabled · focus
- * tokens: --color-primary, --color-border, --shadow-focus-ring
- */
-export interface ToggleProps {
-  checked: boolean;
-  onChange: (next: boolean) => void;
-  disabled?: boolean;
-}
+export interface ToggleProps { checked: boolean; onChange: (next: boolean) => void; disabled?: boolean; }
 
 export function Toggle({ checked, onChange, disabled }: ToggleProps) {
   return (
@@ -19,29 +11,17 @@ export function Toggle({ checked, onChange, disabled }: ToggleProps) {
       disabled={disabled}
       data-state={checked ? "checked" : "default"}
       onClick={() => onChange(!checked)}
-      style={{
-        width: 44,
-        height: 24,
-        borderRadius: "var(--radius-full)",
-        background: checked ? "var(--color-primary)" : "var(--color-border)",
-        border: "none",
-        position: "relative",
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
-        transition: "background 120ms ease",
-      }}
+      className={cn(
+        "w-11 h-6 rounded-full border-none relative transition-colors duration-[120ms]",
+        checked ? "bg-primary" : "bg-border",
+        disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+      )}
     >
       <span
-        style={{
-          position: "absolute",
-          top: 2,
-          left: checked ? 22 : 2,
-          width: 20,
-          height: 20,
-          borderRadius: "var(--radius-full)",
-          background: "var(--color-white)",
-          transition: "left 120ms ease",
-        }}
+        className={cn(
+          "absolute top-0.5 w-5 h-5 rounded-full bg-white transition-[left] duration-[120ms]",
+          checked ? "left-[22px]" : "left-0.5"
+        )}
       />
     </button>
   );

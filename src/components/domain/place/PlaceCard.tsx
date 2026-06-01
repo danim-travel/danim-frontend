@@ -2,53 +2,22 @@ import React from "react";
 import Card from "../../common/Card/Card";
 import Badge from "../../common/Badge/Badge";
 
-/**
- * PlaceCard — 장소/코스 항목 카드 (탐색 · 지도 · 코스)
- * state: default · hover
- * tokens: --post-card-*, --radius-card-comp, --text-*
- */
-export interface PlaceCardProps {
-  name: string;
-  category: string;
-  thumbnail?: string;
-  rating?: number;
-  distance?: string;
-}
+export interface PlaceCardProps { name: string; category: string; thumbnail?: string; rating?: number; distance?: string; }
 
 export function PlaceCard({ name, category, thumbnail, rating, distance }: PlaceCardProps) {
   return (
-    <Card padding="none" interactive style={{ overflow: "hidden", display: "flex", gap: "var(--space-3)" }}>
+    <Card padding="none" interactive className="overflow-hidden flex gap-3">
       <div
-        style={{
-          width: 96,
-          flexShrink: 0,
-          background: thumbnail ? `center/cover url(${thumbnail})` : "var(--color-background-subtle)",
-        }}
+        className="w-24 shrink-0 bg-bg-subtle"
+        style={thumbnail ? { backgroundImage: `url(${thumbnail})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
       />
-      <div style={{ padding: "var(--space-3) var(--space-3) var(--space-3) 0", flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)" }}>
+      <div className="py-3 pr-3 flex-1 min-w-0">
+        <div className="flex items-center gap-2">
           <Badge variant="status">{category}</Badge>
-          {rating != null && (
-            <span style={{ fontSize: "var(--text-caption-size)", color: "var(--color-text-tertiary)" }}>
-              ★ {rating}
-            </span>
-          )}
+          {rating != null && <span className="text-[12px] text-text-muted">★ {rating}</span>}
         </div>
-        <div
-          style={{
-            marginTop: "var(--space-1)",
-            fontSize: "var(--text-card-title-size)",
-            fontWeight: "var(--text-card-title-weight)" as React.CSSProperties["fontWeight"],
-            color: "var(--color-text-primary)",
-          }}
-        >
-          {name}
-        </div>
-        {distance && (
-          <div style={{ fontSize: "var(--text-caption-size)", color: "var(--color-text-tertiary)" }}>
-            {distance}
-          </div>
-        )}
+        <div className="mt-1 text-[16px] font-semibold text-text">{name}</div>
+        {distance && <div className="text-[12px] text-text-muted">{distance}</div>}
       </div>
     </Card>
   );

@@ -1,51 +1,33 @@
 import React from "react";
+import { cn } from "@/lib/utils";
 
-/**
- * IconButton — 아이콘 단독 버튼 (헤더 · 카드 더보기 · 탭)
- * variant: ghost | filled
- * state: default · hover · active · focus · disabled
- * tokens: --color-text-tertiary, --radius-full, --shadow-focus-ring
- */
 export type IconButtonVariant = "ghost" | "filled";
 export type IconButtonSize = "sm" | "md";
 
-export interface IconButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   icon: React.ReactNode;
   variant?: IconButtonVariant;
   size?: IconButtonSize;
   "aria-label": string;
 }
 
-const dim: Record<IconButtonSize, number> = { sm: 36, md: 44 };
+const sizeClasses: Record<IconButtonSize, string> = {
+  sm: "w-9 h-9",
+  md: "w-11 h-11",
+};
 
-export function IconButton({
-  icon,
-  variant = "ghost",
-  size = "md",
-  disabled,
-  style,
-  ...rest
-}: IconButtonProps) {
+export function IconButton({ icon, variant = "ghost", size = "md", disabled, className, ...rest }: IconButtonProps) {
   return (
     <button
       data-variant={variant}
       disabled={disabled}
-      style={{
-        width: dim[size],
-        height: dim[size],
-        display: "grid",
-        placeItems: "center",
-        borderRadius: "var(--radius-full)",
-        color: "var(--color-text-tertiary)",
-        background:
-          variant === "filled" ? "var(--color-background-subtle)" : "transparent",
-        border: "none",
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
-        transition: "background 120ms ease",
-        ...style,
-      }}
+      className={cn(
+        "grid place-items-center rounded-full text-text-muted border-none transition-[background] duration-[120ms]",
+        sizeClasses[size],
+        variant === "filled" ? "bg-bg-subtle" : "bg-transparent",
+        disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
+        className
+      )}
       {...rest}
     >
       {icon}

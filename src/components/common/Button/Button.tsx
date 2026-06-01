@@ -1,16 +1,10 @@
 import React from "react";
+import { cn } from "@/lib/utils";
 
-/**
- * Button — 기본 액션 트리거
- * variant: primary | secondary | outline
- * state: default · hover · active · focus · disabled · loading
- * tokens: --button-*, --radius-button, --shadow-button-primary, --text-button
- */
 export type ButtonVariant = "primary" | "secondary" | "outline";
 export type ButtonSize = "sm" | "md" | "lg";
 
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   fullWidth?: boolean;
@@ -19,29 +13,16 @@ export interface ButtonProps
   rightIcon?: React.ReactNode;
 }
 
-const sizePad: Record<ButtonSize, React.CSSProperties> = {
-  sm: { padding: "var(--space-2) var(--space-4)" },
-  md: { padding: "var(--space-3) var(--space-5)" },
-  lg: { padding: "var(--space-4) var(--space-6)" },
+const sizeClasses: Record<ButtonSize, string> = {
+  sm: "py-2 px-4",
+  md: "py-3 px-5",
+  lg: "py-4 px-6",
 };
 
-const variantStyle: Record<ButtonVariant, React.CSSProperties> = {
-  primary: {
-    background: "var(--button-primary-default-bg)",
-    color: "var(--button-primary-default-fg)",
-    boxShadow: "var(--button-primary-default-shadow)",
-    border: "none",
-  },
-  secondary: {
-    background: "var(--button-secondary-default-bg)",
-    color: "var(--button-secondary-default-fg)",
-    border: "1px solid var(--button-secondary-default-border)",
-  },
-  outline: {
-    background: "var(--button-outline-default-bg)",
-    color: "var(--button-outline-default-fg)",
-    border: "1.5px solid var(--button-outline-default-border)",
-  },
+const variantClasses: Record<ButtonVariant, string> = {
+  primary:   "bg-[var(--button-primary-bg)] text-[var(--button-primary-text)] shadow-[var(--button-primary-shadow)] border-transparent",
+  secondary: "bg-[var(--button-secondary-bg)] text-[var(--button-secondary-text)] border border-[var(--button-secondary-border)]",
+  outline:   "bg-[var(--button-outline-bg)] text-[var(--button-outline-text)] border border-[var(--button-outline-border)]",
 };
 
 export function Button({
@@ -53,7 +34,7 @@ export function Button({
   rightIcon,
   disabled,
   children,
-  style,
+  className,
   ...rest
 }: ButtonProps) {
   const isDisabled = disabled || loading;
@@ -62,29 +43,15 @@ export function Button({
       data-variant={variant}
       data-state={isDisabled ? "disabled" : "default"}
       disabled={isDisabled}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: "var(--icon-gap)",
-        width: fullWidth ? "100%" : undefined,
-        borderRadius: "var(--radius-button)",
-        fontSize: "var(--text-button-size)",
-        fontWeight: "var(--text-button-weight)" as React.CSSProperties["fontWeight"],
-        letterSpacing: "var(--text-button-spacing)",
-        cursor: isDisabled ? "not-allowed" : "pointer",
-        transition: "background 120ms ease, box-shadow 120ms ease",
-        ...sizePad[size],
-        ...variantStyle[variant],
-        ...(isDisabled
-          ? {
-              background: "var(--button-primary-disabled-bg)",
-              color: "var(--button-primary-disabled-fg)",
-              boxShadow: "none",
-            }
-          : null),
-        ...style,
-      }}
+      className={cn(
+        "inline-flex items-center justify-center gap-2 rounded-button text-[14px] font-semibold tracking-[-0.01em] transition-[background,box-shadow] duration-[120ms]",
+        sizeClasses[size],
+        fullWidth && "w-full",
+        isDisabled
+          ? "bg-[var(--button-primary-bg-disabled)] text-[var(--button-primary-text-disabled)] shadow-none border-transparent cursor-not-allowed opacity-100"
+          : cn(variantClasses[variant], "cursor-pointer"),
+        className
+      )}
       {...rest}
     >
       {leftIcon}

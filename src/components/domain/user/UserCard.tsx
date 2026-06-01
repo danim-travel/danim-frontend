@@ -1,23 +1,10 @@
 import React from "react";
+import { cn } from "@/lib/utils";
 import Avatar from "../../common/Avatar/Avatar";
 import Button from "../../common/Button/Button";
 
-/**
- * UserCard / FollowItem — 유저 요약 (layout으로 통합: row=FollowItem, card=UserCard)
- * state: default · hover
- * tokens: --text-*, --color-*, --radius-card-comp
- */
 export interface UserCardProps {
-  user: {
-    name: string;
-    handle: string;
-    region?: string;
-    bio?: string;
-    initial: string;
-    color?: string;
-    verified?: boolean;
-    mutual?: boolean;
-  };
+  user: { name: string; handle: string; region?: string; bio?: string; initial: string; color?: string; verified?: boolean; mutual?: boolean; };
   following?: boolean;
   layout?: "row" | "card";
   onToggleFollow?: () => void;
@@ -26,51 +13,29 @@ export interface UserCardProps {
 export function UserCard({ user, following, layout = "row", onToggleFollow }: UserCardProps) {
   return (
     <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "var(--space-4)",
-        padding: layout === "row" ? "var(--space-5) var(--space-6)" : "var(--space-6)",
-        background: layout === "card" ? "var(--color-background-card)" : "transparent",
-        borderRadius: layout === "card" ? "var(--radius-card-comp)" : 0,
-        boxShadow: layout === "card" ? "var(--shadow-card)" : "none",
-      }}
+      className={cn(
+        "flex items-center gap-4",
+        layout === "row" ? "px-6 py-5 bg-transparent" : "p-6 bg-bg-card rounded-card shadow-card"
+      )}
     >
       <Avatar size="lg" initial={user.initial} color={user.color} />
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)" }}>
-          <span style={{ fontSize: "var(--text-card-title-size)", fontWeight: 700, color: "var(--color-text-primary)" }}>
-            {user.name}
-          </span>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="text-[16px] font-bold text-text">{user.name}</span>
           {user.mutual && (
-            <span
-              style={{
-                fontSize: "var(--text-caption-size)",
-                padding: "0 var(--space-2)",
-                borderRadius: "var(--radius-pill)",
-                background: "var(--color-primary-soft)",
-                color: "var(--color-primary-active)",
-              }}
-            >
-              맞팔
-            </span>
+            <span className="text-[12px] px-2 rounded-pill bg-primary-soft text-primary-active">맞팔</span>
           )}
         </div>
-        <div style={{ fontSize: "var(--text-caption-size)", color: "var(--color-text-tertiary)" }}>
-          {user.handle}
-          {user.region ? ` · ${user.region}` : ""}
+        <div className="text-[12px] text-text-muted">
+          {user.handle}{user.region ? ` · ${user.region}` : ""}
         </div>
-        {user.bio && (
-          <div style={{ fontSize: "var(--text-body-sm-size)", color: "var(--color-text-secondary)", marginTop: "var(--space-1)" }}>
-            {user.bio}
-          </div>
-        )}
+        {user.bio && <div className="text-[13px] text-text-secondary mt-1">{user.bio}</div>}
       </div>
       <Button
         variant={following ? "primary" : "outline"}
         size="sm"
-        onClick={onToggleFollow}
-        style={{ borderRadius: "var(--radius-pill)", minWidth: 96 }}
+        onClick={() => onToggleFollow?.()}
+        className="rounded-pill min-w-[96px]"
       >
         {following ? "팔로잉" : user.mutual ? "맞팔로우" : "팔로우"}
       </Button>

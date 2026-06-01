@@ -1,11 +1,7 @@
 import React from "react";
+import { cn } from "@/lib/utils";
 import Avatar from "../../common/Avatar/Avatar";
 
-/**
- * ConversationItem — DM 목록 행
- * state: default · active · unread
- * tokens: --color-selected-background, --text-*, --color-*
- */
 export interface ConversationItemProps {
   user: { name: string; initial: string; color?: string };
   preview: string;
@@ -16,69 +12,26 @@ export interface ConversationItemProps {
   onClick?: () => void;
 }
 
-export function ConversationItem({
-  user,
-  preview,
-  time,
-  unread,
-  online,
-  active,
-  onClick,
-}: ConversationItemProps) {
+export function ConversationItem({ user, preview, time, unread, online, active, onClick }: ConversationItemProps) {
   return (
     <button
       onClick={onClick}
       data-state={active ? "active" : "default"}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "var(--space-3)",
-        width: "100%",
-        textAlign: "left",
-        padding: "var(--space-3) var(--space-6)",
-        background: active ? "var(--color-selected-background)" : "transparent",
-        border: "none",
-        cursor: "pointer",
-      }}
+      className={cn(
+        "flex items-center gap-3 w-full text-left px-6 py-3 border-none cursor-pointer",
+        active ? "bg-primary-soft" : "bg-transparent"
+      )}
     >
-      <span style={{ position: "relative" }}>
+      <span className="relative shrink-0">
         <Avatar size="lg" initial={user.initial} color={user.color} />
-        {online && (
-          <span
-            style={{
-              position: "absolute",
-              bottom: 1,
-              right: 1,
-              width: 12,
-              height: 12,
-              borderRadius: "var(--radius-full)",
-              background: "var(--color-primary)",
-              border: "2px solid var(--color-background-card)",
-            }}
-          />
-        )}
+        {online && <span className="absolute bottom-0.5 right-0.5 w-3 h-3 rounded-full bg-primary border-2 border-bg-card" />}
       </span>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div
-          style={{
-            fontSize: "var(--text-card-title-size)",
-            fontWeight: unread ? 700 : 600,
-            color: "var(--color-text-primary)",
-          }}
-        >
+      <div className="flex-1 min-w-0">
+        <div className={cn("text-[16px] text-text", unread ? "font-bold" : "font-semibold")}>
           {user.name}
         </div>
-        <div
-          style={{
-            fontSize: "var(--text-body-sm-size)",
-            color: unread ? "var(--color-text-secondary)" : "var(--color-text-tertiary)",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}
-        >
-          {preview}
-          {time ? ` · ${time}` : ""}
+        <div className={cn("text-[13px] truncate", unread ? "text-text-secondary" : "text-text-muted")}>
+          {preview}{time ? ` · ${time}` : ""}
         </div>
       </div>
     </button>
