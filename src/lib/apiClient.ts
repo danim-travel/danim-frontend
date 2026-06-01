@@ -1,18 +1,28 @@
-/**
- * ky 기반 HTTP 클라이언트.
- * 모든 API 요청은 이 파일을 통해야 한다. 컴포넌트/훅에서 ky·fetch 직접 호출 금지.
- */
 import ky from 'ky'
 import { config } from '@/lib/config'
 import { useAuthStore } from '@/store/authStore'
 
-export class ApiError extends Error {
-  constructor(
-    public readonly status: number,
-    public readonly detail: string | Record<string, string[]>
-  ) {
-    super(typeof detail === 'string' ? detail : JSON.stringify(detail))
-  }
+type ApiErrorDetail = string | Record<string, string[]>
+
+export type ApiError = Error & {
+  readonly status: number
+  readonly detail: ApiErrorDetail
+}
+
+export function createApiError(status: number, detail: ApiErrorDetail): ApiError {
+  return Object.assign(
+    new Error(typeof detail === 'string' ? detail : JSON.stringify(detail)),
+    { name: 'ApiError', status, detail }
+  ) as ApiError
+}
+
+export function isApiError(error: unknown): error is ApiError {
+  return (
+    error instanceof Error &&
+    error.name === 'ApiError' &&
+    'status' in error &&
+    'detail' in error
+  )
 }
 
 // 인증 헤더가 붙지 않는 클라이언트. 로그인·회원가입·refresh처럼 access_token이 없는 상태에서 호출하는 엔드포인트 전용.
@@ -58,7 +68,7 @@ export const apiClient = ky.create({
     ],
     // 401 응답을 받으면 refresh로 새 토큰을 받아 같은 요청을 한 번 재시도한다.
     afterResponse: [
-      async (input, options, response) => {
+      async (request, options, response) => {
         if (response.status !== 401) return
         const headers = new Headers(options.headers as HeadersInit)
         // 재시도 요청이 다시 401을 받는 경우 무한 루프를 막기 위한 플래그.
@@ -68,7 +78,7 @@ export const apiClient = ky.create({
           headers.set('Authorization', `Bearer ${newToken}`)
           // 재시도임을 표시 — 다음 401에서 또 refresh로 진입하지 않도록.
           headers.set('x-is-retry', '1')
-          return await ky(input, { ...options, headers })
+          return await ky(request, { ...options, headers })
         } catch {
           // getRefreshPromise 내부에서 clearAuth + redirect 처리
           return response
@@ -79,14 +89,11 @@ export const apiClient = ky.create({
     beforeError: [
       async (error) => {
         try {
-          const body = await error.response.clone().json() as { error_detail?: string | Record<string, string[]> }
-          throw new ApiError(
-            error.response.status,
-            body.error_detail ?? error.message
-          )
+          const body = await error.response.clone().json() as { error_detail?: ApiErrorDetail }
+          throw createApiError(error.response.status, body.error_detail ?? error.message)
         } catch (e) {
-          if (e instanceof ApiError) throw e
-          throw new ApiError(error.response.status, error.message)
+          if (isApiError(e)) throw e
+          throw createApiError(error.response.status, error.message)
         }
       },
     ],
