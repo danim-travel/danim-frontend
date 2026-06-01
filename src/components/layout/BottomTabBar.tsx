@@ -15,7 +15,7 @@ export function BottomTabBar({ items, active, onNav }: BottomTabBarProps) {
               key={it.key}
               onClick={() => onNav(it.key)}
               aria-label={it.label}
-              className="w-[52px] h-[52px] -mt-6 rounded-full bg-primary text-text-inverse border-none grid place-items-center shadow-floating-button cursor-pointer"
+              className="w-13 h-13 -mt-6 rounded-full bg-primary text-text-inverse border-none grid place-items-center shadow-floating-button cursor-pointer"
             >
               {it.icon}
             </button>
@@ -32,7 +32,7 @@ export function BottomTabBar({ items, active, onNav }: BottomTabBarProps) {
             )}
           >
             {it.icon}
-            <span className="text-[11px] font-semibold">{it.label}</span>
+            <span className="text-nav font-semibold">{it.label}</span>
           </button>
         );
       })}

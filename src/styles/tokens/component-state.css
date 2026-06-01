@@ -123,4 +123,7 @@
   --toast-text:       var(--color-text-inverse);
   --toast-bg-success: var(--color-success);
   --toast-bg-error:   var(--color-error);
+
+  /* ── Modal max-width ────────────────────── */
+  --modal-max-width: 560px;
 }

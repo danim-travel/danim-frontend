@@ -22,7 +22,7 @@ export function IconButton({ icon, variant = "ghost", size = "md", disabled, cla
       data-variant={variant}
       disabled={disabled}
       className={cn(
-        "grid place-items-center rounded-full text-text-muted border-none transition-[background] duration-[120ms]",
+        "grid place-items-center rounded-full text-text-muted border-none transition-[background] duration-fast",
         sizeClasses[size],
         variant === "filled" ? "bg-bg-subtle" : "bg-transparent",
         disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",

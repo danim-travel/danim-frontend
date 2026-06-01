@@ -15,15 +15,15 @@ export function Stepper({ steps, current }: StepperProps) {
               <span
                 data-state={state}
                 className={cn(
-                  "w-7 h-7 rounded-full grid place-items-center text-[13px] font-bold",
+                  "w-7 h-7 rounded-full grid place-items-center text-label font-bold",
                   state === "active"    && "bg-[var(--stepper-bg-active)] text-[var(--stepper-text-active)]",
                   state === "completed" && "bg-[var(--stepper-bg-completed)] text-[var(--stepper-text-completed)]",
-                  state === "default"   && "bg-transparent text-[var(--stepper-text)] border-[1.5px] border-[var(--stepper-border)]"
+                  state === "default"   && "bg-transparent text-[var(--stepper-text)] border-2 border-[var(--stepper-border)]"
                 )}
               >
                 {i + 1}
               </span>
-              <span className={cn("text-[13px]", state === "default" ? "text-text-muted" : "text-text")}>
+              <span className={cn("text-body-sm", state === "default" ? "text-text-muted" : "text-text")}>
                 {s.label}
               </span>
             </div>

@@ -15,14 +15,14 @@ export function Tabs({ items, value, onChange }: TabsProps) {
             data-state={on ? "selected" : "default"}
             onClick={() => onChange(it.key)}
             className={cn(
-              "relative inline-flex items-center gap-2 px-6 py-4 bg-transparent border-none cursor-pointer text-[16px] font-bold",
+              "relative inline-flex items-center gap-2 px-6 py-4 bg-transparent border-none cursor-pointer text-card-title font-bold",
               on ? "text-text" : "text-text-muted"
             )}
           >
             {it.icon}
             {it.label}
             {it.count != null && (
-              <span className={cn("text-[12px]", on ? "text-primary" : "text-text-muted")}>
+              <span className={cn("text-caption", on ? "text-primary" : "text-text-muted")}>
                 {it.count}
               </span>
             )}

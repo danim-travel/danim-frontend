@@ -10,7 +10,7 @@ export interface CheckboxProps {
 
 export function Checkbox({ checked, onChange, label, disabled }: CheckboxProps) {
   return (
-    <label className={cn("inline-flex items-center gap-2 text-[14px] text-text-secondary", disabled ? "cursor-not-allowed" : "cursor-pointer")}>
+    <label className={cn("inline-flex items-center gap-2 text-body text-text-secondary", disabled ? "cursor-not-allowed" : "cursor-pointer")}>
       <input
         type="checkbox"
         checked={checked}
@@ -21,8 +21,8 @@ export function Checkbox({ checked, onChange, label, disabled }: CheckboxProps) 
       <span
         data-state={checked ? "checked" : "default"}
         className={cn(
-          "w-5 h-5 grid place-items-center rounded-xs border-[1.5px] text-text-inverse transition-colors shrink-0",
-          checked ? "bg-primary border-primary" : "bg-white border-border"
+          "w-5 h-5 grid place-items-center rounded-xs border-2 text-text-inverse transition-colors shrink-0",
+          checked ? "bg-primary border-primary" : "bg-bg-card border-border"
         )}
       >
         {checked && (

@@ -34,6 +34,13 @@
   --button-padding-y: var(--space-3);    /* 12px */
   --input-padding-x:  var(--space-4);    /* 16px */
   --input-padding-y:  var(--space-3);    /* 12px */
+
+  /* ── Animation ───────────────────────────────── */
+  --duration-fast:   120ms;
+  --duration-normal: 160ms;
+
+  /* ── Z-index ─────────────────────────────────── */
+  --z-modal: 100;
 }
 
 /* ── Desktop overrides (≥ 768px) ─────────────── */

@@ -44,7 +44,7 @@ export function Button({
       data-state={isDisabled ? "disabled" : "default"}
       disabled={isDisabled}
       className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-button text-[14px] font-semibold tracking-[-0.01em] transition-[background,box-shadow] duration-[120ms]",
+        "inline-flex items-center justify-center gap-2 rounded-button text-button font-semibold tracking-snug transition-[background,box-shadow] duration-fast",
         sizeClasses[size],
         fullWidth && "w-full",
         isDisabled

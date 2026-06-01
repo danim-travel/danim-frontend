@@ -6,7 +6,7 @@ export interface SidebarNavProps { items: SidebarNavItem[]; active: string; onNa
 
 export function SidebarNav({ items, active, onNav, brand, footer }: SidebarNavProps) {
   return (
-    <aside className="w-[88px] h-full bg-bg-card shadow-surface flex flex-col items-center py-7 gap-10">
+    <aside className="w-22 h-full bg-bg-card shadow-surface flex flex-col items-center py-7 gap-10">
       {brand}
       <nav className="flex flex-col gap-2 w-full px-3">
         {items.map((it) => {
@@ -24,7 +24,7 @@ export function SidebarNav({ items, active, onNav, brand, footer }: SidebarNavPr
               )}
             >
               {it.icon}
-              <span className="text-[11px] font-semibold">{it.label}</span>
+              <span className="text-nav font-semibold">{it.label}</span>
             </button>
           );
         })}

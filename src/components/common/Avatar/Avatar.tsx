@@ -1,4 +1,3 @@
-import React from "react";
 import { cn } from "@/lib/utils";
 
 export type AvatarSize = "sm" | "md" | "lg" | "xl";
@@ -33,7 +32,7 @@ export function Avatar({ src, initial, size = "md", ring, color }: AvatarProps) 
 
   if (!ring) return inner;
   return (
-    <div className="p-[2.5px] rounded-avatar bg-[var(--avatar-story-border)]">
+    <div className="p-0.5 rounded-avatar bg-[var(--avatar-story-border)]">
       {inner}
     </div>
   );
