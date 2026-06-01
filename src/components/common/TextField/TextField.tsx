@@ -1,12 +1,7 @@
 import React from "react";
+import { cn } from "@/lib/utils";
 
-/**
- * TextField — 라벨 + 입력 + 헬퍼/에러
- * state: default · focus · error · disabled · placeholder
- * tokens: --input-*, --radius-input, --text-label/helper/error
- */
-export interface TextFieldProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface TextFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   helperText?: string;
   error?: string;
@@ -14,77 +9,36 @@ export interface TextFieldProps
   rightSlot?: React.ReactNode;
 }
 
-export function TextField({
-  label,
-  helperText,
-  error,
-  required,
-  rightSlot,
-  disabled,
-  style,
-  ...rest
-}: TextFieldProps) {
+export function TextField({ label, helperText, error, required, rightSlot, disabled, className, ...rest }: TextFieldProps) {
   const hasError = Boolean(error);
   return (
-    <label style={{ display: "block" }}>
+    <label className="block">
       {label && (
-        <span
-          style={{
-            display: "block",
-            marginBottom: "var(--space-2)",
-            fontSize: "var(--text-label-size)",
-            fontWeight: "var(--text-label-weight)" as React.CSSProperties["fontWeight"],
-            color: "var(--color-text-secondary)",
-          }}
-        >
+        <span className="block mb-2 text-[13px] font-semibold text-text-secondary">
           {label}
-          {required && <span style={{ color: "var(--color-primary)" }}> *</span>}
+          {required && <span className="text-primary"> *</span>}
         </span>
       )}
-      <span style={{ position: "relative", display: "block" }}>
+      <span className="relative block">
         <input
           data-state={hasError ? "error" : "default"}
           disabled={disabled}
-          style={{
-            width: "100%",
-            padding: "var(--input-padding-y) var(--input-padding-x)",
-            paddingRight: rightSlot ? "64px" : undefined,
-            background: disabled
-              ? "var(--input-disabled-bg)"
-              : "var(--input-default-bg)",
-            border: `1px solid ${
-              hasError ? "var(--input-error-border)" : "var(--input-default-border)"
-            }`,
-            borderRadius: "var(--radius-input)",
-            fontSize: "var(--text-body-size)",
-            color: "var(--input-default-fg)",
-            outline: "none",
-            ...style,
-          }}
+          className={cn(
+            "w-full py-3 px-4 rounded-input text-[14px] outline-none border transition-colors",
+            "bg-[var(--input-bg)] text-[var(--input-text)]",
+            hasError ? "border-[var(--input-border-error)]" : "border-[var(--input-border)]",
+            disabled && "bg-[var(--input-bg-disabled)] text-[var(--input-text-disabled)] cursor-not-allowed",
+            rightSlot && "pr-16",
+            className
+          )}
           {...rest}
         />
         {rightSlot && (
-          <span
-            style={{
-              position: "absolute",
-              right: "var(--space-2)",
-              top: "50%",
-              transform: "translateY(-50%)",
-            }}
-          >
-            {rightSlot}
-          </span>
+          <span className="absolute right-2 top-1/2 -translate-y-1/2">{rightSlot}</span>
         )}
       </span>
       {(helperText || error) && (
-        <span
-          style={{
-            display: "block",
-            marginTop: "var(--space-2)",
-            fontSize: "var(--text-helper-size)",
-            color: hasError ? "var(--input-error-fg)" : "var(--color-text-tertiary)",
-          }}
-        >
+        <span className={cn("block mt-2 text-[12px]", hasError ? "text-[var(--input-text-error)]" : "text-text-muted")}>
           {error || helperText}
         </span>
       )}

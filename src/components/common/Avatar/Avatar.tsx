@@ -1,57 +1,45 @@
 import React from "react";
+import { cn } from "@/lib/utils";
 
-/**
- * Avatar — 프로필 이미지/이니셜
- * state: default · story (ring)
- * tokens: --avatar-*, --radius-avatar
- */
 export type AvatarSize = "sm" | "md" | "lg" | "xl";
 
 export interface AvatarProps {
   src?: string;
   initial?: string;
   size?: AvatarSize;
-  ring?: boolean; // story ring
-  color?: string; // background token reference
+  ring?: boolean;
+  color?: string;
 }
 
-const dim: Record<AvatarSize, number> = { sm: 32, md: 44, lg: 56, xl: 112 };
+const sizeClasses: Record<AvatarSize, { box: string; text: string }> = {
+  sm: { box: "w-8 h-8",   text: "text-[13px]" },
+  md: { box: "w-11 h-11", text: "text-[18px]" },
+  lg: { box: "w-14 h-14", text: "text-[22px]" },
+  xl: { box: "w-28 h-28", text: "text-[45px]" },
+};
 
-export function Avatar({
-  src,
-  initial,
-  size = "md",
-  ring,
-  color = "var(--color-primary)",
-}: AvatarProps) {
-  const d = dim[size];
+export function Avatar({ src, initial, size = "md", ring, color }: AvatarProps) {
+  const { box, text } = sizeClasses[size];
   const inner = (
     <div
-      style={{
-        width: d,
-        height: d,
-        borderRadius: "var(--radius-avatar)",
-        background: src ? `center/cover url(${src})` : color,
-        color: "var(--color-text-inverse)",
-        display: "grid",
-        placeItems: "center",
-        fontWeight: 700,
-        fontSize: d * 0.4,
-        border: `2px solid var(--avatar-default-border)`,
-      }}
+      className={cn(
+        "grid place-items-center rounded-avatar font-bold border-2 border-bg-card text-text-inverse shrink-0",
+        box,
+        text
+      )}
+      style={
+        src
+          ? { backgroundImage: `url(${src})`, backgroundSize: "cover", backgroundPosition: "center" }
+          : { backgroundColor: color ?? "var(--color-primary)" }
+      }
     >
       {!src && initial}
     </div>
   );
+
   if (!ring) return inner;
   return (
-    <div
-      style={{
-        padding: 2.5,
-        borderRadius: "var(--radius-avatar)",
-        background: "var(--avatar-story-border)",
-      }}
-    >
+    <div className="p-[2.5px] rounded-avatar bg-[var(--avatar-story-border)]">
       {inner}
     </div>
   );

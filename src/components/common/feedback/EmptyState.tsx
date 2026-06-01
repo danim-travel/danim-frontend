@@ -1,46 +1,14 @@
 import React from "react";
 
-/**
- * EmptyState — 결과 없음 (검색 · 피드)
- * state: empty
- * tokens: --text-body/caption, --color-text-*, --space-*
- */
-export interface EmptyStateProps {
-  icon?: React.ReactNode;
-  title: string;
-  description?: string;
-  action?: React.ReactNode;
-}
+export interface EmptyStateProps { icon?: React.ReactNode; title: string; description?: string; action?: React.ReactNode; }
 
 export function EmptyState({ icon, title, description, action }: EmptyStateProps) {
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        textAlign: "center",
-        padding: "var(--space-12) var(--space-6)",
-        gap: "var(--space-3)",
-      }}
-    >
-      {icon && <div style={{ color: "var(--color-text-disabled)" }}>{icon}</div>}
-      <div
-        style={{
-          fontSize: "var(--text-card-title-size)",
-          fontWeight: "var(--text-card-title-weight)" as React.CSSProperties["fontWeight"],
-          color: "var(--color-text-primary)",
-        }}
-      >
-        {title}
-      </div>
-      {description && (
-        <div style={{ fontSize: "var(--text-body-size)", color: "var(--color-text-tertiary)" }}>
-          {description}
-        </div>
-      )}
-      {action && <div style={{ marginTop: "var(--space-2)" }}>{action}</div>}
+    <div className="flex flex-col items-center justify-center text-center px-6 py-12 gap-3">
+      {icon && <div className="text-text-disabled">{icon}</div>}
+      <div className="text-[16px] font-semibold text-text">{title}</div>
+      {description && <div className="text-[14px] text-text-muted">{description}</div>}
+      {action && <div className="mt-2">{action}</div>}
     </div>
   );
 }

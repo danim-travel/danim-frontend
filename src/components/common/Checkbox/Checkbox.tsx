@@ -1,10 +1,6 @@
 import React from "react";
+import { cn } from "@/lib/utils";
 
-/**
- * Checkbox — 동의 · 선택 체크박스
- * state: default · checked · disabled · focus
- * tokens: --color-primary, --color-border, --radius-xs
- */
 export interface CheckboxProps {
   checked: boolean;
   onChange: (next: boolean) => void;
@@ -14,31 +10,20 @@ export interface CheckboxProps {
 
 export function Checkbox({ checked, onChange, label, disabled }: CheckboxProps) {
   return (
-    <label
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: "var(--space-2)",
-        cursor: disabled ? "not-allowed" : "pointer",
-        fontSize: "var(--text-body-size)",
-        color: "var(--color-text-secondary)",
-      }}
-    >
+    <label className={cn("inline-flex items-center gap-2 text-[14px] text-text-secondary", disabled ? "cursor-not-allowed" : "cursor-pointer")}>
+      <input
+        type="checkbox"
+        checked={checked}
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.checked)}
+        className="sr-only"
+      />
       <span
-        role="checkbox"
-        aria-checked={checked}
         data-state={checked ? "checked" : "default"}
-        onClick={() => !disabled && onChange(!checked)}
-        style={{
-          width: 20,
-          height: 20,
-          display: "grid",
-          placeItems: "center",
-          borderRadius: "var(--radius-xs)",
-          background: checked ? "var(--color-primary)" : "var(--color-white)",
-          border: `1.5px solid ${checked ? "var(--color-primary)" : "var(--color-border)"}`,
-          color: "var(--color-text-inverse)",
-        }}
+        className={cn(
+          "w-5 h-5 grid place-items-center rounded-xs border-[1.5px] text-text-inverse transition-colors shrink-0",
+          checked ? "bg-primary border-primary" : "bg-white border-border"
+        )}
       >
         {checked && (
           <svg width={12} height={12} viewBox="0 0 24 24" fill="none">

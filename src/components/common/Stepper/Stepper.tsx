@@ -1,67 +1,33 @@
 import React from "react";
+import { cn } from "@/lib/utils";
 
-/**
- * Stepper — 코스 단계 인디케이터
- * state: default(미방문) · active(현재) · completed(완료)
- * tokens: --stepper-*
- */
-export interface StepperStep {
-  label: string;
-}
-
-export interface StepperProps {
-  steps: StepperStep[];
-  current: number; // 0-indexed
-}
+export interface StepperStep { label: string; }
+export interface StepperProps { steps: StepperStep[]; current: number; }
 
 export function Stepper({ steps, current }: StepperProps) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)" }}>
+    <div className="flex items-center gap-2">
       {steps.map((s, i) => {
         const state = i < current ? "completed" : i === current ? "active" : "default";
-        const circle: React.CSSProperties =
-          state === "active"
-            ? { background: "var(--stepper-active-bg)", color: "var(--stepper-active-fg)" }
-            : state === "completed"
-            ? { background: "var(--stepper-completed-bg)", color: "var(--stepper-completed-fg)" }
-            : {
-                background: "transparent",
-                color: "var(--stepper-default-fg)",
-                border: "1.5px solid var(--stepper-default-border)",
-              };
         return (
           <React.Fragment key={i}>
-            <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)" }}>
+            <div className="flex items-center gap-2">
               <span
                 data-state={state}
-                style={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: "var(--radius-full)",
-                  display: "grid",
-                  placeItems: "center",
-                  fontSize: "var(--text-label-size)",
-                  fontWeight: 700,
-                  ...circle,
-                }}
+                className={cn(
+                  "w-7 h-7 rounded-full grid place-items-center text-[13px] font-bold",
+                  state === "active"    && "bg-[var(--stepper-bg-active)] text-[var(--stepper-text-active)]",
+                  state === "completed" && "bg-[var(--stepper-bg-completed)] text-[var(--stepper-text-completed)]",
+                  state === "default"   && "bg-transparent text-[var(--stepper-text)] border-[1.5px] border-[var(--stepper-border)]"
+                )}
               >
                 {i + 1}
               </span>
-              <span
-                style={{
-                  fontSize: "var(--text-label-size)",
-                  color:
-                    state === "default"
-                      ? "var(--color-text-tertiary)"
-                      : "var(--color-text-primary)",
-                }}
-              >
+              <span className={cn("text-[13px]", state === "default" ? "text-text-muted" : "text-text")}>
                 {s.label}
               </span>
             </div>
-            {i < steps.length - 1 && (
-              <span style={{ width: 24, height: 2, background: "var(--color-border)" }} />
-            )}
+            {i < steps.length - 1 && <span className="w-6 h-0.5 bg-border" />}
           </React.Fragment>
         );
       })}
