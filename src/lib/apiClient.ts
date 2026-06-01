@@ -80,6 +80,7 @@ export const apiClient = ky.create({
           headers.set('x-is-retry', '1')
           return await ky(request, { ...options, headers })
         } catch {
+          // getRefreshPromise 내부에서 clearAuth + redirect 처리
           return response
         }
       },
