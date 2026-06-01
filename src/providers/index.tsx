@@ -6,7 +6,7 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
-import { ApiError, publicClient } from '@/lib/apiClient'
+import { isApiError, publicClient } from '@/lib/apiClient'
 import { useAuthStore } from '@/store/authStore'
 
 async function initMsw() {
@@ -62,7 +62,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           queries: {
             staleTime: 60 * 1000,
             retry: (failureCount, error) => {
-              if (error instanceof ApiError && error.status === 401) return false
+              if (isApiError(error) && error.status === 401) return false
               return failureCount < 1
             },
             refetchOnWindowFocus: false,
