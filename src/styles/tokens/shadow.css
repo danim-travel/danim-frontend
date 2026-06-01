@@ -1,0 +1,33 @@
+@theme inline {
+  /* ── Primitive ───────────────────────────────── */
+  --shadow-none: none;
+  --shadow-xs:   0 1px 2px rgba(15, 23, 32, 0.05);
+  --shadow-sm:   0 2px 8px rgba(17, 24, 39, 0.06);
+  --shadow-md:   0 4px 16px rgba(17, 24, 39, 0.06);
+  --shadow-lg:   0 12px 32px rgba(15, 23, 32, 0.08);
+  --shadow-xl:   0 20px 48px rgba(15, 23, 32, 0.12);
+
+  --shadow-mint-ring: 0 0 0 3px rgba(62, 203, 160, 0.35);
+  --shadow-mint-sm:   0 4px 14px rgba(62, 203, 160, 0.35);
+  --shadow-mint-md:   0 6px 20px rgba(62, 203, 160, 0.45);
+  --shadow-mint-lg:   0 10px 20px -8px rgba(62, 203, 160, 0.55);
+
+  /* ── Semantic ────────────────────────────────── */
+  --shadow-surface:      var(--shadow-sm);
+  --shadow-raised:       var(--shadow-md);
+  --shadow-overlay:      var(--shadow-lg);
+  --shadow-floating:     var(--shadow-xl);
+  --shadow-focus:        var(--shadow-mint-ring);
+  --shadow-brand:        var(--shadow-mint-sm);
+  --shadow-brand-strong: var(--shadow-mint-md);
+
+  /* ── Component ───────────────────────────────── */
+  --shadow-card:            var(--shadow-raised);
+  --shadow-card-hover:      var(--shadow-overlay);
+  --shadow-modal:           var(--shadow-overlay);
+  --shadow-dropdown:        var(--shadow-raised);
+  --shadow-popover:         var(--shadow-lg);
+  --shadow-bottom-sheet:    var(--shadow-floating);
+  --shadow-floating-button: var(--shadow-brand-strong);
+  --shadow-focus-ring:      var(--shadow-focus);
+}

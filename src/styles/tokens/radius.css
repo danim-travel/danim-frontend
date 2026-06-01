@@ -1,0 +1,25 @@
+@theme inline {
+  /* ── Primitive ───────────────────────────────── */
+  --radius-none: 0px;
+  --radius-xs:   6px;
+  --radius-sm:   8px;
+  --radius-md:   12px;
+  --radius-lg:   16px;
+  --radius-xl:   20px;
+  --radius-2xl:  24px;
+  --radius-full: 9999px;
+
+  /* ── Semantic ────────────────────────────────── */
+  --radius-control: var(--radius-md);   /* 12px · 입력/작은 컨트롤 */
+  --radius-card:    var(--radius-xl);   /* 20px · 카드/패널 */
+  --radius-modal:   var(--radius-2xl);  /* 24px · 모달/큰 표면 */
+  --radius-sheet:   var(--radius-2xl);  /* 24px · 바텀시트 */
+  --radius-pill:    var(--radius-full); /* 9999px · 칩/태그/원형 */
+
+  /* ── Component ───────────────────────────────── */
+  --radius-button:       var(--radius-lg);      /* 16px */
+  --radius-input:        var(--radius-control); /* 12px */
+  --radius-textarea:     var(--radius-control); /* 12px */
+  --radius-badge:        var(--radius-pill);    /* 9999px */
+  --radius-avatar:       var(--radius-full);    /* 9999px */
+}
