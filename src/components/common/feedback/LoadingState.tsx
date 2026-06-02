@@ -10,11 +10,13 @@ const radiusClasses: Record<NonNullable<SkeletonProps["radius"]>, string> = {
 };
 
 export function Skeleton({ width = "100%", height = 16, radius = "control", className }: SkeletonProps) {
+  const w = typeof width  === "number" ? `${width}px`  : width;
+  const h = typeof height === "number" ? `${height}px` : height;
   return (
     <span
       aria-hidden
-      className={cn("block bg-bg-subtle animate-pulse", radiusClasses[radius], className)}
-      style={{ width, height }}
+      className={cn("block bg-bg-subtle animate-pulse w-[var(--sk-w)] h-[var(--sk-h)]", radiusClasses[radius], className)}
+      style={{ "--sk-w": w, "--sk-h": h } as React.CSSProperties}
     />
   );
 }

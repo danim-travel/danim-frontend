@@ -103,7 +103,7 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
               <div className="px-6 py-5 bg-bg-card border-t border-border-subtle">
                 <div className="flex items-start">
                   {spots.map((spot, i) => (
-                    <div key={spot.spot_id} className="flex items-start" style={{ flex: i < spots.length - 1 ? 1 : "none" }}>
+                    <div key={spot.spot_id} className={`flex items-start ${i < spots.length - 1 ? "flex-1" : "flex-none"}`}>
                       <button onClick={() => setActiveSpotIdx(i)} className="flex flex-col items-center gap-1.5 shrink-0">
                         <div
                           className={`w-8 h-8 rounded-full flex items-center justify-center text-[13px] font-bold transition-all border-2 shadow-sm ${

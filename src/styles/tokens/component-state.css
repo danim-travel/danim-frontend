@@ -111,16 +111,6 @@
   --avatar-radius:       var(--radius-avatar);
   --avatar-story-border: var(--color-primary);
 
-  --avatar-size-sm:  32px;
-  --avatar-size-md:  44px;
-  --avatar-size-lg:  56px;
-  --avatar-size-xl: 112px;
-
-  --avatar-font-sm:  13px;
-  --avatar-font-md:  18px;
-  --avatar-font-lg:  22px;
-  --avatar-font-xl:  45px;
-
   /* ── Stepper ─────────────────────────────── */
   --stepper-text:          var(--color-text-disabled);
   --stepper-border:        var(--color-border);
