@@ -34,6 +34,17 @@
   --button-outline-radius:    var(--radius-button);
   --button-outline-bg-hover:  var(--color-primary-soft);
 
+  /* ── Segmented ───────────────────────────── */
+  --segmented-item-height:           38px;
+  --segmented-item-gap:              var(--space-2);   /* 8px */
+  --segmented-item-radius:           var(--radius-control);
+  --segmented-item-bg:               var(--color-bg-card);
+  --segmented-item-text:             var(--color-text-secondary);
+  --segmented-item-border:           var(--color-border);
+  --segmented-item-bg-selected:      var(--color-primary-soft);
+  --segmented-item-text-selected:    var(--color-primary);
+  --segmented-item-border-selected:  var(--color-primary);
+
   /* ── Button · sm ─────────────────────────── */
   --button-sm-height:    32px;
   --button-sm-padding-x: var(--space-3);  /* 12px */
