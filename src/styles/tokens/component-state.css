@@ -50,24 +50,24 @@
 
   /* ── Button · sm ─────────────────────────── */
   --button-sm-height:    32px;
-  --button-sm-padding-x: var(--space-3);  /* 12px */
-  --button-sm-font-size: 12px;
-  --button-sm-icon-size: 14px;
-  --button-sm-gap:       var(--space-2);  /* 8px */
+  --button-sm-padding-x: var(--space-3);     /* 12px */
+  --button-sm-font-size: var(--font-size-xs); /* 12px */
+  --button-sm-icon-size: var(--icon-size-sm); /* 14px */
+  --button-sm-gap:       var(--space-2);     /* 8px */
 
   /* ── Button · md ─────────────────────────── */
   --button-md-height:    40px;
-  --button-md-padding-x: var(--space-5);  /* 20px */
-  --button-md-font-size: 14px;
-  --button-md-icon-size: 16px;
-  --button-md-gap:       var(--space-2);  /* 8px */
+  --button-md-padding-x: var(--space-5);     /* 20px */
+  --button-md-font-size: var(--font-size-md); /* 14px */
+  --button-md-icon-size: var(--icon-size-md); /* 16px */
+  --button-md-gap:       var(--space-2);     /* 8px */
 
   /* ── Button · lg ─────────────────────────── */
   --button-lg-height:    48px;
-  --button-lg-padding-x: var(--space-6);  /* 24px */
-  --button-lg-font-size: 16px;
-  --button-lg-icon-size: 18px;
-  --button-lg-gap:       var(--space-3);  /* 12px */
+  --button-lg-padding-x: var(--space-6);     /* 24px */
+  --button-lg-font-size: var(--font-size-lg); /* 16px */
+  --button-lg-icon-size: var(--icon-size-lg); /* 18px */
+  --button-lg-gap:       var(--space-3);     /* 12px */
 
   /* ── Input ───────────────────────────────── */
   --input-bg:               var(--color-bg-subtle);

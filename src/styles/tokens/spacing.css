@@ -41,6 +41,11 @@
 
   /* ── Z-index ─────────────────────────────────── */
   --z-modal: 100;
+
+  /* ── Icon size ───────────────────────────────── */
+  --icon-size-sm: 14px;
+  --icon-size-md: 16px;
+  --icon-size-lg: 18px;
 }
 
 /* ── Desktop overrides (≥ 768px) ─────────────── */

@@ -15,6 +15,11 @@
   --letter-spacing-snug:   -0.01em;  /* section-title · card-title · button */
   --letter-spacing-normal:  0em;     /* body · caption · label · nav */
 
+  /* ── Font size primitives (size-only, component token 참조용) ── */
+  --font-size-xs: 12px;  /* = text-caption */
+  --font-size-md: 14px;  /* = text-body · text-button */
+  --font-size-lg: 16px;  /* = text-card-title */
+
   /* ── Type scale (size / line-height) ─────────── */
   --text-display:       44px / 1.15;
   --text-page-title:    28px / 1.25;
