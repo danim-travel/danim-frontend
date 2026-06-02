@@ -28,11 +28,46 @@
   --button-secondary-text-disabled: var(--color-text-disabled);
 
   /* ── Button · outline ────────────────────── */
-  --button-outline-bg:        var(--color-bg-card);
-  --button-outline-text:      var(--color-primary);
-  --button-outline-border:    var(--color-primary);
-  --button-outline-radius:    var(--radius-button);
-  --button-outline-bg-hover:  var(--color-primary-soft);
+  --button-outline-bg:            var(--color-bg-card);
+  --button-outline-text:          var(--color-primary);
+  --button-outline-border:        var(--color-primary);
+  --button-outline-radius:        var(--radius-button);
+  --button-outline-bg-hover:      var(--color-primary-soft);
+  --button-outline-bg-disabled:   var(--color-bg-subtle);
+  --button-outline-text-disabled: var(--color-text-disabled);
+  --button-outline-border-disabled: var(--color-border);
+
+  /* ── Segmented ───────────────────────────── */
+  --segmented-item-height:           38px;
+  --segmented-item-gap:              var(--space-2);   /* 8px */
+  --segmented-item-radius:           var(--radius-control);
+  --segmented-item-bg:               var(--color-bg-card);
+  --segmented-item-text:             var(--color-text-secondary);
+  --segmented-item-border:           var(--color-border);
+  --segmented-item-bg-selected:      var(--color-primary-soft);
+  --segmented-item-text-selected:    var(--color-primary);
+  --segmented-item-border-selected:  var(--color-primary);
+
+  /* ── Button · sm ─────────────────────────── */
+  --button-sm-height:    32px;
+  --button-sm-padding-x: var(--space-3);     /* 12px */
+  --button-sm-font-size: var(--font-size-xs); /* 12px */
+  --button-sm-icon-size: var(--icon-size-sm); /* 14px */
+  --button-sm-gap:       var(--space-2);     /* 8px */
+
+  /* ── Button · md ─────────────────────────── */
+  --button-md-height:    40px;
+  --button-md-padding-x: var(--space-5);     /* 20px */
+  --button-md-font-size: var(--font-size-md); /* 14px */
+  --button-md-icon-size: var(--icon-size-md); /* 16px */
+  --button-md-gap:       var(--space-2);     /* 8px */
+
+  /* ── Button · lg ─────────────────────────── */
+  --button-lg-height:    48px;
+  --button-lg-padding-x: var(--space-6);     /* 24px */
+  --button-lg-font-size: var(--font-size-lg); /* 16px */
+  --button-lg-icon-size: var(--icon-size-lg); /* 18px */
+  --button-lg-gap:       var(--space-3);     /* 12px */
 
   /* ── Input ───────────────────────────────── */
   --input-bg:               var(--color-bg-subtle);
@@ -113,4 +148,7 @@
   --toast-text:       var(--color-text-inverse);
   --toast-bg-success: var(--color-success);
   --toast-bg-error:   var(--color-error);
+
+  /* ── Modal max-width ────────────────────── */
+  --modal-max-width: 560px;
 }

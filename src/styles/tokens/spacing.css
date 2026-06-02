@@ -34,6 +34,18 @@
   --button-padding-y: var(--space-3);    /* 12px */
   --input-padding-x:  var(--space-4);    /* 16px */
   --input-padding-y:  var(--space-3);    /* 12px */
+
+  /* ── Animation ───────────────────────────────── */
+  --duration-fast:   120ms;
+  --duration-normal: 160ms;
+
+  /* ── Z-index ─────────────────────────────────── */
+  --z-modal: 100;
+
+  /* ── Icon size ───────────────────────────────── */
+  --icon-size-sm: 14px;
+  --icon-size-md: 16px;
+  --icon-size-lg: 18px;
 }
 
 /* ── Desktop overrides (≥ 768px) ─────────────── */

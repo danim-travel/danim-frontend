@@ -66,4 +66,7 @@
   --color-border-focus:  var(--color-primary);
   --color-border-error:  var(--color-error);
 
+  /* ── Semantic: Overlay ───────────────────────── */
+  --color-overlay: rgb(15 23 32 / 0.45);
+
 }
