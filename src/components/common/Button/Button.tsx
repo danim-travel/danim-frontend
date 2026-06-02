@@ -26,6 +26,12 @@ const variantClasses: Record<ButtonVariant, string> = {
   outline:   "bg-[var(--button-outline-bg)] text-[var(--button-outline-text)] border border-[var(--button-outline-border)]",
 };
 
+const disabledClasses: Record<ButtonVariant, string> = {
+  primary:   "bg-[var(--button-primary-bg-disabled)] text-[var(--button-primary-text-disabled)] shadow-none border-transparent",
+  secondary: "bg-[var(--button-secondary-bg-disabled)] text-[var(--button-secondary-text-disabled)] border border-[var(--button-secondary-border)]",
+  outline:   "bg-[var(--button-outline-bg-disabled)] text-[var(--button-outline-text-disabled)] border border-[var(--button-outline-border-disabled)]",
+};
+
 export function Button({
   variant = "primary",
   size = "md",
@@ -49,7 +55,7 @@ export function Button({
         sizeClasses[size],
         fullWidth && "w-full",
         isDisabled
-          ? "bg-[var(--button-primary-bg-disabled)] text-[var(--button-primary-text-disabled)] shadow-none border-transparent cursor-not-allowed opacity-100"
+          ? cn(disabledClasses[variant], "cursor-not-allowed opacity-100")
           : cn(variantClasses[variant], "cursor-pointer"),
         className
       )}

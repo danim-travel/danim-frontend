@@ -28,11 +28,14 @@
   --button-secondary-text-disabled: var(--color-text-disabled);
 
   /* ── Button · outline ────────────────────── */
-  --button-outline-bg:        var(--color-bg-card);
-  --button-outline-text:      var(--color-primary);
-  --button-outline-border:    var(--color-primary);
-  --button-outline-radius:    var(--radius-button);
-  --button-outline-bg-hover:  var(--color-primary-soft);
+  --button-outline-bg:            var(--color-bg-card);
+  --button-outline-text:          var(--color-primary);
+  --button-outline-border:        var(--color-primary);
+  --button-outline-radius:        var(--radius-button);
+  --button-outline-bg-hover:      var(--color-primary-soft);
+  --button-outline-bg-disabled:   var(--color-bg-subtle);
+  --button-outline-text-disabled: var(--color-text-disabled);
+  --button-outline-border-disabled: var(--color-border);
 
   /* ── Segmented ───────────────────────────── */
   --segmented-item-height:           38px;
