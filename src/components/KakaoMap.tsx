@@ -190,14 +190,14 @@ function KakaoMap({ selectedPost, onBoundsChange, onPinClick }: KakaoMapProps) {
       {status === "loading" && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-bg gap-3">
           <div className="w-8 h-8 rounded-full border-4 border-warning border-t-transparent animate-spin" />
-          <p className="text-sm text-text-muted">지도를 불러오는 중...</p>
+          <p className="text-body text-text-muted">지도를 불러오는 중...</p>
         </div>
       )}
 
       {status === "error" && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-bg gap-2">
-          <p className="text-base font-semibold text-text-secondary">지도를 불러올 수 없습니다</p>
-          <p className="text-sm text-text-muted">
+          <p className="text-card-title font-semibold text-text-secondary">지도를 불러올 수 없습니다</p>
+          <p className="text-body text-text-muted">
             카카오 개발자 콘솔 → 플랫폼 키 → JavaScript SDK 도메인에{" "}
             <code className="bg-border px-1 rounded">http://localhost:3000</code> 을 추가해주세요.
           </p>
@@ -207,7 +207,7 @@ function KakaoMap({ selectedPost, onBoundsChange, onPinClick }: KakaoMapProps) {
       {status === "ready" && (
         <button
           onClick={goToCurrentLocation}
-          className="absolute bottom-8 right-3 z-10 flex items-center gap-1.5 rounded-full bg-bg-card px-4 py-2 text-sm font-medium shadow-md hover:bg-bg-subtle active:scale-95 transition-transform"
+          className="absolute bottom-8 right-3 z-10 flex items-center gap-1.5 rounded-full bg-bg-card px-4 py-2 text-body font-medium shadow-md hover:bg-bg-subtle active:scale-95 transition-transform"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
@@ -217,7 +217,7 @@ function KakaoMap({ selectedPost, onBoundsChange, onPinClick }: KakaoMapProps) {
       )}
 
       {locError && (
-        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-10 rounded-lg bg-error px-4 py-2 text-sm text-text-inverse shadow-lg whitespace-nowrap">
+        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-10 rounded-lg bg-error px-4 py-2 text-body text-text-inverse shadow-lg whitespace-nowrap">
           {locError}
         </div>
       )}

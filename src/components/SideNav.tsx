@@ -60,7 +60,7 @@ export default function SideNav() {
       {/* 메인 로고, 클릭하면 홈으로 이동 */}
       <Link href="/" className="mb-5">
         <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-md hover:shadow-lg transition-shadow">
-          <span className="text-text-inverse text-base">✈️</span>
+          <span className="text-text-inverse text-card-title">✈️</span>
         </div>
       </Link>
 
