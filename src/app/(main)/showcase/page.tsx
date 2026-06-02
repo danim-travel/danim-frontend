@@ -22,7 +22,7 @@ import { TextField }   from "@/components/common/TextField/TextField";
 import { Toast }       from "@/components/common/Toast/Toast";
 import { Toggle }      from "@/components/common/Toggle/Toggle";
 import { EmptyState }  from "@/components/common/feedback/EmptyState";
-import { LoadingState } from "@/components/common/feedback/LoadingState";
+import { LoadingState } from "@/components/common/feedback/Skeleton";
 
 const KakaoMap = dynamic(() => import("@/components/KakaoMap"), { ssr: false });
 

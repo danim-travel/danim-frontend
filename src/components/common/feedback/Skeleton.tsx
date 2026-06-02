@@ -23,7 +23,7 @@ export function Skeleton({ width = "100%", height = 16, radius = "control", clas
 
 export interface LoadingStateProps { rows?: number; }
 
-export function LoadingState({ rows = 3 }: LoadingStateProps) {
+export function LoadingState({ rows = 2 }: LoadingStateProps) {
   return (
     <div data-state="loading" className="flex flex-col gap-4">
       {Array.from({ length: rows }).map((_, i) => (

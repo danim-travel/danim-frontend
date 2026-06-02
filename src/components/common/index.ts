@@ -13,4 +13,4 @@ export * from "./TextField/TextField";
 export * from "./Toast/Toast";
 export * from "./Toggle/Toggle";
 export * from "./feedback/EmptyState";
-export * from "./feedback/LoadingState";
+export * from "./feedback/Skeleton";
