@@ -16,7 +16,7 @@ export function Toast({ variant = "default", icon, children }: ToastProps) {
       role="status"
       data-variant={variant}
       className={cn(
-        "inline-flex items-center gap-2 px-5 py-3 rounded-card text-[var(--toast-text)] text-body font-medium shadow-floating",
+        "inline-flex items-center gap-2 px-5 py-3 rounded-card text-text-inverse text-base font-medium shadow-floating",
         variantClasses[variant]
       )}
     >

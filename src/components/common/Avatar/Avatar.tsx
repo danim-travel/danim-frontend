@@ -8,7 +8,8 @@ export interface AvatarProps {
   initial?: string;
   size?: AvatarSize;
   ring?: boolean;
-  color?: string;
+  /** Tailwind bg 클래스. 예: "bg-primary", "bg-amber-400" */
+  colorClass?: string;
 }
 
 const sizeClasses: Record<AvatarSize, { box: string; text: string }> = {
@@ -18,17 +19,16 @@ const sizeClasses: Record<AvatarSize, { box: string; text: string }> = {
   xl: { box: "w-28 h-28", text: "text-[45px]" },
 };
 
-export function Avatar({ src, initial, size = "md", ring, color }: AvatarProps) {
+export function Avatar({ src, initial, size = "md", ring, colorClass = "bg-primary" }: AvatarProps) {
   const { box, text } = sizeClasses[size];
   const inner = (
     <div
       className={cn(
         "relative overflow-hidden grid place-items-center rounded-avatar font-bold border-2 border-bg-card text-text-inverse shrink-0",
-        "bg-[var(--avatar-bg,var(--color-primary))]",
+        !src && colorClass,
         box,
         text
       )}
-      style={color ? { "--avatar-bg": color } as React.CSSProperties : undefined}
     >
       {src
         ? <img src={src} alt="" className="absolute inset-0 w-full h-full object-cover" />

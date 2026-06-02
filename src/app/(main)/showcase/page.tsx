@@ -193,15 +193,15 @@ export default function ShowcasePage() {
               { name: "src?",     type: "string",                    desc: "프로필 이미지 URL" },
               { name: "initial?", type: "string",                    desc: "이미지 없을 때 표시할 이니셜" },
               { name: "size?",    type: '"sm" | "md" | "lg" | "xl"', desc: "크기 (기본: md)" },
-              { name: "color?",   type: "string",                    desc: "배경색 (hex)" },
-              { name: "ring?",    type: "boolean",                   desc: "스토리 링 표시" },
+              { name: "colorClass?", type: "string",                    desc: 'Tailwind bg 클래스. 예: "bg-primary"' },
+              { name: "ring?",       type: "boolean",                   desc: "스토리 링 표시" },
             ]}
           />
           <Preview label="size · ring">
-            <Avatar size="sm" initial="김" color="#3ECBA0" />
-            <Avatar size="md" initial="이" color="#F59E0B" />
-            <Avatar size="lg" initial="박" color="#6366F1" />
-            <Avatar size="xl" initial="정" color="#EC4899" />
+            <Avatar size="sm" initial="김" colorClass="bg-primary" />
+            <Avatar size="md" initial="이" colorClass="bg-amber-400" />
+            <Avatar size="lg" initial="박" colorClass="bg-indigo-500" />
+            <Avatar size="xl" initial="정" colorClass="bg-pink-500" />
             <Avatar size="md" initial="링" ring />
           </Preview>
         </section>
