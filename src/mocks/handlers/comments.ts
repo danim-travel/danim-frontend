@@ -89,11 +89,12 @@ export const commentsHandlers = [
     }
 
     const now = new Date().toISOString()
+    const commentId = commentIdCounter++
     const newComment: CommentCreateResponse = {
-      comment_id: `comment-${commentIdCounter++}`,
+      comment_id: `comment-${commentId}`,
       content: body.content ?? null,
       comment_img: body.comment_img
-        ? { img_url: `https://picsum.photos/seed/comment${commentIdCounter}/200/200`, original_img: body.comment_img.original_img, key: body.comment_img.key }
+        ? { img_url: `https://picsum.photos/seed/comment${commentId}/200/200`, original_img: body.comment_img.original_img, key: body.comment_img.key }
         : { img_url: null, original_img: null, key: null },
       post_id: body.post_id,
       user_id: MOCK_USER_ID,
