@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { cn } from "@/lib/utils";
+import { FieldLabel } from "../FieldLabel/FieldLabel";
 
 export interface TextFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -14,12 +15,7 @@ export function TextField({ label, helperText, error, required, rightSlot, disab
   const hasError = Boolean(error);
   return (
     <label className="block">
-      {label && (
-        <span className="block mb-2 text-label font-semibold text-text-secondary">
-          {label}
-          {required && <span className="text-primary"> *</span>}
-        </span>
-      )}
+      {label && <FieldLabel required={required}>{label}</FieldLabel>}
       <span className="relative block">
         <input
           data-state={hasError ? "error" : "default"}
@@ -27,7 +23,9 @@ export function TextField({ label, helperText, error, required, rightSlot, disab
           className={cn(
             "w-full py-3 px-4 rounded-input text-base outline-none border transition-colors",
             "bg-[var(--input-bg)] text-[var(--input-text)]",
-            hasError ? "border-[var(--input-border-error)]" : "border-[var(--input-border)]",
+            hasError
+              ? "border-[var(--input-border-error)]"
+              : "border-[var(--input-border)] focus:border-[var(--input-border-focus)]",
             disabled && "bg-[var(--input-bg-disabled)] text-[var(--input-text-disabled)] cursor-not-allowed",
             rightSlot && "pr-16",
             className

@@ -92,6 +92,7 @@ Page / Component
 | `/dm/[roomId]` | DM: 특정 대화방 (좌측 목록 고정, 우측 채팅) |
 | `/login` | 로그인: 소셜 + 이메일 |
 | `/register` | 회원가입 |
+| `/reset-password` | 비밀번호 재설정: 이메일 인증 코드 + 새 비밀번호 설정 |
 | `/social-callback` | 소셜 로그인 콜백 수신 (백엔드 302 리다이렉트 도착지) |
 
 ---
