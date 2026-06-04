@@ -27,6 +27,7 @@ export function useCommentMutations(postId: string) {
         .json<CommentCreateResponse>(),
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: postDetailKey })
+      await queryClient.cancelQueries({ queryKey: commentsKey })
       const previousDetail = queryClient.getQueryData<PostDetail>(postDetailKey)
       queryClient.setQueryData<PostDetail>(postDetailKey, (old) => {
         if (!old) return old
@@ -39,6 +40,7 @@ export function useCommentMutations(postId: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: commentsKey })
+      queryClient.invalidateQueries({ queryKey: postDetailKey })
     },
   })
 
@@ -76,18 +78,21 @@ export function useCommentMutations(postId: string) {
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: postDetailKey })
       await queryClient.cancelQueries({ queryKey: commentsKey })
-      const previous = queryClient.getQueryData<PostDetail>(postDetailKey)
+      const previousDetail = queryClient.getQueryData<PostDetail>(postDetailKey)
+      const previousComments = queryClient.getQueryData<CommentsListResponse>(commentsKey)
       queryClient.setQueryData<PostDetail>(postDetailKey, (old) => {
         if (!old) return old
         return { ...old, comment_count: Math.max(0, old.comment_count - 1) }
       })
-      return { previous }
+      return { previousDetail, previousComments }
     },
     onError: (_err, _vars, context) => {
-      if (context?.previous) queryClient.setQueryData(postDetailKey, context.previous)
+      if (context?.previousDetail) queryClient.setQueryData(postDetailKey, context.previousDetail)
+      if (context?.previousComments) queryClient.setQueryData(commentsKey, context.previousComments)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: commentsKey })
+      queryClient.invalidateQueries({ queryKey: postDetailKey })
     },
   })
 
@@ -136,12 +141,26 @@ export function useCommentMutations(postId: string) {
     [likeMutate]
   )
 
+  const { mutate: updateMutate } = updateMutation
+  const onUpdateComment = useCallback(
+    (commentId: string, content: string) => updateMutate({ commentId, content }),
+    [updateMutate]
+  )
+
+  const { mutate: deleteMutate } = deleteMutation
+  const onDeleteComment = useCallback(
+    (commentId: string) => deleteMutate(commentId),
+    [deleteMutate]
+  )
+
   return {
     createMutation,
     updateMutation,
     deleteMutation,
     likeMutation,
     toggleCommentLike,
+    onUpdateComment,
+    onDeleteComment,
     presignedUrlMutation,
   }
 }
