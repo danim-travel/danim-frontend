@@ -84,7 +84,7 @@ export default function ShowcasePage() {
         {/* 헤더 + 목차 */}
         <div className="mb-10">
           <h1 className="text-page-title font-bold text-text">컴포넌트 쇼케이스</h1>
-          <p className="text-body text-text-disabled mt-1">공통 컴포넌트 목록 및 동작 확인</p>
+          <p className="text-base text-text-disabled mt-1">공통 컴포넌트 목록 및 동작 확인</p>
           <div className="flex flex-wrap gap-2 mt-4">
             {SECTIONS.map((s) => (
               <a
@@ -218,9 +218,9 @@ export default function ShowcasePage() {
             ]}
           />
           <Preview label="padding · interactive">
-            <Card padding="sm" className="text-body text-text-muted">padding sm</Card>
-            <Card padding="md" className="text-body text-text-muted">padding md</Card>
-            <Card interactive className="text-body text-text-muted cursor-pointer">interactive hover</Card>
+            <Card padding="sm" className="text-base text-text-muted">padding sm</Card>
+            <Card padding="md" className="text-base text-text-muted">padding md</Card>
+            <Card interactive className="text-base text-text-muted cursor-pointer">interactive hover</Card>
           </Preview>
         </section>
 
@@ -311,7 +311,7 @@ export default function ShowcasePage() {
           <Preview label="on · off · disabled">
             <div className="flex items-center gap-3">
               <Toggle checked={toggled} onChange={setToggled} />
-              <span className="text-body text-text-muted">{toggled ? "켜짐" : "꺼짐"}</span>
+              <span className="text-base text-text-muted">{toggled ? "켜짐" : "꺼짐"}</span>
             </div>
             <Toggle checked={true}  onChange={() => {}} disabled />
             <Toggle checked={false} onChange={() => {}} disabled />
@@ -353,7 +353,7 @@ export default function ShowcasePage() {
           />
           <div className="bg-bg-card rounded-2xl border border-border-subtle overflow-hidden">
             <Tabs items={TAB_ITEMS} value={tabValue} onChange={setTabValue} />
-            <div className="p-6 text-body text-text-muted">
+            <div className="p-6 text-base text-text-muted">
               선택된 탭: <span className="font-semibold text-text">{tabValue}</span>
             </div>
           </div>
@@ -407,7 +407,7 @@ export default function ShowcasePage() {
               </>
             }
           >
-            <p className="text-body text-text-muted">이 여행 기록을 삭제하면 복구할 수 없습니다. 계속하시겠습니까?</p>
+            <p className="text-base text-text-muted">이 여행 기록을 삭제하면 복구할 수 없습니다. 계속하시겠습니까?</p>
           </Modal>
         </section>
 
@@ -503,7 +503,7 @@ export default function ShowcasePage() {
             path="src/components/SideNav.tsx"
             description="좌측 고정 68px 네비게이션. (main) 레이아웃에 포함되어 자동 렌더링."
           />
-          <div className="bg-bg-card rounded-2xl border border-border-subtle p-6 text-body text-text-disabled">
+          <div className="bg-bg-card rounded-2xl border border-border-subtle p-6 text-base text-text-disabled">
             현재 화면 왼쪽에 표시 중
           </div>
         </section>
@@ -572,7 +572,7 @@ function SectionHeader({
         <h2 className="text-card-title font-bold text-text">{title}</h2>
         <code className="text-caption text-text-disabled font-mono">{path}</code>
       </div>
-      <p className="text-body text-text-muted mb-3">{description}</p>
+      <p className="text-base text-text-muted mb-3">{description}</p>
       {props && (
         <div className="overflow-x-auto">
           <table className="w-full text-caption border-collapse">
