@@ -23,13 +23,13 @@ export default function KebabMenu({ items, className }: Props) {
     <div className={`relative ${className ?? ""}`} ref={ref}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm border border-border flex items-center justify-center text-text-muted hover:bg-bg-card hover:text-text-secondary transition-all"
+        className="w-8 h-8 rounded-full bg-bg-card/90 backdrop-blur-sm border border-border flex items-center justify-center text-text-muted hover:bg-bg-card hover:text-text-secondary transition-all"
         aria-label="더보기"
       >
         <MoreHorizontal className="w-[17px] h-[17px]" />
       </button>
       {open && (
-        <div className="absolute top-10 right-0 min-w-[180px] bg-bg-card border border-border-subtle rounded-2xl shadow-[0_12px_32px_-8px_rgba(0,0,0,0.18)] py-1.5 flex flex-col z-50">
+        <div className="absolute top-10 right-0 min-w-[180px] bg-bg-card border border-border-subtle rounded-2xl shadow-lg py-1.5 flex flex-col z-50 overflow-hidden">
           {items.map((item, i) =>
             item.divider ? (
               <div key={i} className="h-px bg-bg my-1 mx-3" />
@@ -37,7 +37,7 @@ export default function KebabMenu({ items, className }: Props) {
               <button
                 key={i}
                 onClick={() => { item.onClick?.(); setOpen(false); }}
-                className={`flex items-center gap-2.5 h-[38px] px-3.5 text-[13px] font-medium text-left transition-colors ${
+                className={`flex items-center gap-2.5 h-[38px] px-3.5 text-body-sm font-medium text-left transition-colors ${
                   item.danger ? "text-error hover:bg-error-bg" : "text-text-secondary hover:bg-bg-subtle"
                 }`}
               >
