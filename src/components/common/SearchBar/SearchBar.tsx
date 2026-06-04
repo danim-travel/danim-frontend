@@ -20,7 +20,7 @@ export function SearchBar({ value, onClear, variant = "pill", className, ...rest
       <input
         value={value}
         className={cn(
-          "flex-1 border-none outline-none bg-transparent py-3 px-2 text-body text-[var(--search-text)]",
+          "flex-1 border-none outline-none bg-transparent py-3 px-2 text-base text-[var(--search-text)]",
           className
         )}
         {...rest}

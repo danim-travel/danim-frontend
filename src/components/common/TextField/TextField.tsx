@@ -25,7 +25,7 @@ export function TextField({ label, helperText, error, required, rightSlot, disab
           data-state={hasError ? "error" : "default"}
           disabled={disabled}
           className={cn(
-            "w-full py-3 px-4 rounded-input text-body outline-none border transition-colors",
+            "w-full py-3 px-4 rounded-input text-base outline-none border transition-colors",
             "bg-[var(--input-bg)] text-[var(--input-text)]",
             hasError ? "border-[var(--input-border-error)]" : "border-[var(--input-border)]",
             disabled && "bg-[var(--input-bg-disabled)] text-[var(--input-text-disabled)] cursor-not-allowed",
