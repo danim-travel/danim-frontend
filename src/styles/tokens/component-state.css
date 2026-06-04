@@ -39,6 +39,7 @@
 
   /* ── Segmented ───────────────────────────── */
   --segmented-item-height:           38px;
+  --segmented-item-height-lg:        48px;   /* 폼 입력(48px)과 높이 정렬용 */
   --segmented-item-gap:              var(--space-2);   /* 8px */
   --segmented-item-radius:           var(--radius-control);
   --segmented-item-bg:               var(--color-bg-card);
