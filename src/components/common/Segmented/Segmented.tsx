@@ -30,7 +30,7 @@ export function Segmented({ items, value, onChange, disabled, fullWidth }: Segme
             data-state={selected ? "selected" : "default"}
             onClick={() => onChange(item.key)}
             className={cn(
-              "flex-1 h-[var(--segmented-item-height)] rounded-[var(--segmented-item-radius)] border text-body font-semibold transition-colors",
+              "flex-1 h-[var(--segmented-item-height)] rounded-[var(--segmented-item-radius)] border text-base font-semibold transition-colors",
               selected
                 ? "bg-[var(--segmented-item-bg-selected)] text-[var(--segmented-item-text-selected)] border-[var(--segmented-item-border-selected)]"
                 : "bg-[var(--segmented-item-bg)] text-[var(--segmented-item-text)] border-[var(--segmented-item-border)]",

@@ -1,6 +1,9 @@
 @theme inline {
+  /* Next Font 런타임 변수 */
   --font-sans: var(--font-geist-sans);
+}
 
+@theme {
   /* ── Font family ─────────────────────────────── */
   --font-family-base: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
 
@@ -20,15 +23,34 @@
   --font-size-md: 14px;  /* = text-body · text-button */
   --font-size-lg: 16px;  /* = text-card-title */
 
-  /* ── Type scale (size / line-height) ─────────── */
-  --text-display:       44px / 1.15;
-  --text-page-title:    28px / 1.25;
-  --text-section-title: 22px / 1.3;
-  --text-card-title:    16px / 1.4;
-  --text-base:          14px / 1.6;
-  --text-body-sm:       13px / 1.6;
-  --text-caption:       12px / 1.5;
-  --text-label:         13px / 1.4;
-  --text-button:        14px / 1;
-  --text-nav:           11px / 1.3;
+  /* ── Type scale (font-size + line-height 분리 정의) ── */
+  --text-display: 44px;
+  --text-display--line-height: 1.15;
+
+  --text-page-title: 28px;
+  --text-page-title--line-height: 1.25;
+
+  --text-section-title: 22px;
+  --text-section-title--line-height: 1.3;
+
+  --text-card-title: 16px;
+  --text-card-title--line-height: 1.4;
+
+  --text-base: 14px;
+  --text-base--line-height: 1.6;
+
+  --text-body-sm: 13px;
+  --text-body-sm--line-height: 1.6;
+
+  --text-caption: 12px;
+  --text-caption--line-height: 1.5;
+
+  --text-label: 13px;
+  --text-label--line-height: 1.4;
+
+  --text-button: 14px;
+  --text-button--line-height: 1;
+
+  --text-nav: 11px;
+  --text-nav--line-height: 1.3;
 }

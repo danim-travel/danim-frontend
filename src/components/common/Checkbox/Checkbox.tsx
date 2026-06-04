@@ -11,7 +11,7 @@ export interface CheckboxProps {
 
 export function Checkbox({ checked, onChange, label, disabled }: CheckboxProps) {
   return (
-    <label className={cn("inline-flex items-center gap-2 text-body text-text-secondary", disabled ? "cursor-not-allowed" : "cursor-pointer")}>
+    <label className={cn("inline-flex items-center gap-2 text-base text-text-secondary", disabled ? "cursor-not-allowed" : "cursor-pointer")}>
       <input
         type="checkbox"
         checked={checked}
