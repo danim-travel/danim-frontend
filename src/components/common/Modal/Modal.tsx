@@ -1,0 +1,50 @@
+"use client";
+import React from "react";
+import { cn } from "@/lib/utils";
+
+export interface ModalProps {
+  open: boolean;
+  onClose: () => void;
+  title?: string;
+  footer?: React.ReactNode;
+  placement?: "center" | "bottom";
+  children?: React.ReactNode;
+}
+
+export function Modal({ open, onClose, title, footer, placement = "center", children }: ModalProps) {
+  if (!open) return null;
+  const bottom = placement === "bottom";
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      className={cn("fixed inset-0 z-modal bg-overlay flex justify-center", bottom ? "items-end" : "items-center")}
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className={cn(
+          "flex flex-col gap-6 max-w-full w-full",
+          bottom
+            ? "bg-[var(--sheet-bg)] shadow-[var(--sheet-shadow)] rounded-t-sheet p-6"
+            : "max-w-[var(--modal-max-width)] bg-[var(--modal-bg)] shadow-modal rounded-modal p-8"
+        )}
+      >
+        {title && (
+          <div className="flex items-center justify-between">
+            <h2 className="text-section-title font-bold text-text">{title}</h2>
+            <button onClick={onClose} aria-label="닫기" className="bg-transparent border-none cursor-pointer text-text-muted">
+              <svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+                <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            </button>
+          </div>
+        )}
+        <div>{children}</div>
+        {footer && <div className="flex gap-3">{footer}</div>}
+      </div>
+    </div>
+  );
+}
+
+export default Modal;

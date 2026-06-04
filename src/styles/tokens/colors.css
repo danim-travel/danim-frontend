@@ -1,0 +1,72 @@
+@theme inline {
+  /* ── Primitive: Mint ────────────────────────── */
+  --color-mint-50:  #ECF7F1;
+  --color-mint-100: #D3EFE0;
+  --color-mint-200: #A8E2C5;
+  --color-mint-300: #6FD2A8;
+  --color-mint-500: #3ECBA0;
+  --color-mint-600: #2EC27E;
+  --color-mint-700: #1F9F63;
+  --color-mint-800: #147547;
+
+  /* ── Primitive: Gray ────────────────────────── */
+  --color-gray-50:  #F9FAFB;
+  --color-gray-100: #F3F4F6;
+  --color-gray-200: #E5E7EB;
+  --color-gray-300: #D1D5DB;
+  --color-gray-400: #9CA3AF;
+  --color-gray-500: #6B7280;
+  --color-gray-600: #4B5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1F2937;
+  --color-gray-900: #0F1720;
+
+  /* ── Primitive: Status ──────────────────────── */
+  --color-red-50:     #FEE2E2;
+  --color-red-500:    #EF4F55;
+  --color-yellow-50:  #FEF3C7;
+  --color-yellow-500: #FBBF24;
+
+  /* ── Primitive: Neutral ─────────────────────── */
+  --color-white: #FFFFFF;
+  --color-black: #000000;
+
+  /* ── Semantic: Primary ──────────────────────── */
+  --color-primary:        var(--color-mint-500);
+  --color-primary-hover:  var(--color-mint-600);
+  --color-primary-active: var(--color-mint-700);
+  --color-primary-soft:   var(--color-mint-50);
+
+  /* ── Semantic: Background ───────────────────── */
+  --color-bg:        var(--color-gray-100);
+  --color-bg-card:   var(--color-white);
+  --color-bg-subtle: var(--color-gray-50);
+
+  /* ── Semantic: Text ─────────────────────────── */
+  --color-text:             var(--color-gray-900);
+  --color-text-emphasis:    var(--color-gray-800);
+  --color-text-secondary:   var(--color-gray-700);
+  --color-text-body:        var(--color-gray-600);
+  --color-text-muted:       var(--color-gray-500);
+  --color-text-disabled:    var(--color-gray-400);
+  --color-text-placeholder: var(--color-gray-300);
+  --color-text-inverse:     var(--color-white);
+
+  /* ── Semantic: Status ───────────────────────── */
+  --color-success:    var(--color-mint-600);
+  --color-warning:    var(--color-yellow-500);
+  --color-warning-bg: var(--color-yellow-50);
+  --color-error:      var(--color-red-500);
+  --color-error-bg:   var(--color-red-50);
+
+  /* ── Semantic: Border ───────────────────────── */
+  --color-border-subtle: var(--color-gray-100);
+  --color-border:        var(--color-gray-200);
+  --color-border-strong: var(--color-gray-300);
+  --color-border-focus:  var(--color-primary);
+  --color-border-error:  var(--color-error);
+
+  /* ── Semantic: Overlay ───────────────────────── */
+  --color-overlay: rgb(15 23 32 / 0.45);
+
+}

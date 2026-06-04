@@ -1,0 +1,15 @@
+COMMIT_MSG=$(cat "$1")
+
+# 커밋 메시지 형식 검증: type: 설명 (#이슈번호)
+# 허용 타입: feat, fix, refactor, style, docs, test, chore, build, ci, perf
+PATTERN="^(feat|fix|refactor|style|docs|test|chore|build|ci|perf)(\(.+\))?: .+"
+
+if ! echo "$COMMIT_MSG" | grep -Eq "$PATTERN"; then
+  echo "❌ 커밋 메시지 형식이 올바르지 않습니다."
+  echo ""
+  echo "올바른 형식: <type>: <설명>"
+  echo "예시: feat: 로그인 기능 추가 (#12)"
+  echo ""
+  echo "허용 타입: feat, fix, refactor, style, docs, test, chore, build, ci, perf"
+  exit 1
+fi
