@@ -3,6 +3,7 @@
  */
 import { http, HttpResponse } from 'msw'
 import type { PostDetail } from '@/types'
+import { likedPosts, bookmarkedPosts, postLikeCounts } from './interactions'
 
 const mockPostDetail: PostDetail = {
   post: {
@@ -28,18 +29,26 @@ const mockPostDetail: PostDetail = {
         y: 33.458806,
       },
       images: [
+        // 가로 긴 이미지 (16:9)
         {
-          img_url: 'https://picsum.photos/seed/jeju1/480/480',
-          original_img: 'https://picsum.photos/seed/jeju1/1080/1080',
+          img_url: 'https://picsum.photos/seed/jeju1/960/540',
+          original_img: 'https://picsum.photos/seed/jeju1/1920/1080',
           img_order: 1,
         },
+        // 세로 긴 이미지 (9:16)
         {
-          img_url: 'https://picsum.photos/seed/jeju2/480/480',
-          original_img: 'https://picsum.photos/seed/jeju2/1080/1080',
+          img_url: 'https://picsum.photos/seed/jeju2/540/960',
+          original_img: 'https://picsum.photos/seed/jeju2/1080/1920',
           img_order: 2,
         },
+        // 1:1 이미지
+        {
+          img_url: 'https://picsum.photos/seed/jeju4/800/800',
+          original_img: 'https://picsum.photos/seed/jeju4/1080/1080',
+          img_order: 3,
+        },
       ],
-      content: '성산일출봉 정상에서 보는 일출이 정말 아름다워요.',
+      content: '성산일출봉 정상에서 보는 일출이 정말 아름다워요.\n\n새벽 4시에 일어나서 등산을 시작했는데, 정상까지 약 30분 정도 걸렸어요. 계단이 잘 정비되어 있어서 생각보다 쉽게 올라갈 수 있었습니다.\n\n정상에서 본 일출은 정말 장관이었어요. 바다 위로 떠오르는 해를 보며 한 해의 소원을 빌었습니다. 주변에 사진 찍기 좋은 포인트도 많아서 인생샷도 건졌어요.\n\n참고로 입장료는 5,000원이고, 주차장도 넓어서 편리해요. 근처에 우뭇가사리 칼국수 맛집도 있으니 일출 보고 아침 식사로 추천드려요. 다음에는 친구들이랑 다시 와서 우도까지 가보고 싶네요. 정말 잊을 수 없는 여행이었습니다.',
       order: 1,
     },
     {
@@ -70,7 +79,13 @@ const mockPostDetail: PostDetail = {
 }
 
 export const postsHandlers = [
-  http.get('*/v1/posts/:postId', () => {
-    return HttpResponse.json(mockPostDetail)
+  http.get('*/v1/posts/:postId', ({ params }) => {
+    const postId = params.postId as string
+    return HttpResponse.json({
+      ...mockPostDetail,
+      is_liked: likedPosts.has(postId),
+      is_bookmarked: bookmarkedPosts.has(postId),
+      like_count: postLikeCounts.get(postId) ?? mockPostDetail.like_count,
+    })
   }),
 ]
