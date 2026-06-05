@@ -47,3 +47,42 @@ export type Post = {
   color: string
   pins: { lat: number; lng: number }[]
 }
+
+// 게시글 작성 요청 타입
+export type CreatePostSpotLocation = {
+  place_name: string
+  address_name: string
+  road_address_name: string
+  x: string // 카카오맵 API가 string으로 반환
+  y: string
+}
+
+export type CreatePostSpotImage = {
+  original_img: string
+  key: string // S3 key
+}
+
+export type CreatePostSpot = {
+  order: number
+  content: string
+  location: CreatePostSpotLocation
+  images: CreatePostSpotImage[]
+}
+
+export type CreatePostRequest = {
+  title: string
+  thumbnail: string
+  spots: CreatePostSpot[]
+  // content 필드 없음 (의도적으로 제거됨)
+}
+
+// presigned URL 타입
+export type PostPresignedUrlRequest = {
+  original_img: string
+}
+
+export type PostPresignedUrlResponse = {
+  presigned_url: string
+  img_url: string
+  key: string
+}
