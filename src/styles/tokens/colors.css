@@ -69,4 +69,8 @@
   /* ── Semantic: Overlay ───────────────────────── */
   --color-overlay: rgb(15 23 32 / 0.45);
 
+  /* ── Brand: Social ──────────────────────────── */
+  --color-social-kakao-bg:   #FEE500;
+  --color-social-kakao-text: #191600;
+
 }

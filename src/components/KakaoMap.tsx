@@ -1,26 +1,47 @@
 "use client";
 
-import { useRef, useState, useEffect, memo } from "react";
+import { useRef, useState, useEffect, useCallback, memo } from "react";
 import Script from "next/script";
 import type { Post } from "@/types";
 import { config } from "@/lib/config";
+import { getCssVar } from "@/lib/cssVar";
 
 type Status = "loading" | "ready" | "error";
 
 const DEFAULT_CENTER = { lat: 37.5665, lng: 126.978 } as const;
+const MIN_ZOOM = 1;
+const MAX_ZOOM = 14;
 
 export type BoundsData = {
   swLat: number; swLng: number;
   neLat: number; neLng: number;
 };
 
+export interface MapControls {
+  zoomIn: () => void;
+  zoomOut: () => void;
+}
+
+const HEX_COLOR_RE = /^#[0-9a-fA-F]{3,8}$/;
+
 const makeNumberPin = (num: number, color: string, onClick?: () => void): HTMLElement => {
+  const safeColor = HEX_COLOR_RE.test(color) ? color : getCssVar("--color-primary");
+
   const el = document.createElement("div");
-  el.style.cssText = `display:flex;flex-direction:column;align-items:center;cursor:${onClick ? "pointer" : "default"};`;
-  el.innerHTML = `
-    <div style="width:34px;height:34px;border-radius:50%;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;font-family:sans-serif;border:2.5px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.35);">${num}</div>
-    <div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:9px solid ${color};margin-top:-1px;"></div>
-  `;
+  el.className = "flex flex-col items-center";
+  el.style.setProperty("--pin-color", safeColor);
+  if (onClick) el.style.cursor = "pointer";
+
+  const circle = document.createElement("div");
+  circle.className = "map-pin-circle";
+  circle.textContent = String(num);
+
+  const tail = document.createElement("div");
+  tail.className = "map-pin-tail";
+
+  el.appendChild(circle);
+  el.appendChild(tail);
+
   if (onClick) {
     el.addEventListener("click", (e) => { e.stopPropagation(); onClick(); });
   }
@@ -31,9 +52,13 @@ interface KakaoMapProps {
   selectedPost: Post | null;
   onBoundsChange?: (bounds: BoundsData) => void;
   onPinClick?: (post: Post, pinIndex: number) => void;
+  /** 지도 준비 완료 시 zoom 제어 객체를 전달한다. raw kakao.maps.Map은 외부로 노출하지 않는다. */
+  onMapReady?: (controls: MapControls) => void;
+  /** 사용자가 현재위치 버튼을 누르고 위치 이동이 완료됐을 때 호출된다. */
+  onCurrentLocation?: () => void;
 }
 
-function KakaoMap({ selectedPost, onBoundsChange, onPinClick }: KakaoMapProps) {
+function KakaoMap({ selectedPost, onBoundsChange, onPinClick, onMapReady, onCurrentLocation }: KakaoMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<kakao.maps.Map | null>(null);
   const overlaysRef = useRef<kakao.maps.CustomOverlay[]>([]);
@@ -41,27 +66,27 @@ function KakaoMap({ selectedPost, onBoundsChange, onPinClick }: KakaoMapProps) {
   const [status, setStatus] = useState<Status>("loading");
   const [locError, setLocError] = useState("");
 
-  // 렌더마다 최신값 유지 — 이벤트 핸들러 stale closure 방지
   const onBoundsChangeRef = useRef(onBoundsChange);
   const onPinClickRef = useRef(onPinClick);
-  const selectedPostRef = useRef(selectedPost);
+  const onMapReadyRef = useRef(onMapReady);
+  const onCurrentLocationRef = useRef(onCurrentLocation);
   useEffect(() => {
     onBoundsChangeRef.current = onBoundsChange;
     onPinClickRef.current = onPinClick;
-    selectedPostRef.current = selectedPost;
-  }, [onBoundsChange, onPinClick, selectedPost]);
+    onMapReadyRef.current = onMapReady;
+    onCurrentLocationRef.current = onCurrentLocation;
+  }, [onBoundsChange, onPinClick, onMapReady, onCurrentLocation]);
 
-  // initMap 중복 호출 방지
   const mapInitializedRef = useRef(false);
 
-  const clearGroup = () => {
+  const clearGroup = useCallback(() => {
     overlaysRef.current.forEach((o) => o.setMap(null));
     overlaysRef.current = [];
     polylineRef.current?.setMap(null);
     polylineRef.current = null;
-  };
+  }, []);
 
-  const applyPost = (post: Post) => {
+  const applyPost = useCallback((post: Post) => {
     const map = mapRef.current;
     if (!map) return;
 
@@ -94,7 +119,7 @@ function KakaoMap({ selectedPost, onBoundsChange, onPinClick }: KakaoMapProps) {
     });
 
     map.setBounds(bounds, 80, 80, 80, 80);
-  };
+  }, [clearGroup]);
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -103,8 +128,7 @@ function KakaoMap({ selectedPost, onBoundsChange, onPinClick }: KakaoMapProps) {
     } else {
       clearGroup();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedPost]);
+  }, [selectedPost, applyPost, clearGroup]);
 
   const goToCurrentLocation = () => {
     if (!navigator.geolocation) {
@@ -116,9 +140,9 @@ function KakaoMap({ selectedPost, onBoundsChange, onPinClick }: KakaoMapProps) {
       ({ coords }) => {
         const map = mapRef.current;
         if (!map) return;
-        clearGroup();
         map.setCenter(new kakao.maps.LatLng(coords.latitude, coords.longitude));
         map.setLevel(3);
+        onCurrentLocationRef.current?.();
       },
       () => setLocError("위치 권한이 거부되었습니다.")
     );
@@ -136,13 +160,17 @@ function KakaoMap({ selectedPost, onBoundsChange, onPinClick }: KakaoMapProps) {
     kakao.maps.load(() => {
       if (!containerRef.current) return;
 
-      const defaultCenter = new kakao.maps.LatLng(DEFAULT_CENTER.lat, DEFAULT_CENTER.lng);
       const map = new kakao.maps.Map(containerRef.current, {
-        center: defaultCenter,
+        center: new kakao.maps.LatLng(DEFAULT_CENTER.lat, DEFAULT_CENTER.lng),
         level: 3,
       });
       mapRef.current = map;
       setStatus("ready");
+
+      onMapReadyRef.current?.({
+        zoomIn: () => map.setLevel(Math.max(MIN_ZOOM, map.getLevel() - 1)),
+        zoomOut: () => map.setLevel(Math.min(MAX_ZOOM, map.getLevel() + 1)),
+      });
 
       kakao.maps.event.addListener(map, "idle", () => {
         if (!onBoundsChangeRef.current) return;
@@ -154,34 +182,24 @@ function KakaoMap({ selectedPost, onBoundsChange, onPinClick }: KakaoMapProps) {
           neLat: ne.getLat(), neLng: ne.getLng(),
         });
       });
-
-      // 기본: 현재 위치로 이동
-      // geolocation은 비동기 — 콜백 시점에 selectedPost가 생겼으면 덮어쓰지 않음
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          ({ coords }) => {
-            if (selectedPostRef.current) return;
-            map.setCenter(new kakao.maps.LatLng(coords.latitude, coords.longitude));
-          },
-          () => {}
-        );
-      }
     });
   };
 
+  // SDK가 이미 로드된 상태에서 재마운트될 때 onReady가 재호출되지 않을 수 있으므로 직접 체크
   useEffect(() => {
     if (typeof kakao !== "undefined" && kakao.maps) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       initMap();
     }
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // mount 시 1회만 — initMap은 mapInitializedRef로 중복 호출을 방지한다
 
   return (
     <div className="relative w-full h-full bg-bg">
       <Script
+        id="kakao-map-sdk"
         src={`//dapi.kakao.com/v2/maps/sdk.js?appkey=${config.kakaoMapKey}&autoload=false&libraries=services`}
         strategy="afterInteractive"
-        onLoad={initMap}
+        onReady={initMap}
         onError={() => setStatus("error")}
       />
 

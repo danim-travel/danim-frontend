@@ -45,5 +45,5 @@ export type PostDetail = {
 export type Post = {
   post_id: string
   color: string
-  pins: { lat: number; lng: number; label: string; body: string }[]
+  pins: { lat: number; lng: number }[]
 }

@@ -25,7 +25,7 @@ export function Avatar({ src, initial, size = "md", ring, colorClass = "bg-prima
   const inner = (
     <div
       className={cn(
-        "relative overflow-hidden grid place-items-center rounded-avatar font-bold border-2 border-bg-card text-text-inverse shrink-0",
+        "relative overflow-hidden grid place-items-center rounded-avatar font-bold text-text-inverse shrink-0",
         !src && colorClass,
         box,
         text

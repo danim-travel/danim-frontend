@@ -9,3 +9,4 @@ export type ApiErrorResponse =
 export * from './post.types'
 export * from './comment.types'
 export * from './interaction.types'
+export * from './feed.types'

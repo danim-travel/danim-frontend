@@ -37,3 +37,27 @@ body {
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
+
+.map-pin-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--pin-color);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 15px;
+  border: 2.5px solid #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.map-pin-tail {
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 9px solid var(--pin-color);
+  margin-top: -1px;
+}
