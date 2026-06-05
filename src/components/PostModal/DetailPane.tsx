@@ -1,8 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import { ChevronRight } from "lucide-react";
 import type { Comment, PostDetail, Spot } from "@/types";
+import { Avatar, Button } from "@/components/common";
 import ActionBar from "./ActionBar";
 import CommentInputBar from "./CommentInputBar";
 import CommentSection from "./CommentSection";
@@ -28,17 +28,11 @@ export default function PostModalDetailPane({
   return (
     <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
       <header className="flex items-center gap-3 px-6 pt-5 pb-4 shrink-0">
-        <div className="w-11 h-11 rounded-full overflow-hidden bg-bg shrink-0">
-          {data.user.profile_img && (
-            <Image
-              src={data.user.profile_img}
-              alt={data.user.nickname}
-              width={44}
-              height={44}
-              className="object-cover"
-            />
-          )}
-        </div>
+        <Avatar
+          src={data.user.profile_img ?? undefined}
+          initial={data.user.nickname?.[0] ?? "?"}
+          size="md"
+        />
         <span className="text-base font-bold text-text">{data.user.nickname}</span>
       </header>
 
@@ -53,13 +47,14 @@ export default function PostModalDetailPane({
             </span>
           </div>
           {showGoToMain && onGoToMain && (
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={onGoToMain}
-              className="flex items-center gap-1 px-3.5 py-1.5 rounded-full border border-primary text-primary text-nav font-semibold shrink-0 hover:opacity-80 transition-all"
+              rightIcon={<ChevronRight size={12} />}
             >
               코스 상세보기
-              <ChevronRight className="w-3 h-3" />
-            </button>
+            </Button>
           )}
         </div>
       )}

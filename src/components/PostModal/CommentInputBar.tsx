@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@/components/common";
 import { usePostModalContext } from "./PostModalContext";
 
 export default function CommentInputBar() {
@@ -24,15 +25,15 @@ export default function CommentInputBar() {
         className="flex-1 text-caption bg-bg-subtle rounded-full border border-border px-4 py-2.5 outline-none text-text-secondary placeholder:text-text-disabled transition-colors focus:border-primary"
         placeholder="댓글을 입력하세요..."
       />
-      <button
+      <Button
+        variant="primary"
+        size="sm"
         onClick={handleSubmit}
-        className={`shrink-0 px-4 py-2 rounded-full text-caption font-semibold transition-all ${
-          disabled ? "bg-bg text-text-disabled" : "bg-primary text-text-inverse"
-        }`}
         disabled={disabled}
+        className="rounded-full shrink-0"
       >
         전송
-      </button>
+      </Button>
     </div>
   );
 }
