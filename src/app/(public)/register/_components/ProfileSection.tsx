@@ -1,9 +1,10 @@
 "use client";
-import { TextField } from "@/components/common";
-import { GenderField, type Gender } from "./GenderField";
-import { BirthdateField } from "./BirthdateField";
+import { TextField, Segmented, FieldLabel } from "@/components/common";
 
 const NICK_MAX = 20;
+const INPUT_CLASS = "h-12 text-center px-2";
+
+export type Gender = "male" | "female";
 
 export interface ProfileSectionProps {
   nickname: string;
@@ -33,10 +34,59 @@ export function ProfileSection({ nickname, onNicknameChange, gender, onGenderCha
 
       <div className="grid grid-cols-2 gap-4">
         <TextField label="이름" required type="text" placeholder="실명을 입력해주세요" className="h-12" />
-        <GenderField value={gender} onChange={onGenderChange} />
+        <div>
+          <FieldLabel>성별</FieldLabel>
+          <Segmented
+            fullWidth
+            size="lg"
+            value={gender}
+            onChange={(key) => onGenderChange(key as Gender)}
+            items={[
+              { key: "male", label: "남성" },
+              { key: "female", label: "여성" },
+            ]}
+          />
+        </div>
       </div>
 
-      <BirthdateField />
+      <div>
+        <label htmlFor="birthdate-year" className="block mb-2 text-label font-semibold text-text-secondary">
+          생년월일
+        </label>
+        <div className="flex gap-2">
+          <div className="flex-[1.2]">
+            <TextField
+              id="birthdate-year"
+              type="text"
+              inputMode="numeric"
+              maxLength={4}
+              placeholder="YYYY"
+              aria-label="출생 연도"
+              className={INPUT_CLASS}
+            />
+          </div>
+          <div className="flex-1">
+            <TextField
+              type="text"
+              inputMode="numeric"
+              maxLength={2}
+              placeholder="MM"
+              aria-label="출생 월"
+              className={INPUT_CLASS}
+            />
+          </div>
+          <div className="flex-1">
+            <TextField
+              type="text"
+              inputMode="numeric"
+              maxLength={2}
+              placeholder="DD"
+              aria-label="출생 일"
+              className={INPUT_CLASS}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

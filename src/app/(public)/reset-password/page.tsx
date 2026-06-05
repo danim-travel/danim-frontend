@@ -1,13 +1,20 @@
+import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 import { AuthSplitLayout, AuthCard, AuthCardHeader } from "../_components";
-import { BackLink, ResetPasswordForm } from "./_components";
+import { ResetPasswordForm } from "./_components/ResetPasswordForm";
 
 export default function ResetPasswordPage() {
   return (
     <AuthSplitLayout>
       <AuthCard>
-        {/* 헤더 */}
         <div className="flex flex-col gap-3">
-          <BackLink />
+          <Link
+            href="/login"
+            className="flex items-center gap-1 self-start text-caption text-text-muted hover:text-text-secondary transition-colors"
+          >
+            <ChevronLeft className="size-3.5" />
+            로그인으로 돌아가기
+          </Link>
           <AuthCardHeader
             title="비밀번호 재설정"
             subtitle={

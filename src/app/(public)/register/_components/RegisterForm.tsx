@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/common";
 import { AccountSection } from "./AccountSection";
 import { ProfileSection } from "./ProfileSection";
-import type { Gender } from "./GenderField";
+import type { Gender } from "./ProfileSection";
 
 /** 회원가입 폼: 계정 섹션 + 프로필 섹션 + 제출 버튼. */
 export function RegisterForm() {
