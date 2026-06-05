@@ -4,6 +4,7 @@
 import { http, HttpResponse } from 'msw'
 import type { PostDetail } from '@/types'
 import { likedPosts, bookmarkedPosts, postLikeCounts } from './interactions'
+import { getCommentCount } from './comments'
 
 const mockPostDetail: PostDetail = {
   post: {
@@ -83,6 +84,7 @@ export const postsHandlers = [
     const postId = params.postId as string
     return HttpResponse.json({
       ...mockPostDetail,
+      comment_count: getCommentCount(postId), // 댓글 목 데이터와 동기화
       is_liked: likedPosts.has(postId),
       is_bookmarked: bookmarkedPosts.has(postId),
       like_count: postLikeCounts.get(postId) ?? mockPostDetail.like_count,

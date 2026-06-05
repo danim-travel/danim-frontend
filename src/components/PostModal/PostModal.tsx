@@ -3,12 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { useScrollLock } from "@/hooks/useScrollLock";
 import { X } from "lucide-react";
+import { IconButton, UserRowSkeleton, EmptyState } from "@/components/common";
 import { usePostDetail } from "@/hooks/usePostDetail";
 import { useCommentsQuery } from "@/hooks/useCommentsQuery";
 import { useCommentMutations } from "@/hooks/useCommentMutations";
 import { useAuthStore } from "@/store/authStore";
+import { config } from "@/lib/config";
 import { buildPostContextMenu } from "./menuBuilder";
 import { PostModalProvider } from "./PostModalContext";
+import { SHOWCASE_MOCK_USER_ID } from "./constants";
 import KebabMenu from "./KebabMenu";
 import ImagePane from "./ImagePane";
 import DetailPane from "./DetailPane";
@@ -33,7 +36,7 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
     onDeleteComment,
   } = useCommentMutations(postId);
 
-  const currentUserId = useAuthStore((s) => s.user?.userId) ?? null;
+  const currentUserId = useAuthStore((s) => s.user?.userId) ?? (config.isDev ? SHOWCASE_MOCK_USER_ID : null);
 
   useScrollLock(true);
 
@@ -100,13 +103,13 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
       >
         {!data && isLoading && (
           <div className="w-full h-[500px] flex items-center justify-center">
-            <span className="text-sm text-text-disabled">불러오는 중...</span>
+            <UserRowSkeleton rows={3} />
           </div>
         )}
 
         {!data && isError && (
           <div className="w-full h-[500px] flex items-center justify-center">
-            <span className="text-sm text-text-disabled">게시글을 불러올 수 없습니다.</span>
+            <EmptyState title="게시글을 불러올 수 없습니다." />
           </div>
         )}
 
@@ -115,13 +118,14 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
             {/* Floating controls */}
             <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
               <KebabMenu items={menuItems} />
-              <button
-                onClick={onClose}
-                className="w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm border border-border flex items-center justify-center text-text-disabled hover:bg-bg-card hover:text-text-body transition-all"
+              <IconButton
+                icon={<X size={14} />}
+                variant="filled"
+                size="sm"
                 aria-label="닫기"
-              >
-                <X className="w-[14px] h-[14px]" />
-              </button>
+                onClick={onClose}
+                className="bg-white/90 backdrop-blur-sm border border-border hover:bg-bg-card"
+              />
             </div>
 
             <ImagePane

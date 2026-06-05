@@ -9,6 +9,7 @@ export interface StepperProps {
   steps: StepperStep[];
   current: number;
   showLabels?: boolean;
+  onStepClick?: (index: number) => void;
 }
 
 type StepState = "active" | "completed" | "default";
@@ -25,7 +26,8 @@ const labelClasses: Record<StepState, string> = {
   default: "text-text-disabled",
 };
 
-export function Stepper({ steps, current, showLabels = true }: StepperProps) {
+export function Stepper({ steps, current, showLabels = true, onStepClick }: StepperProps) {
+  const clickable = !!onStepClick;
   return (
     <div className="flex flex-col gap-1.5">
       {/* 상단: 마커 + 연결선 */}
@@ -33,18 +35,30 @@ export function Stepper({ steps, current, showLabels = true }: StepperProps) {
         {steps.map((_, i) => {
           const state: StepState =
             i < current ? "completed" : i === current ? "active" : "default";
+          const isLast = i === steps.length - 1;
+          const markerClass = cn(
+            "w-8 h-8 rounded-full grid place-items-center text-body-sm font-bold border-2 shrink-0 transition-all",
+            markerClasses[state],
+            clickable && "cursor-pointer"
+          );
           return (
             <React.Fragment key={i}>
-              <div
-                data-state={state}
-                className={cn(
-                  "w-8 h-8 rounded-full grid place-items-center text-body-sm font-bold border-2 shrink-0 transition-all",
-                  markerClasses[state]
-                )}
-              >
-                {i + 1}
-              </div>
-              {i < steps.length - 1 && (
+              {/* onStepClick 제공 시 button, 아니면 div로 렌더링 */}
+              {clickable ? (
+                <button
+                  type="button"
+                  data-state={state}
+                  onClick={() => onStepClick(i)}
+                  className={markerClass}
+                >
+                  {i + 1}
+                </button>
+              ) : (
+                <div data-state={state} className={markerClass}>
+                  {i + 1}
+                </div>
+              )}
+              {!isLast && (
                 <div
                   className={cn(
                     "flex-1 h-px mx-1.5",
@@ -63,19 +77,20 @@ export function Stepper({ steps, current, showLabels = true }: StepperProps) {
           {steps.map((s, i) => {
             const state: StepState =
               i < current ? "completed" : i === current ? "active" : "default";
+            const isLast = i === steps.length - 1;
             return (
               <React.Fragment key={i}>
                 <div className="w-8 shrink-0 flex justify-center">
                   <span
                     className={cn(
-                      "text-tiny font-medium leading-tight max-w-[44px] truncate text-center",
+                      "text-tiny font-medium leading-tight text-center whitespace-nowrap",
                       labelClasses[state]
                     )}
                   >
-                    {s.label}
+                    {s.label.length > 10 ? s.label.slice(0, 10) + "…" : s.label}
                   </span>
                 </div>
-                {i < steps.length - 1 && <div className="flex-1 mx-1.5" />}
+                {!isLast && <div className="flex-1 mx-1.5" />}
               </React.Fragment>
             );
           })}

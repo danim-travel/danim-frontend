@@ -53,6 +53,8 @@ const commentsList: Comment[] = [
   },
 ]
 
+export const getCommentCount = (_postId?: string) => commentsList.length
+
 // mock 댓글 ID 생성 (3까지는 있어서 4부터 시작)
 let commentIdCounter = 4
 
