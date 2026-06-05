@@ -46,16 +46,17 @@ export function VerificationField({
           <TextField
             label={label}
             required={required}
-            className={cn("h-12", className)}
+            className={className}
             {...inputProps}
           />
         </div>
         <Button
           type="button"
           variant={actionVariant}
+          size="lg"
           onClick={onAction}
           disabled={actionDisabled}
-          className="h-12 px-6 shrink-0 whitespace-nowrap text-body-sm"
+          className="shrink-0 whitespace-nowrap"
         >
           {actionLabel}
         </Button>

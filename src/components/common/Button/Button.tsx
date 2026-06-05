@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { cn } from "@/lib/utils";
+import { Spinner } from "@/components/ui/spinner";
 
 export type ButtonVariant = "primary" | "secondary" | "outline";
 export type ButtonSize = "sm" | "md" | "lg";
@@ -15,21 +16,30 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 const sizeClasses: Record<ButtonSize, string> = {
-  sm: "h-[var(--button-sm-height)] px-[var(--button-sm-padding-x)] text-[var(--button-sm-font-size)] gap-[var(--button-sm-gap)] [&_svg]:w-[var(--button-sm-icon-size)] [&_svg]:h-[var(--button-sm-icon-size)]",
-  md: "h-[var(--button-md-height)] px-[var(--button-md-padding-x)] text-[var(--button-md-font-size)] gap-[var(--button-md-gap)] [&_svg]:w-[var(--button-md-icon-size)] [&_svg]:h-[var(--button-md-icon-size)]",
-  lg: "h-[var(--button-lg-height)] px-[var(--button-lg-padding-x)] text-[var(--button-lg-font-size)] gap-[var(--button-lg-gap)] [&_svg]:w-[var(--button-lg-icon-size)] [&_svg]:h-[var(--button-lg-icon-size)]",
+  sm: "h-(--button-sm-height) px-(--button-sm-padding-x) text-(length:--button-sm-font-size) gap-(--button-sm-gap) [&_svg]:w-(--button-sm-icon-size) [&_svg]:h-(--button-sm-icon-size)",
+  md: "h-(--button-md-height) px-(--button-md-padding-x) text-(length:--button-md-font-size) gap-(--button-md-gap) [&_svg]:w-(--button-md-icon-size) [&_svg]:h-(--button-md-icon-size)",
+  lg: "h-(--button-lg-height) px-(--button-lg-padding-x) text-(length:--button-lg-font-size) gap-(--button-lg-gap) [&_svg]:w-(--button-lg-icon-size) [&_svg]:h-(--button-lg-icon-size)",
 };
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary:   "bg-[var(--button-primary-bg)] text-[var(--button-primary-text)] shadow-[var(--button-primary-shadow)] border-transparent",
-  secondary: "bg-[var(--button-secondary-bg)] text-[var(--button-secondary-text)] border border-[var(--button-secondary-border)]",
-  outline:   "bg-[var(--button-outline-bg)] text-[var(--button-outline-text)] border border-[var(--button-outline-border)]",
+  primary:
+    "bg-(--button-primary-bg) text-(color:--button-primary-text) shadow-(--button-primary-shadow) border-transparent " +
+    "hover:bg-(--button-primary-bg-hover) active:bg-(--button-primary-bg-active) " +
+    "focus-visible:outline-none focus-visible:shadow-(--button-primary-shadow-focus)",
+  secondary:
+    "bg-(--button-secondary-bg) text-(color:--button-secondary-text) border border-(--button-secondary-border) " +
+    "hover:bg-(--button-secondary-bg-hover) " +
+    "focus-visible:outline-none focus-visible:shadow-(--button-primary-shadow-focus)",
+  outline:
+    "bg-(--button-outline-bg) text-(color:--button-outline-text) border border-(--button-outline-border) " +
+    "hover:bg-(--button-outline-bg-hover) " +
+    "focus-visible:outline-none focus-visible:shadow-(--button-primary-shadow-focus)",
 };
 
 const disabledClasses: Record<ButtonVariant, string> = {
-  primary:   "bg-[var(--button-primary-bg-disabled)] text-[var(--button-primary-text-disabled)] shadow-none border-transparent",
-  secondary: "bg-[var(--button-secondary-bg-disabled)] text-[var(--button-secondary-text-disabled)] border border-[var(--button-secondary-border)]",
-  outline:   "bg-[var(--button-outline-bg-disabled)] text-[var(--button-outline-text-disabled)] border border-[var(--button-outline-border-disabled)]",
+  primary:   "bg-(--button-primary-bg-disabled) text-(color:--button-primary-text-disabled) shadow-none border-transparent",
+  secondary: "bg-(--button-secondary-bg-disabled) text-(color:--button-secondary-text-disabled) border border-(--button-secondary-border)",
+  outline:   "bg-(--button-outline-bg-disabled) text-(color:--button-outline-text-disabled) border border-(--button-outline-border-disabled)",
 };
 
 export function Button({
@@ -61,9 +71,9 @@ export function Button({
       )}
       {...rest}
     >
-      {leftIcon}
-      {loading ? "처리 중…" : children}
-      {rightIcon}
+      {!loading && leftIcon}
+      {loading ? <Spinner size="sm" /> : children}
+      {!loading && rightIcon}
     </button>
   );
 }

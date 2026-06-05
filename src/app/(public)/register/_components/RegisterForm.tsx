@@ -28,7 +28,7 @@ export function RegisterForm() {
         />
       </div>
 
-      <Button type="submit" fullWidth className="h-[56px] text-base mt-7">
+      <Button type="submit" size="lg" fullWidth className="mt-7">
         회원가입 완료
       </Button>
     </form>

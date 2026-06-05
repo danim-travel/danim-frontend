@@ -13,6 +13,7 @@ export * from "./Segmented/Segmented";
 export * from "./Stepper/Stepper";
 export * from "./Tabs/Tabs";
 export * from "./TextField/TextField";
+export * from "./UserRow/UserRow";
 export * from "./Toast/Toast";
 export * from "./Toggle/Toggle";
 export * from "./feedback/EmptyState";

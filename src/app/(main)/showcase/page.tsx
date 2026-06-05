@@ -21,8 +21,12 @@ import { Tabs }        from "@/components/common/Tabs/Tabs";
 import { TextField }   from "@/components/common/TextField/TextField";
 import { Toast }       from "@/components/common/Toast/Toast";
 import { Toggle }      from "@/components/common/Toggle/Toggle";
+import { UserRow }     from "@/components/common/UserRow/UserRow";
+import { PasswordField } from "@/components/common/PasswordField/PasswordField";
+import { VerificationField } from "@/components/common/VerificationField/VerificationField";
 import { EmptyState }  from "@/components/common/feedback/EmptyState";
-import { LoadingState } from "@/components/common/feedback/Skeleton";
+import { UserRowSkeleton } from "@/components/common/feedback/Skeleton";
+import { toast } from "@/store/toastStore";
 
 const KakaoMap = dynamic(() => import("@/components/KakaoMap"), { ssr: false });
 
@@ -33,6 +37,8 @@ const SECTIONS = [
   { id: "avatar",      label: "Avatar" },
   { id: "card",        label: "Card" },
   { id: "textfield",   label: "TextField" },
+  { id: "passwordfield", label: "PasswordField" },
+  { id: "verificationfield", label: "VerificationField" },
   { id: "searchbar",   label: "SearchBar" },
   { id: "checkbox",    label: "Checkbox" },
   { id: "toggle",      label: "Toggle" },
@@ -42,7 +48,8 @@ const SECTIONS = [
   { id: "modal",       label: "Modal" },
   { id: "toast",       label: "Toast" },
   { id: "emptystate",  label: "EmptyState" },
-  { id: "loading",     label: "LoadingState" },
+  { id: "userrow",     label: "UserRow" },
+  { id: "loading",     label: "UserRowSkeleton" },
   { id: "spinner",     label: "Spinner" },
   { id: "sidenav",     label: "SideNav" },
   { id: "kakaomap",    label: "KakaoMap" },
@@ -68,14 +75,16 @@ const SEGMENT_ITEMS = [
 ];
 
 export default function ShowcasePage() {
-  const [postModalOpen,  setPostModalOpen]  = useState(false);
-  const [commonModalOpen, setCommonModalOpen] = useState(false);
-  const [checked,        setChecked]        = useState(false);
-  const [toggled,        setToggled]        = useState(false);
-  const [tabValue,       setTabValue]       = useState("posts");
-  const [segValue,       setSegValue]       = useState("male");
-  const [searchValue,    setSearchValue]    = useState("");
-  const [stepperCurrent, setStepperCurrent] = useState(1);
+  const [postModalOpen,    setPostModalOpen]    = useState(false);
+  const [commonModalOpen,  setCommonModalOpen]  = useState(false);
+  const [bottomModalOpen,  setBottomModalOpen]  = useState(false);
+  const [stretchModalOpen, setStretchModalOpen] = useState(false);
+  const [checked,          setChecked]          = useState(false);
+  const [toggled,          setToggled]          = useState(false);
+  const [tabValue,         setTabValue]         = useState("posts");
+  const [segValue,         setSegValue]         = useState("male");
+  const [searchValue,      setSearchValue]      = useState("");
+  const [stepperCurrent,   setStepperCurrent]   = useState(1);
 
   return (
     <div className="h-full overflow-y-auto bg-bg">
@@ -103,12 +112,12 @@ export default function ShowcasePage() {
           <SectionHeader
             title="Button"
             path="src/components/common/Button/Button.tsx"
-            description="주요 액션 버튼. variant 3가지 × size 3가지. loading · disabled 상태 지원."
+            description="주요 액션 버튼. variant 3가지 × size 3가지. loading · disabled 상태 지원. hover·active·focus-visible 상태 토큰 적용됨."
             props={[
               { name: "variant?",   type: '"primary" | "secondary" | "outline"', desc: "버튼 스타일 (기본: primary)" },
               { name: "size?",      type: '"sm" | "md" | "lg"',                  desc: "버튼 크기 (기본: md)" },
               { name: "fullWidth?", type: "boolean",                             desc: "부모 너비 전체 차지" },
-              { name: "loading?",   type: "boolean",                             desc: "처리 중 상태 (비활성화 + 텍스트 변경)" },
+              { name: "loading?",   type: "boolean",                             desc: "처리 중 상태 (비활성화 + 스피너 표시)" },
               { name: "leftIcon?",  type: "ReactNode",                           desc: "왼쪽 아이콘" },
               { name: "rightIcon?", type: "ReactNode",                           desc: "오른쪽 아이콘" },
             ]}
@@ -136,7 +145,7 @@ export default function ShowcasePage() {
               <Button disabled>Primary</Button>
               <Button variant="secondary" disabled>Secondary</Button>
               <Button variant="outline" disabled>Outline</Button>
-              <Button loading>처리 중</Button>
+              <Button loading>로그인</Button>
             </Preview>
           </div>
         </section>
@@ -148,16 +157,17 @@ export default function ShowcasePage() {
             path="src/components/common/IconButton/IconButton.tsx"
             description="아이콘 전용 버튼. aria-label 필수."
             props={[
-              { name: "icon",       type: "ReactNode",           desc: "표시할 아이콘" },
-              { name: "aria-label", type: "string",              desc: "접근성 레이블 (필수)" },
-              { name: "variant?",   type: '"ghost" | "filled"',  desc: "버튼 스타일 (기본: ghost)" },
-              { name: "size?",      type: '"sm" | "md"',         desc: "버튼 크기 (기본: md)" },
+              { name: "icon",       type: "ReactNode",                desc: "표시할 아이콘" },
+              { name: "aria-label", type: "string",                   desc: "접근성 레이블 (필수)" },
+              { name: "variant?",   type: '"ghost" | "filled"',       desc: "버튼 스타일 (기본: ghost)" },
+              { name: "size?",      type: '"sm" | "md" | "lg"',       desc: "버튼 크기 (기본: md)" },
             ]}
           />
           <Preview label="variant · size">
             <IconButton icon={<Heart size={20} />} aria-label="좋아요" variant="ghost" />
             <IconButton icon={<Bell size={20} />}  aria-label="알림"   variant="filled" />
             <IconButton icon={<Settings size={18} />} aria-label="설정" size="sm" />
+            <IconButton icon={<Heart size={24} />} aria-label="좋아요 큰 사이즈" size="lg" />
             <IconButton icon={<Trash2 size={20} />}   aria-label="삭제" disabled />
           </Preview>
         </section>
@@ -190,9 +200,9 @@ export default function ShowcasePage() {
             path="src/components/common/Avatar/Avatar.tsx"
             description="사용자 프로필 이미지 또는 이니셜 아바타."
             props={[
-              { name: "src?",     type: "string",                    desc: "프로필 이미지 URL" },
-              { name: "initial?", type: "string",                    desc: "이미지 없을 때 표시할 이니셜" },
-              { name: "size?",    type: '"sm" | "md" | "lg" | "xl"', desc: "크기 (기본: md)" },
+              { name: "src?",        type: "string",                    desc: "프로필 이미지 URL" },
+              { name: "initial?",    type: "string",                    desc: "이미지 없을 때 표시할 이니셜" },
+              { name: "size?",       type: '"sm" | "md" | "lg" | "xl"', desc: "크기 (기본: md)" },
               { name: "colorClass?", type: "string",                    desc: 'Tailwind bg 클래스. 예: "bg-primary"' },
               { name: "ring?",       type: "boolean",                   desc: "스토리 링 표시" },
             ]}
@@ -211,17 +221,33 @@ export default function ShowcasePage() {
           <SectionHeader
             title="Card"
             path="src/components/common/Card/Card.tsx"
-            description="콘텐츠 컨테이너. padding · interactive 옵션."
+            description="콘텐츠 컨테이너. variant · padding · interactive 옵션."
             props={[
-              { name: "padding?",     type: '"md" | "sm" | "none"', desc: "내부 패딩 (기본: md)" },
-              { name: "interactive?", type: "boolean",              desc: "hover 시 shadow 상승 효과" },
+              { name: "variant?",     type: '"elevated" | "section" | "thumbnail"', desc: "카드 종류 (기본: elevated)" },
+              { name: "padding?",     type: '"md" | "sm" | "none"',                  desc: "내부 패딩 (기본: md)" },
+              { name: "interactive?", type: "boolean",                                desc: "hover 시 shadow 상승 효과" },
             ]}
           />
-          <Preview label="padding · interactive">
-            <Card padding="sm" className="text-base text-text-muted">padding sm</Card>
-            <Card padding="md" className="text-base text-text-muted">padding md</Card>
-            <Card interactive className="text-base text-text-muted cursor-pointer">interactive hover</Card>
-          </Preview>
+          <div className="space-y-3">
+            <Preview label="padding · interactive">
+              <Card padding="sm" className="text-base text-text-muted">padding sm</Card>
+              <Card padding="md" className="text-base text-text-muted">padding md</Card>
+              <Card interactive className="text-base text-text-muted cursor-pointer">interactive hover</Card>
+            </Preview>
+            <div className="bg-bg-subtle rounded-2xl border border-border-subtle p-6">
+              <p className="text-caption text-text-disabled font-mono mb-4">variant</p>
+              <div className="flex flex-wrap items-start gap-3">
+                <Card variant="elevated" className="text-base text-text-muted w-48">elevated (기본 카드)</Card>
+                <Card variant="section" className="text-base text-text-muted w-48">section (설정 페이지 등)</Card>
+                <Card variant="thumbnail" className="w-48">
+                  <div className="aspect-video bg-bg-subtle grid place-items-center text-caption text-text-disabled">
+                    thumbnail image
+                  </div>
+                  <div className="p-3 text-base text-text-muted">썸네일 카드</div>
+                </Card>
+              </div>
+            </div>
+          </div>
         </section>
 
         {/* ── TextField ──────────────────────────── */}
@@ -246,33 +272,104 @@ export default function ShowcasePage() {
           </div>
         </section>
 
+        {/* ── PasswordField ──────────────────────── */}
+        <section id="passwordfield" className="mb-14">
+          <SectionHeader
+            title="PasswordField"
+            path="src/components/common/PasswordField/PasswordField.tsx"
+            description="보기/숨기기 토글 내장 비밀번호 필드. TextField 래퍼."
+            props={[
+              { name: "label?",      type: "string",  desc: "입력 필드 레이블" },
+              { name: "helperText?", type: "string",  desc: "하단 도움말 텍스트" },
+              { name: "error?",      type: "string",  desc: "에러 메시지" },
+              { name: "required?",   type: "boolean", desc: "필수 여부 표시" },
+              { name: "—", type: "TextFieldProps 상속", desc: "type, rightSlot 제외" },
+            ]}
+          />
+          <div className="grid grid-cols-2 gap-4">
+            <PasswordField label="비밀번호" placeholder="비밀번호 입력" required />
+            <PasswordField label="비밀번호" placeholder="비밀번호 입력" error="비밀번호가 일치하지 않습니다" />
+          </div>
+        </section>
+
+        {/* ── VerificationField ──────────────────── */}
+        <section id="verificationfield" className="mb-14">
+          <SectionHeader
+            title="VerificationField"
+            path="src/components/common/VerificationField/VerificationField.tsx"
+            description="입력 + 우측 액션 버튼 조합 필드. 이메일/휴대폰 인증 등에 사용."
+            props={[
+              { name: "label",        type: "string",                            desc: "필드 라벨 (필수)" },
+              { name: "actionLabel",  type: "string",                            desc: "우측 액션 버튼 라벨 (필수)" },
+              { name: "onAction?",    type: "() => void",                        desc: "액션 버튼 클릭 콜백" },
+              { name: "helperText?",  type: "string",                            desc: "입력 행 아래 안내 문구 (예: 타이머)" },
+              { name: "helperTone?",  type: '"muted" | "primary" | "error"',     desc: "helper 텍스트 톤 (기본: primary)" },
+            ]}
+          />
+          <div className="grid grid-cols-2 gap-4">
+            <VerificationField
+              label="이메일"
+              placeholder="example@danim.com"
+              actionLabel="인증 요청"
+            />
+            <VerificationField
+              label="인증 코드"
+              placeholder="6자리 코드 입력"
+              actionLabel="확인"
+              helperText="남은 시간 02:48"
+              helperTone="primary"
+            />
+          </div>
+        </section>
+
         {/* ── SearchBar ──────────────────────────── */}
         <section id="searchbar" className="mb-14">
           <SectionHeader
             title="SearchBar"
             path="src/components/common/SearchBar/SearchBar.tsx"
-            description="검색 인풋. pill · panel 두 가지 형태."
+            description="검색 인풋. pill · panel 두 가지 형태, sm · md 두 가지 크기."
             props={[
-              { name: "value",    type: "string",      desc: "입력값 (controlled)" },
-              { name: "onClear?", type: "() => void",  desc: "입력값 지우기 콜백" },
-              { name: "variant?", type: '"pill" | "panel"', desc: "형태 (기본: pill)" },
+              { name: "value",    type: "string",             desc: "입력값 (controlled)" },
+              { name: "onClear?", type: "() => void",         desc: "입력값 지우기 콜백" },
+              { name: "variant?", type: '"pill" | "panel"',   desc: "형태 (기본: pill)" },
+              { name: "size?",    type: '"sm" | "md"',        desc: "크기 (기본: md)" },
             ]}
           />
-          <div className="space-y-3 max-w-sm">
-            <SearchBar
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              onClear={() => setSearchValue("")}
-              placeholder="장소를 검색해보세요"
-              variant="pill"
-            />
-            <SearchBar
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              onClear={() => setSearchValue("")}
-              placeholder="장소를 검색해보세요"
-              variant="panel"
-            />
+          <div className="space-y-4 max-w-sm">
+            <div className="space-y-3">
+              <p className="text-caption text-text-disabled font-mono">variant</p>
+              <SearchBar
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                onClear={() => setSearchValue("")}
+                placeholder="장소를 검색해보세요"
+                variant="pill"
+              />
+              <SearchBar
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                onClear={() => setSearchValue("")}
+                placeholder="장소를 검색해보세요"
+                variant="panel"
+              />
+            </div>
+            <div className="space-y-3">
+              <p className="text-caption text-text-disabled font-mono">size</p>
+              <SearchBar
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                onClear={() => setSearchValue("")}
+                placeholder="size sm (컴팩트)"
+                size="sm"
+              />
+              <SearchBar
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                onClear={() => setSearchValue("")}
+                placeholder="size md (기본)"
+                size="md"
+              />
+            </div>
           </div>
         </section>
 
@@ -366,15 +463,22 @@ export default function ShowcasePage() {
             path="src/components/common/Stepper/Stepper.tsx"
             description="단계 진행 표시기."
             props={[
-              { name: "steps",   type: "StepperStep[]", desc: "{ label } 배열" },
-              { name: "current", type: "number",        desc: "현재 단계 인덱스 (0부터 시작)" },
+              { name: "steps",       type: "StepperStep[]", desc: "{ label } 배열" },
+              { name: "current",     type: "number",        desc: "현재 단계 인덱스 (0부터 시작)" },
+              { name: "showLabels?", type: "boolean",       desc: "라벨 표시 여부 (기본: true)" },
             ]}
           />
-          <div className="bg-bg-card rounded-2xl border border-border-subtle p-6 space-y-4">
-            <Stepper steps={STEPPER_STEPS} current={stepperCurrent} />
-            <div className="flex gap-2">
-              <Button size="sm" variant="secondary" disabled={stepperCurrent === 0} onClick={() => setStepperCurrent((p) => p - 1)}>이전</Button>
-              <Button size="sm" disabled={stepperCurrent === STEPPER_STEPS.length - 1} onClick={() => setStepperCurrent((p) => p + 1)}>다음</Button>
+          <div className="space-y-4">
+            <div className="bg-bg-card rounded-2xl border border-border-subtle p-6 space-y-4">
+              <Stepper steps={STEPPER_STEPS} current={stepperCurrent} />
+              <div className="flex gap-2">
+                <Button size="sm" variant="secondary" disabled={stepperCurrent === 0} onClick={() => setStepperCurrent((p) => p - 1)}>이전</Button>
+                <Button size="sm" disabled={stepperCurrent === STEPPER_STEPS.length - 1} onClick={() => setStepperCurrent((p) => p + 1)}>다음</Button>
+              </div>
+            </div>
+            <div className="bg-bg-card rounded-2xl border border-border-subtle p-6">
+              <p className="text-caption text-text-disabled font-mono mb-4">showLabels=false (마커만)</p>
+              <Stepper steps={STEPPER_STEPS} current={stepperCurrent} showLabels={false} />
             </div>
           </div>
         </section>
@@ -384,30 +488,56 @@ export default function ShowcasePage() {
           <SectionHeader
             title="Modal"
             path="src/components/common/Modal/Modal.tsx"
-            description="center · bottom 두 가지 배치. title · footer 슬롯."
+            description="center · bottom 두 가지 배치. title · footer 슬롯. footerAlign으로 footer 정렬 제어."
             props={[
-              { name: "open",       type: "boolean",    desc: "열림 상태" },
-              { name: "onClose",    type: "() => void", desc: "닫기 콜백 (배경 클릭 포함)" },
-              { name: "title?",     type: "string",     desc: "모달 제목" },
-              { name: "footer?",    type: "ReactNode",  desc: "하단 버튼 영역" },
-              { name: "placement?", type: '"center" | "bottom"', desc: "배치 위치 (기본: center)" },
+              { name: "open",         type: "boolean",                        desc: "열림 상태" },
+              { name: "onClose",      type: "() => void",                     desc: "닫기 콜백 (배경 클릭 포함)" },
+              { name: "title?",       type: "string",                         desc: "모달 제목" },
+              { name: "footer?",      type: "ReactNode",                      desc: "하단 버튼 영역" },
+              { name: "footerAlign?", type: '"start" | "end" | "stretch"',    desc: "footer 버튼 정렬 (기본: end)" },
+              { name: "placement?",   type: '"center" | "bottom"',            desc: "배치 위치 (기본: center)" },
             ]}
           />
-          <Preview label="열기">
-            <Button onClick={() => setCommonModalOpen(true)}>Modal 열기</Button>
+          <Preview label="footerAlign · placement">
+            <Button onClick={() => setCommonModalOpen(true)}>end (기본)</Button>
+            <Button variant="secondary" onClick={() => setStretchModalOpen(true)}>stretch</Button>
+            <Button variant="outline" onClick={() => setBottomModalOpen(true)}>bottom placement</Button>
           </Preview>
           <Modal
             open={commonModalOpen}
             onClose={() => setCommonModalOpen(false)}
-            title="여행 기록 삭제"
+            title="footerAlign: end"
             footer={
               <>
-                <Button variant="secondary" fullWidth onClick={() => setCommonModalOpen(false)}>취소</Button>
-                <Button fullWidth onClick={() => setCommonModalOpen(false)}>삭제</Button>
+                <Button variant="secondary" onClick={() => setCommonModalOpen(false)}>취소</Button>
+                <Button onClick={() => setCommonModalOpen(false)}>확인</Button>
               </>
             }
           >
-            <p className="text-base text-text-muted">이 여행 기록을 삭제하면 복구할 수 없습니다. 계속하시겠습니까?</p>
+            <p className="text-base text-text-muted">footer 버튼이 오른쪽에 정렬됩니다 (기본값).</p>
+          </Modal>
+          <Modal
+            open={stretchModalOpen}
+            onClose={() => setStretchModalOpen(false)}
+            title="footerAlign: stretch"
+            footerAlign="stretch"
+            footer={
+              <>
+                <Button variant="secondary" onClick={() => setStretchModalOpen(false)}>취소</Button>
+                <Button onClick={() => setStretchModalOpen(false)}>삭제</Button>
+              </>
+            }
+          >
+            <p className="text-base text-text-muted">footer 버튼들이 동등한 너비로 늘어납니다.</p>
+          </Modal>
+          <Modal
+            open={bottomModalOpen}
+            onClose={() => setBottomModalOpen(false)}
+            title="bottom placement"
+            placement="bottom"
+            footer={<Button fullWidth onClick={() => setBottomModalOpen(false)}>닫기</Button>}
+          >
+            <p className="text-base text-text-muted">모달이 화면 하단에 시트 형태로 표시됩니다.</p>
           </Modal>
         </section>
 
@@ -416,16 +546,31 @@ export default function ShowcasePage() {
           <SectionHeader
             title="Toast"
             path="src/components/common/Toast/Toast.tsx"
-            description="인라인 토스트 메시지. variant 3가지."
+            description="토스트 알림 메시지. ToastProvider가 providers에 등록되어 있어 앱 어디서든 toast.success() 호출 가능."
             props={[
               { name: "variant?", type: '"default" | "success" | "error"', desc: "토스트 종류 (기본: default)" },
               { name: "icon?",    type: "ReactNode",                       desc: "왼쪽 아이콘" },
             ]}
           />
-          <div className="flex flex-col items-start gap-3">
-            <Toast variant="default">저장되었습니다</Toast>
-            <Toast variant="success">게시글이 업로드되었습니다 🎉</Toast>
-            <Toast variant="error">업로드에 실패했습니다. 다시 시도해주세요.</Toast>
+          <div className="space-y-4">
+            <Preview label="trigger (toast 헬퍼)">
+              <Button variant="secondary" onClick={() => toast.default("일반 메시지입니다")}>
+                toast.default
+              </Button>
+              <Button onClick={() => toast.success("저장되었습니다 🎉")}>
+                toast.success
+              </Button>
+              <Button variant="outline" onClick={() => toast.error("오류가 발생했습니다")}>
+                toast.error
+              </Button>
+            </Preview>
+            <Preview label="static (Toast 컴포넌트)">
+              <div className="flex flex-col items-start gap-3 w-full">
+                <Toast variant="default">저장되었습니다</Toast>
+                <Toast variant="success">게시글이 업로드되었습니다 🎉</Toast>
+                <Toast variant="error">업로드에 실패했습니다. 다시 시도해주세요.</Toast>
+              </div>
+            </Preview>
           </div>
         </section>
 
@@ -452,21 +597,68 @@ export default function ShowcasePage() {
           </div>
         </section>
 
-        {/* ── LoadingState ───────────────────────── */}
-        <section id="loading" className="mb-14">
+        {/* ── UserRow ────────────────────────────── */}
+        <section id="userrow" className="mb-14">
           <SectionHeader
-            title="LoadingState / Skeleton"
-            path="src/components/common/feedback/LoadingState.tsx"
-            description="리스트 스켈레톤 로딩 UI."
+            title="UserRow"
+            path="src/components/common/UserRow/UserRow.tsx"
+            description="아바타 + 이름 + 텍스트 패턴. DM·팔로워·검색·댓글에 공통 사용."
             props={[
-              { name: "rows?",   type: "number",                      desc: "스켈레톤 행 수 (기본: 3)" },
-              { name: "width?",  type: "number | string",             desc: "Skeleton 너비 (기본: 100%)" },
-              { name: "height?", type: "number | string",             desc: "Skeleton 높이 (기본: 16)" },
-              { name: "radius?", type: '"control" | "card" | "full"', desc: "모서리 (기본: control)" },
+              { name: "avatar",       type: "ReactNode",  desc: "Avatar 컴포넌트" },
+              { name: "title",        type: "string",     desc: "닉네임/이름" },
+              { name: "subtitle?",    type: "string",     desc: "두 번째 줄" },
+              { name: "description?", type: "string",     desc: "세 번째 줄" },
+              { name: "trailing?",    type: "ReactNode",  desc: "우측 액션" },
+              { name: "onClick?",     type: "() => void", desc: "행 클릭 콜백" },
             ]}
           />
-          <div className="bg-bg-card rounded-2xl border border-border-subtle p-6">
-            <LoadingState rows={3} />
+          <div className="bg-bg-card rounded-2xl border border-border-subtle p-6 space-y-4">
+            <UserRow
+              avatar={<Avatar size="md" initial="김" colorClass="bg-primary" />}
+              title="김다님"
+              subtitle="안녕하세요!"
+            />
+            <UserRow
+              avatar={<Avatar size="md" initial="이" colorClass="bg-amber-400" />}
+              title="이여행"
+              subtitle="여행가 · 팔로워 1.2k"
+              description="제주도 / 부산 / 서울 좋아하는 사람"
+            />
+            <UserRow
+              avatar={<Avatar size="md" initial="박" colorClass="bg-indigo-500" />}
+              title="박지도"
+              subtitle="@parkmap"
+              trailing={<Button size="sm" variant="secondary">팔로우</Button>}
+            />
+            <UserRow
+              avatar={<Avatar size="md" initial="정" colorClass="bg-pink-500" />}
+              title="정클릭"
+              subtitle="클릭 가능한 행 (cursor-pointer)"
+              onClick={() => toast.default("UserRow 클릭됨")}
+            />
+          </div>
+        </section>
+
+        {/* ── UserRowSkeleton ────────────────────── */}
+        <section id="loading" className="mb-14">
+          <SectionHeader
+            title="UserRowSkeleton"
+            path="src/components/common/feedback/Skeleton.tsx"
+            description="UserRow 패턴의 스켈레톤 로딩 UI. 아바타 + 텍스트 2~3줄."
+            props={[
+              { name: "rows?",  type: "number",  desc: "스켈레톤 행 수 (기본: 2)" },
+              { name: "lines?", type: "2 | 3",   desc: "한 행당 텍스트 줄 수 (기본: 2)" },
+            ]}
+          />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-bg-card rounded-2xl border border-border-subtle p-6">
+              <p className="text-caption text-text-disabled font-mono mb-4">lines=2 (기본)</p>
+              <UserRowSkeleton rows={3} lines={2} />
+            </div>
+            <div className="bg-bg-card rounded-2xl border border-border-subtle p-6">
+              <p className="text-caption text-text-disabled font-mono mb-4">lines=3</p>
+              <UserRowSkeleton rows={3} lines={3} />
+            </div>
           </div>
         </section>
 
