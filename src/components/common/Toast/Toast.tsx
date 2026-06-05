@@ -5,9 +5,9 @@ export type ToastVariant = "default" | "success" | "error";
 export interface ToastProps { variant?: ToastVariant; icon?: React.ReactNode; children: React.ReactNode; }
 
 const variantClasses: Record<ToastVariant, string> = {
-  default: "bg-[var(--toast-bg)]",
-  success: "bg-[var(--toast-bg-success)]",
-  error:   "bg-[var(--toast-bg-error)]",
+  default: "bg-(--toast-bg)",
+  success: "bg-(--toast-bg-success)",
+  error:   "bg-(--toast-bg-error)",
 };
 
 export function Toast({ variant = "default", icon, children }: ToastProps) {

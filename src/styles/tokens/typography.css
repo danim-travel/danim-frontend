@@ -18,39 +18,56 @@
   --letter-spacing-snug:   -0.01em;  /* section-title · card-title · button */
   --letter-spacing-normal:  0em;     /* body · caption · label · nav */
 
-  /* ── Font size primitives (size-only, component token 참조용) ── */
-  --font-size-xs: 12px;  /* = text-caption */
-  --font-size-md: 14px;  /* = text-body · text-button */
-  --font-size-lg: 16px;  /* = text-card-title */
+  /* ── Font size primitives (foundation, 1차 토큰) ── */
+  --font-size-10: 10px;
+  --font-size-11: 11px;
+  --font-size-12: 12px;
+  --font-size-13: 13px;
+  --font-size-14: 14px;
+  --font-size-16: 16px;
+  --font-size-18: 18px;
+  --font-size-22: 22px;
+  --font-size-28: 28px;
+  --font-size-44: 44px;
+  --font-size-45: 45px;
 
-  /* ── Type scale (font-size + line-height 분리 정의) ── */
-  --text-display: 44px;
+  /* ── Type scale (semantic, 2차 토큰 — foundation 참조) ── */
+  --text-display: var(--font-size-44);
   --text-display--line-height: 1.15;
 
-  --text-page-title: 28px;
+  --text-page-title: var(--font-size-28);
   --text-page-title--line-height: 1.25;
 
-  --text-section-title: 22px;
+  --text-section-title: var(--font-size-22);
   --text-section-title--line-height: 1.3;
 
-  --text-card-title: 16px;
+  --text-card-title: var(--font-size-16);
   --text-card-title--line-height: 1.4;
 
-  --text-base: 14px;
+  --text-base: var(--font-size-14);
   --text-base--line-height: 1.6;
 
-  --text-body-sm: 13px;
+  --text-body-sm: var(--font-size-13);
   --text-body-sm--line-height: 1.6;
 
-  --text-caption: 12px;
+  --text-caption: var(--font-size-12);
   --text-caption--line-height: 1.5;
 
-  --text-label: 13px;
+  --text-label: var(--font-size-13);
   --text-label--line-height: 1.4;
 
-  --text-button: 14px;
+  --text-button: var(--font-size-14);
   --text-button--line-height: 1;
 
-  --text-nav: 11px;
+  --text-nav: var(--font-size-11);
   --text-nav--line-height: 1.3;
+
+  --text-tiny: var(--font-size-10);
+  --text-tiny--line-height: 1.4;
+
+  --text-title-lg: var(--font-size-18);   /* Avatar md 이니셜, 중간 강조 텍스트 */
+  --text-title-lg--line-height: 1.3;
+
+  --text-hero: var(--font-size-45);       /* Avatar xl 이니셜, 대형 표시 텍스트 */
+  --text-hero--line-height: 1.1;
 }

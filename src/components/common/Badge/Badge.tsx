@@ -19,8 +19,8 @@ export function Badge({ variant = "tag", selected, leftIcon, children, className
       className={cn(
         "inline-flex items-center gap-1 px-3 py-1 rounded-pill text-label font-semibold border",
         selected
-          ? "bg-[var(--chip-bg-selected)] text-text-inverse border-[var(--chip-bg-selected)]"
-          : "bg-[var(--chip-bg)] text-[var(--chip-text)] border-[var(--chip-border)]",
+          ? "bg-(--chip-bg-selected) text-text-inverse border-(--chip-bg-selected)"
+          : "bg-(--chip-bg) text-(--chip-text) border-(--chip-border)",
         selectable ? "cursor-pointer" : "cursor-default",
         className
       )}

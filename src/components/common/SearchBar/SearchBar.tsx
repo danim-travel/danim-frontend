@@ -2,16 +2,38 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 
-export interface SearchBarProps extends React.InputHTMLAttributes<HTMLInputElement> {
+export type SearchBarSize = "sm" | "md";
+
+export interface SearchBarProps
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size"> {
   onClear?: () => void;
   variant?: "pill" | "panel";
+  size?: SearchBarSize;
 }
 
-export function SearchBar({ value, onClear, variant = "pill", className, ...rest }: SearchBarProps) {
+const wrapperSizeClasses: Record<SearchBarSize, string> = {
+  sm: "py-0",
+  md: "",
+};
+
+const inputSizeClasses: Record<SearchBarSize, string> = {
+  sm: "py-2",
+  md: "py-3",
+};
+
+export function SearchBar({
+  value,
+  onClear,
+  variant = "pill",
+  size = "md",
+  className,
+  ...rest
+}: SearchBarProps) {
   return (
     <div className={cn(
-      "relative flex items-center bg-[var(--search-bg)] px-4",
-      variant === "panel" ? "rounded-input" : "rounded-pill"
+      "relative flex items-center bg-(--search-bg) px-4",
+      variant === "panel" ? "rounded-input" : "rounded-pill",
+      wrapperSizeClasses[size]
     )}>
       <svg width={16} height={16} viewBox="0 0 24 24" fill="none" aria-hidden className="shrink-0 text-text-muted">
         <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.8" />
@@ -20,7 +42,8 @@ export function SearchBar({ value, onClear, variant = "pill", className, ...rest
       <input
         value={value}
         className={cn(
-          "flex-1 border-none outline-none bg-transparent py-3 px-2 text-base text-[var(--search-text)]",
+          "flex-1 border-none outline-none bg-transparent px-2 text-base text-(--search-text)",
+          inputSizeClasses[size],
           className
         )}
         {...rest}

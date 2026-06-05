@@ -12,4 +12,7 @@ export const config = {
   get kakaoMapKey() {
     return env.NEXT_PUBLIC_KAKAO_MAP_KEY
   },
+  get isDev() {
+    return process.env.NODE_ENV === 'development'
+  },
 } as const

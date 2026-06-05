@@ -8,6 +8,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { isApiError, publicClient } from '@/lib/apiClient'
 import { useAuthStore } from '@/store/authStore'
+import { ToastProvider } from './ToastProvider'
 
 async function initMsw() {
   if (process.env.NODE_ENV !== 'development') return
@@ -73,7 +74,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthBootstrap>{children}</AuthBootstrap>
+      <ToastProvider>
+        <AuthBootstrap>{children}</AuthBootstrap>
+      </ToastProvider>
     </QueryClientProvider>
   )
 }

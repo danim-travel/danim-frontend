@@ -7,3 +7,5 @@ export type ApiErrorResponse =
   | { error_detail: Record<string, string[]> }
 
 export * from './post.types'
+export * from './comment.types'
+export * from './interaction.types'
