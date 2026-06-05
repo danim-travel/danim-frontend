@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useScrollLock } from "@/hooks/useScrollLock";
 import { X } from "lucide-react";
 import { usePostDetail } from "@/hooks/usePostDetail";
 import { useCommentsQuery } from "@/hooks/useCommentsQuery";
@@ -34,12 +35,7 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
 
   const currentUserId = useAuthStore((s) => s.user?.userId) ?? null;
 
-  useEffect(() => {
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, []);
+  useScrollLock(true);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
