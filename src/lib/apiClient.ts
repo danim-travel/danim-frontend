@@ -1,4 +1,4 @@
-import ky from 'ky'
+import ky, { type HTTPError } from 'ky'
 import { config } from '@/lib/config'
 import { useAuthStore } from '@/store/authStore'
 
@@ -25,24 +25,24 @@ export function isApiError(error: unknown): error is ApiError {
   )
 }
 
-// ApiError에서 토스트에 표시할 메시지를 추출한다.
-// error_detail이 문자열이면 그대로, 객체(필드 에러)면 fallback 사용.
-// ApiError가 아니거나 detail이 없으면 status 범위(4xx/5xx)에 따라 fallback을 반환한다.
-export function getApiErrorMessage(
-  err: unknown,
-  fallback: { client: string; server: string }
-): string {
-  if (isApiError(err)) {
-    if (typeof err.detail === 'string' && err.detail) return err.detail
-    return err.status >= 500 ? fallback.server : fallback.client
-  }
-  return fallback.server
-}
+// 에러 응답 body를 ApiError로 정규화하는 훅. publicClient·apiClient 양쪽에 공유된다.
+const normalizeErrorHook = [
+  async (error: HTTPError) => {
+    try {
+      const body = await error.response.clone().json() as { error_detail?: ApiErrorDetail }
+      throw createApiError(error.response.status, body.error_detail ?? error.message)
+    } catch (e) {
+      if (isApiError(e)) throw e
+      throw createApiError(error.response.status, error.message)
+    }
+  },
+]
 
 // 인증 헤더가 붙지 않는 클라이언트. 로그인·회원가입·refresh처럼 access_token이 없는 상태에서 호출하는 엔드포인트 전용.
 export const publicClient = ky.create({
   prefixUrl: config.apiUrl,
   credentials: 'include',
+  hooks: { beforeError: normalizeErrorHook },
 })
 
 // 동시에 여러 요청이 401을 받아도 refresh 호출은 한 번만 일어나도록 싱글턴으로 공유한다.
@@ -99,17 +99,6 @@ export const apiClient = ky.create({
         }
       },
     ],
-    // 에러 응답 body를 ApiError로 정규화 — 호출부에서 일관된 형태로 다루기 위함.
-    beforeError: [
-      async (error) => {
-        try {
-          const body = await error.response.clone().json() as { error_detail?: ApiErrorDetail }
-          throw createApiError(error.response.status, body.error_detail ?? error.message)
-        } catch (e) {
-          if (isApiError(e)) throw e
-          throw createApiError(error.response.status, error.message)
-        }
-      },
-    ],
+    beforeError: normalizeErrorHook,
   },
 })

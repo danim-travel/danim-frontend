@@ -20,3 +20,28 @@ export type UserProfileResponse = {
   posts_count: number
   posts: UserProfilePost[]
 }
+
+export interface SignupRequest {
+  email: string
+  password: string
+  nickname: string
+  name: string
+  gender: 'male' | 'female'
+  /** YYYY-MM-DD */
+  birth_date: string
+}
+
+export interface AuthUserResponse {
+  user_id: string
+  nickname: string
+  profile_img: string | null
+}
+
+export interface SignupResponse {
+  access_token: string
+  user: AuthUserResponse
+}
+
+export interface TokenRefreshResponse {
+  access_token: string
+}
