@@ -90,4 +90,53 @@ export const postsHandlers = [
       like_count: postLikeCounts.get(postId) ?? mockPostDetail.like_count,
     })
   }),
+
+  // 게시글 작성
+  http.post('*/v1/posts', async ({ request }) => {
+    if (!request.headers.get('Authorization')) {
+      return HttpResponse.json(
+        { error_detail: '인증되지 않은 사용자입니다.' },
+        { status: 401 },
+      )
+    }
+    const body = await request.json() as Record<string, unknown>
+    if (!body.title) {
+      return HttpResponse.json(
+        { error_detail: { title: ['이 필드는 필수 항목입니다.'] } },
+        { status: 400 },
+      )
+    }
+    return HttpResponse.json(
+      { detail: '게시글이 작성되었습니다.' },
+      { status: 201 },
+    )
+  }),
+
+  // presigned URL 발급
+  http.post('*/v1/posts/presigned-url', async ({ request }) => {
+    if (!request.headers.get('Authorization')) {
+      return HttpResponse.json(
+        { error_detail: '자격 인증 데이터가 제공되지 않습니다.' },
+        { status: 401 },
+      )
+    }
+    const body = await request.json() as Record<string, unknown>
+    const originalImg = body.original_img as string | undefined
+    const allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'webp']
+    const ext = originalImg?.split('.').pop()?.toLowerCase()
+    if (!originalImg || !ext || !allowedExts.includes(ext)) {
+      return HttpResponse.json(
+        { error_detail: '지원하지 않는 파일 형식입니다.' },
+        { status: 400 },
+      )
+    }
+    const uuid = crypto.randomUUID()
+    const key = `uploads/images/posts/${uuid}.${ext}`
+    const baseUrl = `https://oz-externship.s3.ap-northeast-2.amazonaws.com/${key}`
+    return HttpResponse.json({
+      presigned_url: `${baseUrl}?AWSAccessKeyId=AKIAIOSFODNN7EXAMPLE&Signature=tHe%2BUpLoAdSiGnAtUrE%3D&Expires=1717600000`,
+      img_url: baseUrl,
+      key,
+    })
+  }),
 ]
