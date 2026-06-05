@@ -19,15 +19,15 @@ export interface SegmentedProps {
 }
 
 const sizeHeight: Record<SegmentedSize, string> = {
-  md: "h-[var(--segmented-item-height)]",
-  lg: "h-[var(--segmented-item-height-lg)]",
+  md: "h-(--segmented-item-height)",
+  lg: "h-(--segmented-item-height-lg)",
 };
 
 export function Segmented({ items, value, onChange, disabled, fullWidth, size = "md" }: SegmentedProps) {
   return (
     <div
       role="group"
-      className={cn("flex gap-[var(--segmented-item-gap)]", fullWidth && "w-full")}
+      className={cn("flex gap-(--segmented-item-gap)", fullWidth && "w-full")}
     >
       {items.map((item) => {
         const selected = item.key === value;
@@ -39,11 +39,11 @@ export function Segmented({ items, value, onChange, disabled, fullWidth, size = 
             data-state={selected ? "selected" : "default"}
             onClick={() => onChange(item.key)}
             className={cn(
-              "flex-1 rounded-[var(--segmented-item-radius)] border text-base font-semibold transition-colors",
+              "flex-1 rounded-(--segmented-item-radius) border text-base font-semibold transition-colors",
               sizeHeight[size],
               selected
-                ? "bg-[var(--segmented-item-bg-selected)] text-[var(--segmented-item-text-selected)] border-[var(--segmented-item-border-selected)]"
-                : "bg-[var(--segmented-item-bg)] text-[var(--segmented-item-text)] border-[var(--segmented-item-border)]",
+                ? "bg-(--segmented-item-bg-selected) text-(--segmented-item-text-selected) border-(--segmented-item-border-selected)"
+                : "bg-(--segmented-item-bg) text-(--segmented-item-text) border-(--segmented-item-border)",
               disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
             )}
           >
