@@ -111,15 +111,13 @@
   --post-action-text:        var(--color-text-muted);
   --post-action-text-active: var(--color-primary);
 
-  /* ── PostCard ────────────────────────────── */
+  /* ── Card ───────────────────────────────── */
   --post-card-bg:           var(--color-bg-card);
   --post-card-shadow:       var(--shadow-card);
   --post-card-radius:       var(--radius-card);
   --post-card-shadow-hover: var(--shadow-card-hover);
-
-  /* ── Thumbnail ───────────────────────────── */
-  --thumbnail-radius:       var(--radius-card);
-  --thumbnail-shadow-hover: var(--shadow-card-hover);
+  --card-section-bg:        var(--color-bg-card);
+  --card-thumbnail-bg:      var(--color-bg-card);
 
   /* ── Avatar ──────────────────────────────── */
   --avatar-border:       var(--color-bg-card);
