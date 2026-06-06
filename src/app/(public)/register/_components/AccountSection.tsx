@@ -4,6 +4,7 @@ import { TextField, PasswordField, VerificationField } from "@/components/common
 import { PasswordStrength } from "../../_components";
 import { requestEmailVerify, confirmEmailCode } from "@/lib/api/auth";
 import { isApiError } from "@/lib/apiClient";
+import { toast } from "@/store/toastStore";
 
 export interface AccountSectionProps {
   email: string;
@@ -38,17 +39,16 @@ export function AccountSection({
   const [verified, setVerified] = useState(false);
   const [requestLoading, setRequestLoading] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
-  const [requestError, setRequestError] = useState<string>();
   const [confirmError, setConfirmError] = useState<string>();
 
   async function handleRequestVerify() {
-    setRequestError(undefined);
     setRequestLoading(true);
     try {
       await requestEmailVerify(email);
       setCodeSent(true);
-    } catch (e) {
-      setRequestError(isApiError(e) ? String(e.detail) : "인증 요청에 실패했습니다.");
+      toast.success("인증코드가 이메일로 발송되었습니다.");
+    } catch {
+      toast.error("인증코드 발송에 실패했습니다. 다시 시도해주세요.");
     } finally {
       setRequestLoading(false);
     }
@@ -80,8 +80,9 @@ export function AccountSection({
         actionLabel={codeSent ? "재요청" : "인증 요청"}
         actionVariant="primary"
         actionDisabled={requestLoading || verified}
+        actionLoading={requestLoading}
         onAction={handleRequestVerify}
-        helperText={emailError ?? requestError}
+        helperText={emailError}
         helperTone="error"
         disabled={verified}
       />
