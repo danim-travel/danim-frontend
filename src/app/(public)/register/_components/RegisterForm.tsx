@@ -11,7 +11,6 @@ import { useAuthStore } from "@/store/authStore";
 import { toast } from "@/store/toastStore";
 import { AccountSection } from "./AccountSection";
 import { ProfileSection } from "./ProfileSection";
-import type { Gender } from "./ProfileSection";
 
 const signupSchema = z
   .object({
@@ -24,9 +23,12 @@ const signupSchema = z
       .regex(/[0-9]/, "숫자가 포함되어야 합니다")
       .regex(/[^a-zA-Z0-9]/, "특수문자가 포함되어야 합니다"),
     passwordConfirm: z.string().min(1, "비밀번호 확인을 입력해주세요"),
-    nickname: z.string().min(2, "2자 이상이어야 합니다").max(20, "20자 이하여야 합니다"),
+    nickname: z
+      .string()
+      .min(2, "2자 이상이어야 합니다")
+      .max(20, "20자 이하여야 합니다")
+      .regex(/^[a-zA-Z0-9가-힣]+$/, "영문, 한글, 숫자만 사용할 수 있습니다"),
     name: z.string().min(1, "이름을 입력해주세요"),
-    gender: z.enum(["male", "female"]),
     birthYear: z.string().regex(/^\d{4}$/, "연도(YYYY)를 입력해주세요"),
     birthMonth: z.string().regex(/^(0?[1-9]|1[0-2])$/, "월(MM)을 입력해주세요"),
     birthDay: z.string().regex(/^(0?[1-9]|[12]\d|3[01])$/, "일(DD)을 입력해주세요"),
@@ -47,7 +49,6 @@ export function RegisterForm() {
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [nickname, setNickname] = useState("");
   const [name, setName] = useState("");
-  const [gender, setGender] = useState<Gender>("male");
   const [birthYear, setBirthYear] = useState("");
   const [birthMonth, setBirthMonth] = useState("");
   const [birthDay, setBirthDay] = useState("");
@@ -65,7 +66,6 @@ export function RegisterForm() {
       passwordConfirm: "",
       nickname: "",
       name: "",
-      gender: "male",
       birthYear: "",
       birthMonth: "",
       birthDay: "",
@@ -80,7 +80,6 @@ export function RegisterForm() {
         password: data.password,
         nickname: data.nickname,
         name: data.name,
-        gender: data.gender,
         birth_date: birthDate,
       });
       useAuthStore.getState().setAuth(
@@ -125,8 +124,6 @@ export function RegisterForm() {
           nickname={nickname}
           onNicknameChange={(v) => { setNickname(v); setValue("nickname", v); }}
           nicknameError={errors.nickname?.message}
-          gender={gender}
-          onGenderChange={(v) => { setGender(v); setValue("gender", v); }}
           name={name}
           onNameChange={(v) => { setName(v); setValue("name", v); }}
           nameError={errors.name?.message}

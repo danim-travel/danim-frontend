@@ -1,18 +1,23 @@
-import React from "react";
+import type { LabelHTMLAttributes } from "react";
 
-export interface FieldLabelProps {
-  children: React.ReactNode;
-  /** 필수 표시(*) 노출 여부 */
+export interface FieldLabelProps extends LabelHTMLAttributes<HTMLLabelElement> {
   required?: boolean;
 }
 
-/** 폼 필드 라벨. 입력류 컴포넌트(TextField·VerificationField 등)와 그룹 필드가 공유한다. */
-export function FieldLabel({ children, required }: FieldLabelProps) {
+export function FieldLabel({
+  children,
+  required,
+  className,
+  ...props
+}: FieldLabelProps) {
   return (
-    <span className="block mb-2 text-label font-semibold text-text-secondary">
+    <label
+      className={`block mb-2 text-label font-semibold text-text-secondary ${className ?? ""}`}
+      {...props}
+    >
       {children}
       {required && <span className="text-primary"> *</span>}
-    </span>
+    </label>
   );
 }
 

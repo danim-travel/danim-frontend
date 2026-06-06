@@ -26,7 +26,6 @@ export interface SignupRequest {
   password: string
   nickname: string
   name: string
-  gender: 'male' | 'female'
   /** YYYY-MM-DD */
   birth_date: string
 }
