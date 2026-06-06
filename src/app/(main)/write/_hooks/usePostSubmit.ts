@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { apiClient } from '@/lib/apiClient'
+import { apiClient, getApiErrorMessage } from '@/lib/apiClient'
 import { toast } from '@/store/toastStore'
 import { queryKeys } from '@/lib/queryKeys'
 import { useAuthStore } from '@/store/authStore'
@@ -30,11 +30,11 @@ export function usePostSubmit({ title, spots, thumbnailKey }: UsePostSubmitArgs)
 
   const submitPost = async (): Promise<boolean> => {
     if (isSubmitting || !canSubmit) return false
+    setIsSubmitting(true)
     // canSubmit이 thumbnailKey !== null을 보장하므로 타입 단언 사용
     const payload = buildPostPayload({ title, spots, thumbnailKey: thumbnailKey! })
 
     try {
-      setIsSubmitting(true)
       await apiClient.post('v1/posts', { json: payload }).json<DetailResponse>()
       // 탐색 페이지·마이페이지에 새 게시글 즉시 반영
       await Promise.all([
@@ -44,7 +44,10 @@ export function usePostSubmit({ title, spots, thumbnailKey }: UsePostSubmitArgs)
       return true
     } catch (err) {
       console.error('게시글 작성 실패:', err)
-      toast.error('게시글 작성에 실패했습니다.')
+      toast.error(getApiErrorMessage(err, {
+        client: '게시글 작성에 실패했습니다.',
+        server: '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+      }))
       return false
     } finally {
       setIsSubmitting(false)
