@@ -32,7 +32,7 @@ export function PasswordStrength({ value }: PasswordStrengthProps) {
           />
         ))}
       </div>
-      <span className={`text-caption font-semibold whitespace-nowrap ${strength.text}`}>{strength.label}</span>
+      <span className={`text-caption font-semibold w-14 text-right shrink-0 ${strength.text}`}>{strength.label}</span>
     </div>
   );
 }
