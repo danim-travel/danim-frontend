@@ -17,9 +17,34 @@ const mockUserProfile: UserProfileResponse = {
   intro: '여행을 좋아하는 사람입니다.',
   follower: 10,
   following: 5,
-  is_following: true,
+  is_following: false,
   posts_count: mockPosts.length,
   posts: mockPosts,
+}
+
+const mockOtherProfiles: Record<string, UserProfileResponse> = {
+  'other-user-1': {
+    name: '김철수',
+    nickname: 'traveler_kim',
+    profile_img: 'https://picsum.photos/seed/otherprofile1/200/200',
+    intro: '국내 여행 전문가입니다.',
+    follower: 120,
+    following: 80,
+    is_following: false,
+    posts_count: 5,
+    posts: mockPosts.slice(0, 5),
+  },
+  'other-user-2': {
+    name: '이영희',
+    nickname: 'yh_explorer',
+    profile_img: null,
+    intro: '',
+    follower: 3,
+    following: 10,
+    is_following: true,
+    posts_count: 2,
+    posts: mockPosts.slice(0, 2),
+  },
 }
 
 export const usersHandlers = [
@@ -39,6 +64,6 @@ export const usersHandlers = [
       )
     }
 
-    return HttpResponse.json(mockUserProfile)
+    return HttpResponse.json(mockOtherProfiles[userId] ?? mockUserProfile)
   }),
 ]
