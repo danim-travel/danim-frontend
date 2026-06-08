@@ -4,7 +4,7 @@ import { PASSWORD_RULES } from "../_constants/passwordValidation";
 export const signupSchema = z
   .object({
     email: z.string().min(1, "이메일을 입력해주세요").email("올바른 이메일 형식이 아닙니다"),
-    emailVerified: z.boolean().refine((v) => v, { message: "이메일 인증이 필요합니다" }),
+    emailToken: z.string().min(1, "이메일 인증이 필요합니다"),
     password: z
       .string()
       .min(PASSWORD_RULES.minLength, `${PASSWORD_RULES.minLength}자 이상이어야 합니다`)

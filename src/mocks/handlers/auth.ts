@@ -39,7 +39,7 @@ export const authHandlers = [
         { status: 400 }
       )
     }
-    return HttpResponse.json({ detail: '이메일 인증이 완료되었습니다.' })
+    return HttpResponse.json({ email_token: 'mock_email_token_verified' })
   }),
 
   // 이메일 로그인

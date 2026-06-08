@@ -41,9 +41,9 @@ export function AccountSection() {
     setConfirmError(undefined);
     setConfirmLoading(true);
     try {
-      await confirmEmailCode(emailField.value, code);
+      const { email_token } = await confirmEmailCode(emailField.value, code);
       setVerified(true);
-      setValue("emailVerified", true, { shouldValidate: true });
+      setValue("emailToken", email_token, { shouldValidate: true });
     } catch (e) {
       setConfirmError(isApiError(e) && typeof e.detail === "string" ? e.detail : "코드 확인에 실패했습니다.");
     } finally {
@@ -51,7 +51,7 @@ export function AccountSection() {
     }
   }
 
-  const codeTone = verified ? "primary" : (confirmError || errors.emailVerified?.message) ? "error" : "muted";
+  const codeTone = verified ? "primary" : (confirmError || errors.emailToken?.message) ? "error" : "muted";
 
   return (
     <>
@@ -91,7 +91,7 @@ export function AccountSection() {
         helperText={
           verified
             ? "이메일 인증이 완료되었습니다."
-            : confirmError ?? errors.emailVerified?.message
+            : confirmError ?? errors.emailToken?.message
         }
         helperTone={codeTone}
         disabled={verified}

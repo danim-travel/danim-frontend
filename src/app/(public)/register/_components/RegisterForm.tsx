@@ -17,7 +17,7 @@ export function RegisterForm() {
     resolver: zodResolver(signupSchema),
     defaultValues: {
       email: "",
-      emailVerified: false,
+      emailToken: "",
       password: "",
       passwordConfirm: "",
       nickname: "",
@@ -34,7 +34,7 @@ export function RegisterForm() {
     try {
       const birthDate = `${data.birthYear}-${data.birthMonth.padStart(2, "0")}-${data.birthDay.padStart(2, "0")}`;
       const response = await signup({
-        email: data.email,
+        email_token: data.emailToken,
         password: data.password,
         nickname: data.nickname,
         name: data.name,
