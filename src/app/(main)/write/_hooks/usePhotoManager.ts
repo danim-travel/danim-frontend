@@ -22,6 +22,8 @@ export function usePhotoManager({ spots, active, updateSpot }: UsePhotoManagerAr
   const [selectedPhotoIdx, setSelectedPhotoIdx] = useState(0)
   // 사진 업로드 중 여부
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false)
+  // 언마운트 후 setState/updateSpot 호출 방지
+  const aliveRef = useRef(true)
 
   // handlePhotoAdd는 async 함수라 클로저로 캡처된 spots가 업로드 완료 시점에 낡은 값일 수 있음 — ref로 항상 최신값 참조
   const spotsRef = useRef(spots)
@@ -32,6 +34,7 @@ export function usePhotoManager({ spots, active, updateSpot }: UsePhotoManagerAr
 
   useEffect(() => {
     return () => {
+      aliveRef.current = false
       spotsRef.current.forEach((s) => s.previewUrls.forEach((url) => URL.revokeObjectURL(url)))
     }
   }, []) // 언마운트 시 1회만 실행
@@ -64,6 +67,11 @@ export function usePhotoManager({ spots, active, updateSpot }: UsePhotoManagerAr
         })
       )
 
+      if (!aliveRef.current) {
+        uploaded.forEach(({ previewUrl }) => URL.revokeObjectURL(previewUrl))
+        return
+      }
+
       // 업로드는 async라 완료될 때쯤엔 사용자가 다른 spot으로 탭을 전환했을 수 있음 -> 의도한 spot에서만 작동
       const targetSpot = spotsRef.current.find((s) => s.id === targetSpotId)
       if (targetSpot) {
@@ -87,7 +95,9 @@ export function usePhotoManager({ spots, active, updateSpot }: UsePhotoManagerAr
       }))
     } finally {
       e.target.value = ''
-      setIsUploadingPhoto(false)
+      if (aliveRef.current) {
+        setIsUploadingPhoto(false)
+      }
     }
   }
 

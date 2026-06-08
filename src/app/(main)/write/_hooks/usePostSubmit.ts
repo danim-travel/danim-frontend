@@ -38,7 +38,7 @@ export function usePostSubmit({ title, spots, thumbnailKey }: UsePostSubmitArgs)
       await apiClient.post('v1/posts', { json: payload }).json<DetailResponse>()
       // 탐색 페이지·마이페이지에 새 게시글 즉시 반영
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.posts.explore() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.posts.exploreBase }),
         ...(userId ? [queryClient.invalidateQueries({ queryKey: queryKeys.users.profile(userId) })] : []),
       ])
       return true
