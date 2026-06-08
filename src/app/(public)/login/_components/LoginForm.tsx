@@ -54,13 +54,12 @@ export function LoginForm() {
 
   return (
     <>
-      {/* 소셜 로그인 — 공식 브랜드 색상(#FEE500 등)은 디자인 토큰 대상이 아님 */}
       <div className="flex flex-col gap-2">
         <Button
           type="button"
           variant="secondary"
           fullWidth
-          className="h-[52px] text-base font-bold bg-[#FEE500] text-[#191600] border-none shadow-none hover:opacity-90"
+          className="h-[52px] text-base font-bold bg-kakao text-kakao-fg border-none shadow-none hover:opacity-90"
           onClick={() => handleSocialLogin("kakao")}
         >
           카카오톡으로 계속하기
