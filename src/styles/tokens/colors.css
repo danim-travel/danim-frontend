@@ -31,6 +31,10 @@
   --color-white: #FFFFFF;
   --color-black: #000000;
 
+  /* ── Brand: Social ──────────────────────────── */
+  --color-kakao:    #FEE500;
+  --color-kakao-fg: #191600;
+
   /* ── Semantic: Primary ──────────────────────── */
   --color-primary:        var(--color-mint-500);
   --color-primary-hover:  var(--color-mint-600);

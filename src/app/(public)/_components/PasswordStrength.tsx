@@ -1,10 +1,12 @@
+import { PASSWORD_RULES } from "../_constants/passwordValidation";
+
 function getPwStrength(pw: string): { score: number; label: string; bar: string; text: string } {
   if (!pw) return { score: 0, label: "", bar: "", text: "" };
   let s = 0;
-  if (pw.length >= 8) s++;
-  if (/[a-zA-Z]/.test(pw)) s++;
-  if (/[0-9]/.test(pw)) s++;
-  if (/[^a-zA-Z0-9]/.test(pw)) s++;
+  if (pw.length >= PASSWORD_RULES.minLength) s++;
+  if (PASSWORD_RULES.hasLetter.test(pw)) s++;
+  if (PASSWORD_RULES.hasNumber.test(pw)) s++;
+  if (PASSWORD_RULES.hasSpecial.test(pw)) s++;
   if (s <= 1) return { score: 1, label: "약함", bar: "bg-error", text: "text-error" };
   if (s === 2) return { score: 2, label: "보통", bar: "bg-warning", text: "text-warning" };
   if (s === 3) return { score: 3, label: "강함", bar: "bg-primary", text: "text-primary" };
@@ -32,7 +34,7 @@ export function PasswordStrength({ value }: PasswordStrengthProps) {
           />
         ))}
       </div>
-      <span className={`text-caption font-semibold whitespace-nowrap ${strength.text}`}>{strength.label}</span>
+      <span className={`text-caption font-semibold w-14 text-right shrink-0 ${strength.text}`}>{strength.label}</span>
     </div>
   );
 }

@@ -15,6 +15,7 @@ export interface VerificationFieldProps extends React.InputHTMLAttributes<HTMLIn
   onAction?: () => void;
   actionVariant?: ButtonVariant;
   actionDisabled?: boolean;
+  actionLoading?: boolean;
   /** 입력 행 아래 안내 문구 (예: 타이머) */
   helperText?: string;
   helperTone?: VerificationHelperTone;
@@ -34,6 +35,7 @@ export function VerificationField({
   onAction,
   actionVariant = "primary",
   actionDisabled,
+  actionLoading,
   helperText,
   helperTone = "primary",
   className,
@@ -56,6 +58,7 @@ export function VerificationField({
           size="lg"
           onClick={onAction}
           disabled={actionDisabled}
+          loading={actionLoading}
           className="shrink-0 whitespace-nowrap"
         >
           {actionLabel}
