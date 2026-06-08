@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useFormContext, useController } from "react-hook-form";
 import { TextField, PasswordField, VerificationField } from "@/components/common";
 import { PasswordStrength } from "../../_components";
+import { PASSWORD_RULES } from "../../_constants/passwordValidation";
 import { requestEmailVerify, confirmEmailCode } from "@/lib/api/auth";
 import { isApiError } from "@/lib/apiClient";
 import { toast } from "@/store/toastStore";
@@ -103,6 +104,7 @@ export function AccountSection() {
           autoComplete="new-password"
           placeholder="8자 이상, 영문 + 숫자 + 특수문자 조합"
           className="h-12"
+          maxLength={PASSWORD_RULES.maxLength}
           {...passwordField}
           error={errors.password?.message}
         />

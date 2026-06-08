@@ -44,3 +44,18 @@ export interface SignupResponse {
 export interface TokenRefreshResponse {
   access_token: string
 }
+
+export interface LoginRequest {
+  email: string
+  password: string
+}
+
+export interface LoginResponse {
+  access_token: string
+}
+
+export interface MeResponse {
+  user_id: string
+  nickname: string
+  profile_img: string | null
+}

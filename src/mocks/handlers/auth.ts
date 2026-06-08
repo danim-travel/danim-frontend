@@ -1,6 +1,6 @@
 /**
  * 인증 관련 Mock 핸들러.
- * signup / email-verify / token-refresh / me-refresh 엔드포인트를 처리한다.
+ * signup / email-verify / login / me / token-refresh / me-refresh 엔드포인트를 처리한다.
  */
 import { http, HttpResponse } from 'msw'
 import { MOCK_USER, MOCK_ACCESS_TOKEN } from '../constants'
@@ -40,6 +40,27 @@ export const authHandlers = [
       )
     }
     return HttpResponse.json({ detail: '이메일 인증이 완료되었습니다.' })
+  }),
+
+  // 이메일 로그인
+  http.post('*/v1/users/login', async ({ request }) => {
+    const body = await request.json() as { email?: string; password?: string }
+    if (!body.email || !body.password) {
+      return HttpResponse.json(
+        { error_detail: '이메일 또는 비밀번호를 입력해주세요.' },
+        { status: 400 }
+      )
+    }
+    return HttpResponse.json({ access_token: MOCK_ACCESS_TOKEN })
+  }),
+
+  // 내 정보 조회
+  http.get('*/v1/users/me', () => {
+    return HttpResponse.json({
+      user_id: MOCK_USER.userId,
+      nickname: MOCK_USER.nickname,
+      profile_img: MOCK_USER.profileImg,
+    })
   }),
 
   // accessToken 재발급 (refreshToken 쿠키 기반)
