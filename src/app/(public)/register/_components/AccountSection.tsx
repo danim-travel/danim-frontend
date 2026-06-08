@@ -27,6 +27,7 @@ export function AccountSection() {
     try {
       await requestEmailVerify(emailField.value);
       setCodeSent(true);
+      setCode("");
       toast.success("인증코드가 이메일로 발송되었습니다.");
     } catch {
       toast.error("인증코드 발송에 실패했습니다. 다시 시도해주세요.");
@@ -41,9 +42,9 @@ export function AccountSection() {
     try {
       await confirmEmailCode(emailField.value, code);
       setVerified(true);
-      setValue("emailVerified", true);
+      setValue("emailVerified", true, { shouldValidate: true });
     } catch (e) {
-      setConfirmError(isApiError(e) ? String(e.detail) : "코드 확인에 실패했습니다.");
+      setConfirmError(isApiError(e) && typeof e.detail === "string" ? e.detail : "코드 확인에 실패했습니다.");
     } finally {
       setConfirmLoading(false);
     }
@@ -59,6 +60,12 @@ export function AccountSection() {
         autoComplete="email"
         placeholder="이메일 주소를 입력해주세요"
         {...emailField}
+        onChange={(e) => {
+          emailField.onChange(e);
+          setCodeSent(false);
+          setCode("");
+          setConfirmError(undefined);
+        }}
         actionLabel={codeSent ? "재요청" : "인증 요청"}
         actionVariant="primary"
         actionDisabled={requestLoading || verified}

@@ -55,6 +55,7 @@ export function ProfileSection() {
                 aria-label="출생 월"
                 className={INPUT_CLASS}
                 {...birthMonthField}
+                onChange={(e) => birthMonthField.onChange(e.target.value.replace(/\D/g, ""))}
               />
             </div>
             <div className="flex-1">
@@ -66,6 +67,7 @@ export function ProfileSection() {
                 aria-label="출생 일"
                 className={INPUT_CLASS}
                 {...birthDayField}
+                onChange={(e) => birthDayField.onChange(e.target.value.replace(/\D/g, ""))}
               />
             </div>
           </div>
