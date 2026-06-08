@@ -24,7 +24,7 @@ export type PostDetail = {
   post: {
     post_id: string
     title: string
-    content: string
+    description: string
     thumbnail: string
     created_at: string
   }
@@ -71,9 +71,9 @@ export type CreatePostSpot = {
 
 export type CreatePostRequest = {
   title: string
+  description: string
   thumbnail: string
   spots: CreatePostSpot[]
-  // content 필드 없음 (의도적으로 제거됨)
 }
 
 // presigned URL 타입

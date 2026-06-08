@@ -10,7 +10,7 @@ const mockPostDetail: PostDetail = {
   post: {
     post_id: 'showcase-post',
     title: '제주도 동쪽 드라이브',
-    content: '성산일출봉부터 섭지코지까지 이어지는 코스예요.',
+    description: '성산일출봉부터 섭지코지까지 이어지는 코스예요.',
     thumbnail: 'https://picsum.photos/seed/jeju/480/320',
     created_at: '2026-05-28T11:45:00Z',
   },
