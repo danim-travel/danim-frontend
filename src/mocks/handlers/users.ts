@@ -5,7 +5,7 @@ import { http, HttpResponse } from 'msw'
 import type { UserProfilePost, UserProfileResponse } from '@/types'
 
 const mockPosts: UserProfilePost[] = Array.from({ length: 20 }, (_, i) => ({
-  post_id: i + 1,
+  post_id: `01HZXK9P${String(i + 1).padStart(2, '0')}ABCDEFGHJKLMNPQRST`,
   title: `여행 기록 ${i + 1}`,
   thumbnail: `https://picsum.photos/seed/userpost${i + 1}/480/480`,
 }))

@@ -4,7 +4,7 @@
  */
 
 export type UserProfilePost = {
-  post_id: number
+  post_id: string
   title: string
   thumbnail: string
 }
@@ -12,7 +12,7 @@ export type UserProfilePost = {
 export type UserProfileResponse = {
   name: string
   nickname: string
-  profile_img: string
+  profile_img: string | null
   intro: string
   follower: number
   following: number
