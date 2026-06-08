@@ -21,6 +21,10 @@ export async function refreshToken(): Promise<TokenRefreshResponse> {
   return publicClient.post('v1/users/token/refresh').json<TokenRefreshResponse>()
 }
 
+export async function refreshMeToken(): Promise<TokenRefreshResponse> {
+  return publicClient.post('v1/users/me/refresh').json<TokenRefreshResponse>()
+}
+
 export async function login(data: LoginRequest): Promise<LoginResponse> {
   return publicClient.post('v1/users/login', { json: data }).json<LoginResponse>()
 }

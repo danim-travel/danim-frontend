@@ -1,9 +1,9 @@
 "use client";
 import { useFormContext, useController } from "react-hook-form";
 import { TextField, FieldLabel } from "@/components/common";
+import { NICKNAME_RULES } from "../../_constants/passwordValidation";
 import type { RegisterFormValues } from "../_schema";
 
-const NICK_MAX = 20;
 const INPUT_CLASS = "h-12 text-center px-2";
 
 export function ProfileSection() {
@@ -72,7 +72,7 @@ export function ProfileSection() {
             </div>
           </div>
           {birthDateError && (
-            <span className="block mt-2 text-caption text-(--input-text-error)">{birthDateError}</span>
+            <span className="block mt-2 text-caption text-error">{birthDateError}</span>
           )}
         </div>
       </div>
@@ -85,10 +85,10 @@ export function ProfileSection() {
         error={errors.nickname?.message}
         className="h-12"
         {...nicknameField}
-        onChange={(e) => nicknameField.onChange(e.target.value.replace(/[^a-zA-Z0-9가-힣]/g, "").slice(0, NICK_MAX))}
+        onChange={(e) => nicknameField.onChange(e.target.value.replace(NICKNAME_RULES.inputFilter, "").slice(0, NICKNAME_RULES.maxLength))}
         rightSlot={
           <span className="text-caption text-text-disabled whitespace-nowrap">
-            {nicknameField.value.length} / {NICK_MAX}
+            {nicknameField.value.length} / {NICKNAME_RULES.maxLength}
           </span>
         }
       />

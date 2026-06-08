@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { PASSWORD_RULES } from "../_constants/passwordValidation";
+import { PASSWORD_RULES, NICKNAME_RULES } from "../_constants/passwordValidation";
 
 export const signupSchema = z
   .object({
@@ -15,9 +15,9 @@ export const signupSchema = z
     passwordConfirm: z.string().min(1, "비밀번호 확인을 입력해주세요"),
     nickname: z
       .string()
-      .min(2, "2자 이상이어야 합니다")
-      .max(20, "20자 이하여야 합니다")
-      .regex(/^[a-zA-Z0-9가-힣]+$/, "영문, 한글, 숫자만 사용할 수 있습니다"),
+      .min(NICKNAME_RULES.minLength, `${NICKNAME_RULES.minLength}자 이상이어야 합니다`)
+      .max(NICKNAME_RULES.maxLength, `${NICKNAME_RULES.maxLength}자 이하여야 합니다`)
+      .regex(NICKNAME_RULES.pattern, "영문, 한글, 숫자만 사용할 수 있습니다"),
     name: z.string().min(1, "이름을 입력해주세요"),
     birthYear: z.string().regex(/^\d{4}$/, "연도(YYYY)를 입력해주세요"),
     birthMonth: z.string().regex(/^(0?[1-9]|1[0-2])$/, "월(MM)을 입력해주세요"),

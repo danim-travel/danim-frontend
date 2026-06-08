@@ -1,8 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { publicClient } from "@/lib/apiClient";
-import { getCurrentUser } from "@/lib/api/auth";
+import { getCurrentUser, refreshMeToken } from "@/lib/api/auth";
 import { useAuthStore } from "@/store/authStore";
 import { toast } from "@/store/toastStore";
 
@@ -21,9 +20,7 @@ export function SocialCallbackHandler() {
 
     async function handleCallback() {
       try {
-        const { access_token } = await publicClient
-          .post("v1/users/me/refresh")
-          .json<{ access_token: string }>();
+        const { access_token } = await refreshMeToken();
         useAuthStore.getState().setToken(access_token);
         const me = await getCurrentUser();
         useAuthStore.getState().setAuth(

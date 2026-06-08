@@ -34,11 +34,9 @@ export function LoginForm() {
   }
 
   const onSubmit = handleSubmit(async (data) => {
-    const authStore = useAuthStore.getState();
-
-try {
-  const { access_token } = await login(data);
-  authStore.setToken(access_token);
+    try {
+      const { access_token } = await login(data);
+      useAuthStore.getState().setToken(access_token);
       const me = await getCurrentUser();
       useAuthStore.getState().setAuth(
         { userId: me.user_id, nickname: me.nickname, profileImg: me.profile_img },
@@ -47,7 +45,6 @@ try {
       router.push("/");
     } catch (e) {
       useAuthStore.getState().clearAuth();
-    
       if (isApiError(e)) {
         toast.error(typeof e.detail === "string" ? e.detail : "이메일 또는 비밀번호를 확인해주세요.");
       } else {

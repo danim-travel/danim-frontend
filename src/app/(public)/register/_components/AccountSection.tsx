@@ -1,12 +1,9 @@
 "use client";
-import { useState } from "react";
 import { useFormContext, useController } from "react-hook-form";
 import { TextField, PasswordField, VerificationField } from "@/components/common";
 import { PasswordStrength } from "../../_components";
 import { PASSWORD_RULES } from "../../_constants/passwordValidation";
-import { requestEmailVerify, confirmEmailCode } from "@/lib/api/auth";
-import { isApiError } from "@/lib/apiClient";
-import { toast } from "@/store/toastStore";
+import { useEmailVerification } from "../_hooks/useEmailVerification";
 import type { RegisterFormValues } from "../_schema";
 
 export function AccountSection() {
@@ -16,42 +13,19 @@ export function AccountSection() {
   const { field: passwordField } = useController({ control, name: "password" });
   const { field: passwordConfirmField } = useController({ control, name: "passwordConfirm" });
 
-  const [code, setCode] = useState("");
-  const [codeSent, setCodeSent] = useState(false);
-  const [verified, setVerified] = useState(false);
-  const [requestLoading, setRequestLoading] = useState(false);
-  const [confirmLoading, setConfirmLoading] = useState(false);
-  const [confirmError, setConfirmError] = useState<string>();
+  const {
+    code, setCode, codeSent, verified,
+    requestLoading, confirmLoading, confirmError,
+    requestVerify, confirmCode, resetVerification,
+  } = useEmailVerification({
+    onVerified: (emailToken) => setValue("emailToken", emailToken, { shouldValidate: true }),
+  });
 
-  async function handleRequestVerify() {
-    setRequestLoading(true);
-    try {
-      await requestEmailVerify(emailField.value);
-      setCodeSent(true);
-      setCode("");
-      toast.success("인증코드가 이메일로 발송되었습니다.");
-    } catch {
-      toast.error("인증코드 발송에 실패했습니다. 다시 시도해주세요.");
-    } finally {
-      setRequestLoading(false);
-    }
+  function getCodeFieldTone() {
+    if (verified) return "primary" as const;
+    if (confirmError || errors.emailToken?.message) return "error" as const;
+    return "muted" as const;
   }
-
-  async function handleConfirmCode() {
-    setConfirmError(undefined);
-    setConfirmLoading(true);
-    try {
-      const { email_token } = await confirmEmailCode(emailField.value, code);
-      setVerified(true);
-      setValue("emailToken", email_token, { shouldValidate: true });
-    } catch (e) {
-      setConfirmError(isApiError(e) && typeof e.detail === "string" ? e.detail : "코드 확인에 실패했습니다.");
-    } finally {
-      setConfirmLoading(false);
-    }
-  }
-
-  const codeTone = verified ? "primary" : (confirmError || errors.emailToken?.message) ? "error" : "muted";
 
   return (
     <>
@@ -63,15 +37,13 @@ export function AccountSection() {
         {...emailField}
         onChange={(e) => {
           emailField.onChange(e);
-          setCodeSent(false);
-          setCode("");
-          setConfirmError(undefined);
+          resetVerification();
         }}
         actionLabel={codeSent ? "재요청" : "인증 요청"}
         actionVariant="primary"
         actionDisabled={requestLoading || verified}
         actionLoading={requestLoading}
-        onAction={handleRequestVerify}
+        onAction={() => requestVerify(emailField.value)}
         helperText={errors.email?.message}
         helperTone="error"
         disabled={verified}
@@ -87,13 +59,13 @@ export function AccountSection() {
         actionLabel={verified ? "완료" : "확인"}
         actionVariant="outline"
         actionDisabled={confirmLoading || verified || !codeSent}
-        onAction={handleConfirmCode}
+        onAction={() => confirmCode(emailField.value)}
         helperText={
           verified
             ? "이메일 인증이 완료되었습니다."
             : confirmError ?? errors.emailToken?.message
         }
-        helperTone={codeTone}
+        helperTone={getCodeFieldTone()}
         disabled={verified}
       />
 
