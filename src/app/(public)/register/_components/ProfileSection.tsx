@@ -1,40 +1,23 @@
 "use client";
+import { useFormContext, useController } from "react-hook-form";
 import { TextField, FieldLabel } from "@/components/common";
+import type { RegisterFormValues } from "../_schema";
 
 const NICK_MAX = 20;
 const INPUT_CLASS = "h-12 text-center px-2";
 
-export interface ProfileSectionProps {
-  nickname: string;
-  onNicknameChange: (value: string) => void;
-  nicknameError?: string;
-  name: string;
-  onNameChange: (value: string) => void;
-  nameError?: string;
-  birthYear: string;
-  onBirthYearChange: (value: string) => void;
-  birthMonth: string;
-  onBirthMonthChange: (value: string) => void;
-  birthDay: string;
-  onBirthDayChange: (value: string) => void;
-  birthDateError?: string;
-}
+export function ProfileSection() {
+  const { control, formState: { errors } } = useFormContext<RegisterFormValues>();
 
-export function ProfileSection({
-  nickname,
-  onNicknameChange,
-  nicknameError,
-  name,
-  onNameChange,
-  nameError,
-  birthYear,
-  onBirthYearChange,
-  birthMonth,
-  onBirthMonthChange,
-  birthDay,
-  onBirthDayChange,
-  birthDateError,
-}: ProfileSectionProps) {
+  const { field: nicknameField } = useController({ control, name: "nickname" });
+  const { field: nameField } = useController({ control, name: "name" });
+  const { field: birthYearField } = useController({ control, name: "birthYear" });
+  const { field: birthMonthField } = useController({ control, name: "birthMonth" });
+  const { field: birthDayField } = useController({ control, name: "birthDay" });
+
+  const birthDateError =
+    errors.birthYear?.message || errors.birthMonth?.message || errors.birthDay?.message;
+
   return (
     <div className="flex flex-col gap-5 pt-7 border-t border-border-subtle">
       <div className="grid grid-cols-2 gap-4">
@@ -44,9 +27,8 @@ export function ProfileSection({
           type="text"
           placeholder="실명을 입력해주세요"
           className="h-12"
-          value={name}
-          onChange={(e) => onNameChange(e.target.value)}
-          error={nameError}
+          {...nameField}
+          error={errors.name?.message}
         />
         <div>
           <FieldLabel htmlFor="birthdate-year">생년월일</FieldLabel>
@@ -60,8 +42,8 @@ export function ProfileSection({
                 placeholder="YYYY"
                 aria-label="출생 연도"
                 className={INPUT_CLASS}
-                value={birthYear}
-                onChange={(e) => onBirthYearChange(e.target.value.replace(/\D/g, ""))}
+                {...birthYearField}
+                onChange={(e) => birthYearField.onChange(e.target.value.replace(/\D/g, ""))}
               />
             </div>
             <div className="flex-1">
@@ -72,8 +54,7 @@ export function ProfileSection({
                 placeholder="MM"
                 aria-label="출생 월"
                 className={INPUT_CLASS}
-                value={birthMonth}
-                onChange={(e) => onBirthMonthChange(e.target.value)}
+                {...birthMonthField}
               />
             </div>
             <div className="flex-1">
@@ -84,8 +65,7 @@ export function ProfileSection({
                 placeholder="DD"
                 aria-label="출생 일"
                 className={INPUT_CLASS}
-                value={birthDay}
-                onChange={(e) => onBirthDayChange(e.target.value)}
+                {...birthDayField}
               />
             </div>
           </div>
@@ -98,15 +78,15 @@ export function ProfileSection({
       <TextField
         label="닉네임"
         required
-        value={nickname}
-        onChange={(e) => onNicknameChange(e.target.value.replace(/[^a-zA-Z0-9가-힣]/g, "").slice(0, NICK_MAX))}
         placeholder="영문, 한글, 숫자 2~20자"
-        helperText={nicknameError ? undefined : "다른 사용자에게 보이는 이름이에요. 나중에 변경할 수 있어요."}
-        error={nicknameError}
+        helperText={errors.nickname?.message ? undefined : "다른 사용자에게 보이는 이름이에요. 나중에 변경할 수 있어요."}
+        error={errors.nickname?.message}
         className="h-12"
+        {...nicknameField}
+        onChange={(e) => nicknameField.onChange(e.target.value.replace(/[^a-zA-Z0-9가-힣]/g, "").slice(0, NICK_MAX))}
         rightSlot={
           <span className="text-caption text-text-disabled whitespace-nowrap">
-            {nickname.length} / {NICK_MAX}
+            {nicknameField.value.length} / {NICK_MAX}
           </span>
         }
       />

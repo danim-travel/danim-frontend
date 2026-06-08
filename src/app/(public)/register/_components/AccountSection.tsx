@@ -1,39 +1,20 @@
 "use client";
 import { useState } from "react";
+import { useFormContext, useController } from "react-hook-form";
 import { TextField, PasswordField, VerificationField } from "@/components/common";
 import { PasswordStrength } from "../../_components";
 import { requestEmailVerify, confirmEmailCode } from "@/lib/api/auth";
 import { isApiError } from "@/lib/apiClient";
 import { toast } from "@/store/toastStore";
+import type { RegisterFormValues } from "../_schema";
 
-export interface AccountSectionProps {
-  email: string;
-  onEmailChange: (value: string) => void;
-  emailError?: string;
-  password: string;
-  onPasswordChange: (value: string) => void;
-  passwordError?: string;
-  passwordConfirm: string;
-  onPasswordConfirmChange: (value: string) => void;
-  passwordConfirmError?: string;
-  /** 이메일 인증 완료 시 호출 — RegisterForm이 emailVerified 필드를 true로 설정 */
-  onEmailVerified: () => void;
-  emailVerifiedError?: string;
-}
+export function AccountSection() {
+  const { control, setValue, formState: { errors } } = useFormContext<RegisterFormValues>();
 
-export function AccountSection({
-  email,
-  onEmailChange,
-  emailError,
-  password,
-  onPasswordChange,
-  passwordError,
-  passwordConfirm,
-  onPasswordConfirmChange,
-  passwordConfirmError,
-  onEmailVerified,
-  emailVerifiedError,
-}: AccountSectionProps) {
+  const { field: emailField } = useController({ control, name: "email" });
+  const { field: passwordField } = useController({ control, name: "password" });
+  const { field: passwordConfirmField } = useController({ control, name: "passwordConfirm" });
+
   const [code, setCode] = useState("");
   const [codeSent, setCodeSent] = useState(false);
   const [verified, setVerified] = useState(false);
@@ -44,7 +25,7 @@ export function AccountSection({
   async function handleRequestVerify() {
     setRequestLoading(true);
     try {
-      await requestEmailVerify(email);
+      await requestEmailVerify(emailField.value);
       setCodeSent(true);
       toast.success("인증코드가 이메일로 발송되었습니다.");
     } catch {
@@ -58,15 +39,17 @@ export function AccountSection({
     setConfirmError(undefined);
     setConfirmLoading(true);
     try {
-      await confirmEmailCode(email, code);
+      await confirmEmailCode(emailField.value, code);
       setVerified(true);
-      onEmailVerified();
+      setValue("emailVerified", true);
     } catch (e) {
       setConfirmError(isApiError(e) ? String(e.detail) : "코드 확인에 실패했습니다.");
     } finally {
       setConfirmLoading(false);
     }
   }
+
+  const codeTone = verified ? "primary" : (confirmError || errors.emailVerified?.message) ? "error" : "muted";
 
   return (
     <>
@@ -75,14 +58,13 @@ export function AccountSection({
         type="email"
         autoComplete="email"
         placeholder="이메일 주소를 입력해주세요"
-        value={email}
-        onChange={(e) => onEmailChange(e.target.value)}
+        {...emailField}
         actionLabel={codeSent ? "재요청" : "인증 요청"}
         actionVariant="primary"
         actionDisabled={requestLoading || verified}
         actionLoading={requestLoading}
         onAction={handleRequestVerify}
-        helperText={emailError}
+        helperText={errors.email?.message}
         helperTone="error"
         disabled={verified}
       />
@@ -101,11 +83,9 @@ export function AccountSection({
         helperText={
           verified
             ? "이메일 인증이 완료되었습니다."
-            : confirmError ?? emailVerifiedError
+            : confirmError ?? errors.emailVerified?.message
         }
-        helperTone={
-          verified ? "primary" : confirmError || emailVerifiedError ? "error" : "muted"
-        }
+        helperTone={codeTone}
         disabled={verified}
       />
 
@@ -114,13 +94,12 @@ export function AccountSection({
           label="비밀번호"
           required
           autoComplete="new-password"
-          value={password}
-          onChange={(e) => onPasswordChange(e.target.value)}
           placeholder="8자 이상, 영문 + 숫자 + 특수문자 조합"
           className="h-12"
-          error={passwordError}
+          {...passwordField}
+          error={errors.password?.message}
         />
-        <PasswordStrength value={password} />
+        <PasswordStrength value={passwordField.value} />
       </div>
 
       <TextField
@@ -130,9 +109,8 @@ export function AccountSection({
         autoComplete="new-password"
         placeholder="비밀번호를 다시 입력해주세요"
         className="h-12"
-        value={passwordConfirm}
-        onChange={(e) => onPasswordConfirmChange(e.target.value)}
-        error={passwordConfirmError}
+        {...passwordConfirmField}
+        error={errors.passwordConfirm?.message}
       />
     </>
   );
