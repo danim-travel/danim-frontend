@@ -25,6 +25,20 @@ export function isApiError(error: unknown): error is ApiError {
   )
 }
 
+// ApiError에서 토스트에 표시할 메시지를 추출한다.
+// error_detail이 문자열이면 그대로, 객체(필드 에러)면 fallback 사용.
+// ApiError가 아니거나 detail이 없으면 status 범위(4xx/5xx)에 따라 fallback을 반환한다.
+export function getApiErrorMessage(
+  err: unknown,
+  fallback: { client: string; server: string }
+): string {
+  if (isApiError(err)) {
+    if (typeof err.detail === 'string' && err.detail) return err.detail
+    return err.status >= 500 ? fallback.server : fallback.client
+  }
+  return fallback.server
+}
+
 // 인증 헤더가 붙지 않는 클라이언트. 로그인·회원가입·refresh처럼 access_token이 없는 상태에서 호출하는 엔드포인트 전용.
 export const publicClient = ky.create({
   prefixUrl: config.apiUrl,
