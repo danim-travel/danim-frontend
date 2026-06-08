@@ -25,6 +25,19 @@ export function isApiError(error: unknown): error is ApiError {
   )
 }
 
+// ApiError에서 사용자에게 보여줄 메시지를 추출한다.
+// detail이 문자열이면 그대로, 아니면 status 기준으로 fallback을 선택한다.
+export function getApiErrorMessage(
+  err: unknown,
+  fallback: { client: string; server: string }
+): string {
+  if (isApiError(err)) {
+    if (typeof err.detail === 'string' && err.detail) return err.detail
+    return err.status >= 500 ? fallback.server : fallback.client
+  }
+  return fallback.server
+}
+
 // 에러 응답 body를 ApiError로 정규화하는 훅. publicClient·apiClient 양쪽에 공유된다.
 const normalizeErrorHook = [
   async (error: HTTPError) => {
