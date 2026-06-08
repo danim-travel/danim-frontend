@@ -58,7 +58,7 @@ export interface LoginResponse {
   access_token: string
 }
 
-export interface MeResponse {
+export interface CurrentUserResponse {
   user_id: string
   nickname: string
   profile_img: string | null

@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button, TextField, PasswordField } from "@/components/common";
-import { login, getMe } from "@/lib/api/auth";
+import { login, getCurrentUser } from "@/lib/api/auth";
 import { useAuthStore } from "@/store/authStore";
 import { isApiError } from "@/lib/apiClient";
 import { toast } from "@/store/toastStore";
@@ -34,16 +34,20 @@ export function LoginForm() {
   }
 
   const onSubmit = handleSubmit(async (data) => {
-    try {
-      const { access_token } = await login(data);
-      useAuthStore.getState().setToken(access_token);
-      const me = await getMe();
+    const authStore = useAuthStore.getState();
+
+try {
+  const { access_token } = await login(data);
+  authStore.setToken(access_token);
+      const me = await getCurrentUser();
       useAuthStore.getState().setAuth(
         { userId: me.user_id, nickname: me.nickname, profileImg: me.profile_img },
         access_token
       );
       router.push("/");
     } catch (e) {
+      useAuthStore.getState().clearAuth();
+    
       if (isApiError(e)) {
         toast.error(typeof e.detail === "string" ? e.detail : "이메일 또는 비밀번호를 확인해주세요.");
       } else {

@@ -1,10 +1,10 @@
 "use client";
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { publicClient, apiClient } from "@/lib/apiClient";
+import { publicClient } from "@/lib/apiClient";
+import { getCurrentUser } from "@/lib/api/auth";
 import { useAuthStore } from "@/store/authStore";
 import { toast } from "@/store/toastStore";
-import type { MeResponse } from "@/types";
 
 export function SocialCallbackHandler() {
   const router = useRouter();
@@ -25,7 +25,7 @@ export function SocialCallbackHandler() {
           .post("v1/users/me/refresh")
           .json<{ access_token: string }>();
         useAuthStore.getState().setToken(access_token);
-        const me = await apiClient.get("v1/users/me").json<MeResponse>();
+        const me = await getCurrentUser();
         useAuthStore.getState().setAuth(
           { userId: me.user_id, nickname: me.nickname, profileImg: me.profile_img },
           access_token

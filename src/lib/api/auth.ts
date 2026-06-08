@@ -1,5 +1,5 @@
 import { publicClient, apiClient } from '@/lib/apiClient'
-import type { SignupRequest, SignupResponse, TokenRefreshResponse, LoginRequest, LoginResponse, MeResponse, ConfirmEmailResponse } from '@/types'
+import type { SignupRequest, SignupResponse, TokenRefreshResponse, LoginRequest, LoginResponse, CurrentUserResponse, ConfirmEmailResponse } from '@/types'
 
 export async function signup(data: SignupRequest): Promise<SignupResponse> {
   return publicClient.post('v1/users/signup', { json: data }).json<SignupResponse>()
@@ -25,6 +25,6 @@ export async function login(data: LoginRequest): Promise<LoginResponse> {
   return publicClient.post('v1/users/login', { json: data }).json<LoginResponse>()
 }
 
-export async function getMe(): Promise<MeResponse> {
-  return apiClient.get('v1/users/me').json<MeResponse>()
+export async function getCurrentUser(): Promise<CurrentUserResponse> {
+  return apiClient.get('v1/users/me').json<CurrentUserResponse>()
 }
