@@ -10,12 +10,13 @@ import SpotIndicatorBar from './_components/SpotIndicatorBar'
 import ThumbnailPicker from './_components/ThumbnailPicker'
 import WriteHeader from './_components/WriteHeader'
 import TitleSection from './_components/TitleSection'
+import DescriptionSection from './_components/DescriptionSection'
 import SpotContentSection from './_components/SpotContentSection'
 import { MAX_SPOTS } from './_constants'
 
 export default function WritePage() {
   const router = useRouter()
-  const { title, setTitle, spot, photo, submit } = useWriteForm()
+  const { title, setTitle, description, setDescription, spot, photo, submit } = useWriteForm()
 
   const { submitPost, canSubmit, isSubmitting } = submit
   const handleSubmit = useCallback(async () => {
@@ -49,6 +50,7 @@ export default function WritePage() {
         <div className="flex-1 overflow-y-auto">
           <div className="px-7 py-4 flex flex-col gap-4">
             <TitleSection title={title} setTitle={setTitle} />
+            <DescriptionSection description={description} setDescription={setDescription} />
 
             <SpotContentSection
               active={spot.active}
