@@ -4,10 +4,12 @@ import type { SpotFormData } from '../_types/write.types'
 
 export function buildPostPayload({
   title,
+  description,
   spots,
   thumbnailKey,
 }: {
   title: string
+  description: string
   spots: SpotFormData[]
   thumbnailKey: string
 }): CreatePostRequest {
@@ -15,6 +17,7 @@ export function buildPostPayload({
   const validSpots = spots.filter((s) => s.location !== null)
   return {
     title: title.trim(),
+    description: description.trim(),
     thumbnail: thumbnailKey,
     spots: validSpots.map((s, i) => ({
       order: i + 1,

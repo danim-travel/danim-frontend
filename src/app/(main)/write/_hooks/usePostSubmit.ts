@@ -12,11 +12,12 @@ import { buildPostPayload } from '../_helpers/postPayload.helper'
 
 type UsePostSubmitArgs = {
   title: string
+  description: string
   spots: SpotFormData[]
   thumbnailKey: string | null
 }
 
-export function usePostSubmit({ title, spots, thumbnailKey }: UsePostSubmitArgs) {
+export function usePostSubmit({ title, description, spots, thumbnailKey }: UsePostSubmitArgs) {
   const queryClient = useQueryClient()
   const userId = useAuthStore((s) => s.user?.userId)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -24,6 +25,7 @@ export function usePostSubmit({ title, spots, thumbnailKey }: UsePostSubmitArgs)
   // 제목 입력, 위치가 있는 스팟 존재, 썸네일 선택 모두 충족해야 제출 가능
   const canSubmit =
     title.trim().length > 0 &&
+    description.trim().length > 0 &&
     spots.some((s) => s.location !== null) &&
     thumbnailKey !== null &&
     !isSubmitting
@@ -32,7 +34,7 @@ export function usePostSubmit({ title, spots, thumbnailKey }: UsePostSubmitArgs)
     if (isSubmitting || !canSubmit) return false
     setIsSubmitting(true)
     // canSubmit이 thumbnailKey !== null을 보장하므로 타입 단언 사용
-    const payload = buildPostPayload({ title, spots, thumbnailKey: thumbnailKey! })
+    const payload = buildPostPayload({ title, description, spots, thumbnailKey: thumbnailKey! })
 
     try {
       await apiClient.post('v1/posts', { json: payload }).json<DetailResponse>()

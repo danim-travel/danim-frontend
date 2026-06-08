@@ -9,6 +9,7 @@ export type { SpotFormData } from '../_types/write.types'
 
 export function useWriteForm() {
   const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
 
   // 스팟 목록 CRUD + 활성 스팟 관리
   const spot = useSpotManager()
@@ -21,6 +22,7 @@ export function useWriteForm() {
   // 게시글 제출 가능 여부 판단 + API 호출
   const submit = usePostSubmit({
     title,
+    description,
     spots: spot.spots,
     thumbnailKey: photo.thumbnailKey,
   })
@@ -36,6 +38,8 @@ export function useWriteForm() {
   return {
     title,
     setTitle,
+    description,
+    setDescription,
     spot: {
       spots: spot.spots,
       activeId: spot.activeId,
