@@ -47,10 +47,7 @@ export function usePostSubmit({ title, description, spots, thumbnailKey }: UsePo
       return true
     } catch (err) {
       console.error('게시글 작성 실패:', err)
-      toast.error(getApiErrorMessage(err, {
-        client: '게시글 작성에 실패했습니다.',
-        server: '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
-      }))
+      toast.error(getApiErrorMessage(err, { client: '게시글 작성에 실패했습니다.' }))
       return false
     } finally {
       setIsSubmitting(false)

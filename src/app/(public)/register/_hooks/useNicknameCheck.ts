@@ -22,10 +22,7 @@ export function useNicknameCheck() {
     } catch (e) {
       setResult({
         ok: false,
-        message: getApiErrorMessage(e, {
-          client: "중복된 닉네임입니다.",
-          server: "잠시 후 다시 시도해주세요.",
-        }),
+        message: getApiErrorMessage(e, { client: "중복된 닉네임입니다." }),
       });
     } finally {
       setChecking(false);

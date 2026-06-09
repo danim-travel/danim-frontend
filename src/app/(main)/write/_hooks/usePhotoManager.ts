@@ -89,10 +89,7 @@ export function usePhotoManager({ spots, active, updateSpot }: UsePhotoManagerAr
       // 업로드 실패 시 미리 생성한 blob URL 전부 revoke
       pairs.forEach(({ previewUrl }) => URL.revokeObjectURL(previewUrl))
       console.error('사진 업로드 실패:', err)
-      toast.error(getApiErrorMessage(err, {
-        client: '사진 업로드에 실패했습니다.',
-        server: '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
-      }))
+      toast.error(getApiErrorMessage(err, { client: '사진 업로드에 실패했습니다.' }))
     } finally {
       e.target.value = ''
       if (aliveRef.current) {

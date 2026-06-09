@@ -44,10 +44,7 @@ export function RegisterForm() {
       toast.success("회원가입이 완료되었습니다. 로그인해주세요.");
       router.push("/login");
     } catch (e) {
-      toast.error(getApiErrorMessage(e, {
-        client: "입력 정보를 확인해주세요.",
-        server: "회원가입에 실패했습니다. 잠시 후 다시 시도해주세요.",
-      }));
+      toast.error(getApiErrorMessage(e, { client: "입력 정보를 확인해주세요." }));
     }
   });
 

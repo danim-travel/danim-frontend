@@ -28,10 +28,7 @@ export function useEmailVerification({ onVerified, purpose }: UseEmailVerificati
       setCode("");
       toast.success("인증코드가 이메일로 발송되었습니다.");
     } catch (e) {
-      toast.error(getApiErrorMessage(e, {
-        client: "인증코드 발송에 실패했습니다. 입력값을 확인해주세요.",
-        server: "인증코드 발송에 실패했습니다. 잠시 후 다시 시도해주세요.",
-      }));
+      toast.error(getApiErrorMessage(e, { client: "인증코드 발송에 실패했습니다. 입력값을 확인해주세요." }));
     } finally {
       setRequestLoading(false);
     }
@@ -46,10 +43,7 @@ export function useEmailVerification({ onVerified, purpose }: UseEmailVerificati
       setVerified(true);
       onVerified(email_token); // 발급된 토큰을 폼의 emailToken 필드에 주입
     } catch (e) {
-      setConfirmError(getApiErrorMessage(e, {
-        client: "코드 확인에 실패했습니다.",
-        server: "코드 확인에 실패했습니다.",
-      }));
+      setConfirmError(getApiErrorMessage(e, { client: "코드 확인에 실패했습니다." }));
     } finally {
       setConfirmLoading(false);
     }

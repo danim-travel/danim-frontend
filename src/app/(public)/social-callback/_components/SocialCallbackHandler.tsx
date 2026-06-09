@@ -30,10 +30,7 @@ export function SocialCallbackHandler() {
         );
         router.replace("/");
       } catch (e) {
-        toast.error(getApiErrorMessage(e, {
-          client: "소셜 로그인에 실패했습니다. 다시 시도해주세요.",
-          server: "소셜 로그인에 실패했습니다. 잠시 후 다시 시도해주세요.",
-        }));
+        toast.error(getApiErrorMessage(e, { client: "소셜 로그인에 실패했습니다. 다시 시도해주세요." }));
         router.replace("/login");
       }
     }
