@@ -10,7 +10,7 @@ const INPUT_CLASS = "h-12 text-center px-2";
 export function ProfileSection() {
   // FormProvider로 공유된 폼 컨텍스트에서 필요한 것만 꺼냄
   // control: 각 필드를 RHF에 연결 / errors: 필드 에러 메시지
-  const { control, formState: { errors } } = useFormContext<RegisterFormValues>();
+  const { control, setValue, formState: { errors } } = useFormContext<RegisterFormValues>();
 
   const { field: nicknameField } = useController({ control, name: "nickname" });
   const { field: nameField } = useController({ control, name: "name" });
@@ -100,15 +100,20 @@ export function ProfileSection() {
         onChange={(e) => {
           // 허용 문자 외 즉시 제거 + 최대 길이 제한
           nicknameField.onChange(e.target.value.replace(NICKNAME_RULES.inputFilter, "").slice(0, NICKNAME_RULES.maxLength));
-          resetNickname(); // 닉네임 변경 시 이전 중복확인 결과 초기화
+          resetNickname();
+          setValue("nicknameChecked", false, { shouldValidate: false });
         }}
         actionLabel="중복확인"
         actionVariant="outline"
-        actionDisabled={checking || !canCheck(nicknameField.value)} // 최소 길이 미만이면 비활성화
+        actionDisabled={checking || !canCheck(nicknameField.value)}
         actionLoading={checking}
-        onAction={() => checkDuplicate(nicknameField.value)}
+        onAction={async () => {
+          const ok = await checkDuplicate(nicknameField.value);
+          setValue("nicknameChecked", ok, { shouldValidate: true });
+        }}
         helperText={
           errors.nickname?.message ??
+          errors.nicknameChecked?.message ??
           (nicknameResult ? nicknameResult.message : "다른 사용자에게 보이는 이름이에요. 나중에 변경할 수 있어요.")
         }
         helperTone={nicknameHelperTone}

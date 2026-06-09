@@ -25,9 +25,9 @@ export const DEFAULT_DURATION = 3000;
 
 // 동일 메시지 중복 시 더 높은 우선순위 variant로 교체
 const VARIANT_PRIORITY: Record<ToastVariant, number> = {
-  error: 2,
-  default: 1,
-  success: 0,
+  error: 2,  // 에러 1순위
+  default: 1,  //  디폴드 2순위
+  success: 0,  // 성공 3순위
 };
 
 const genId = () =>

@@ -3,6 +3,7 @@
  */
 import { http, HttpResponse } from 'msw'
 import type { UserProfilePost, UserProfileResponse } from '@/types'
+import { MOCK_USER } from '../constants'
 
 const mockPosts: UserProfilePost[] = Array.from({ length: 20 }, (_, i) => ({
   post_id: `01HZXK9P${String(i + 1).padStart(2, '0')}ABCDEFGHJKLMNPQRST`,
@@ -48,6 +49,21 @@ const mockOtherProfiles: Record<string, UserProfileResponse> = {
 }
 
 export const usersHandlers = [
+  // 내 정보 조회 — 백엔드 개발 완료 전 임시 mock
+  http.get('*/users/me', ({ request }) => {
+    if (!request.headers.get('Authorization')) {
+      return HttpResponse.json(
+        { error_detail: '자격 인증 데이터가 제공되지 않습니다.' },
+        { status: 401 },
+      )
+    }
+    return HttpResponse.json({
+      user_id: MOCK_USER.userId,
+      nickname: MOCK_USER.nickname,
+      profile_img: MOCK_USER.profileImg,
+    })
+  }),
+
   http.get('*/users/:userId/profile', ({ request, params }) => {
     if (!request.headers.get('Authorization')) {
       return HttpResponse.json(
