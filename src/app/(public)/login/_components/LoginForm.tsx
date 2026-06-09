@@ -38,7 +38,6 @@ export function LoginForm() {
       // 1단계: 로그인 → access_token 발급
       const { access_token } = await login(data);
       useAuthStore.getState().setToken(access_token);
-
       // 2단계: 유저 정보 조회 → 전체 인증 상태 설정
       const me = await getCurrentUser();
       useAuthStore.getState().setAuth(
