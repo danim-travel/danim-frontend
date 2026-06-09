@@ -7,6 +7,8 @@ export interface UserRowProps {
   avatar: React.ReactNode;
   /** 닉네임/이름 */
   title: string;
+  /** title 오른쪽에 인라인으로 렌더링할 노드 (뱃지 등) */
+  titleSuffix?: React.ReactNode;
   /** 두 번째 줄 (실명, 마지막 메시지 등) */
   subtitle?: string;
   /** 세 번째 줄 (팔로워용 소개 등) */
@@ -20,6 +22,7 @@ export interface UserRowProps {
 export function UserRow({
   avatar,
   title,
+  titleSuffix,
   subtitle,
   description,
   trailing,
@@ -37,7 +40,10 @@ export function UserRow({
     >
       {avatar}
       <div className="flex-1 flex flex-col min-w-0">
-        <span className="text-body-sm font-semibold text-text truncate">{title}</span>
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="text-body-sm font-semibold text-text truncate">{title}</span>
+          {titleSuffix}
+        </div>
         {subtitle && (
           <span className="text-caption text-text-muted truncate">{subtitle}</span>
         )}
