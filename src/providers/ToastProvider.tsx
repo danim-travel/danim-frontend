@@ -22,7 +22,7 @@ function ToastEntry({ item }: { item: ToastItem }) {
       removeToast(item.id);
     }, item.duration ?? DEFAULT_DURATION);
     return () => clearTimeout(id);
-  }, [item.id, item.duration, removeToast]);
+  }, [item.id, item.duration, item.updatedAt, removeToast]);
 
   return <Toast variant={item.variant}>{item.message}</Toast>;
 }
