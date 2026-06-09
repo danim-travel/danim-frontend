@@ -7,6 +7,12 @@ import { env } from './env'
 
 export const config = {
   get apiUrl() {
+    if (process.env.NODE_ENV === 'development') {
+      // 실 백엔드가 필요한 경우: .env.local에 NEXT_PUBLIC_USE_REAL_API=true 추가
+      // 기본값은 MSW 모드 — 상대 URL을 써야 SW(localhost:3000)가 요청을 인터셉트할 수 있다.
+      if (process.env.NEXT_PUBLIC_USE_REAL_API === 'true') return env.NEXT_PUBLIC_API_URL
+      return '/'
+    }
     return env.NEXT_PUBLIC_API_URL
   },
   get kakaoMapKey() {

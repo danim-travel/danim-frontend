@@ -6,8 +6,9 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
+import { publicClient } from '@/lib/apiClient'
 import { isApiError } from '@/lib/apiError'
-import { refreshToken } from '@/lib/api/auth'
+import { getCurrentUser } from '@/lib/api/auth'
 import { useAuthStore } from '@/store/authStore'
 import { ToastProvider } from './ToastProvider'
 
@@ -36,14 +37,21 @@ function AuthBootstrap({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const { setToken, setHydrated } = useAuthStore.getState()
     // MSW가 준비된 뒤에 refresh를 호출해야 mock 핸들러가 요청을 가로챌 수 있다.
-    mswReady
-      .catch(() => {})
-      .then(() =>
-        refreshToken()
-          .then(({ access_token }) => setToken(access_token))
-          .catch(() => {})
-          .finally(() => setHydrated())
-      )
+    mswReady.then(() => {
+      publicClient
+        .post('v1/users/me/refresh')
+        .json<{ access_token: string }>()
+        .then(async ({ access_token }) => {
+          setToken(access_token)
+          const { user, setAuth } = useAuthStore.getState()
+          if (!user) {
+            const me = await getCurrentUser()
+            setAuth({ userId: me.user_id, nickname: me.nickname, profileImg: me.profile_img }, access_token)
+          }
+        })
+        .catch(() => {})
+        .finally(() => setHydrated())
+    })
   }, [])
 
   if (!isHydrated) {
