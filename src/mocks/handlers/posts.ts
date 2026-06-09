@@ -80,7 +80,7 @@ const mockPostDetail: PostDetail = {
 }
 
 export const postsHandlers = [
-  http.get('*/v1/posts/:postId', ({ params }) => {
+  http.get('*/posts/:postId', ({ params }) => {
     const postId = params.postId as string
     return HttpResponse.json({
       ...mockPostDetail,
@@ -92,7 +92,7 @@ export const postsHandlers = [
   }),
 
   // 게시글 작성
-  http.post('*/v1/posts', async ({ request }) => {
+  http.post('*/posts', async ({ request }) => {
     if (!request.headers.get('Authorization')) {
       return HttpResponse.json(
         { error_detail: '인증되지 않은 사용자입니다.' },
@@ -113,7 +113,7 @@ export const postsHandlers = [
   }),
 
   // presigned URL 발급
-  http.post('*/v1/posts/presigned-url', async ({ request }) => {
+  http.post('*/posts/presigned-url', async ({ request }) => {
     if (!request.headers.get('Authorization')) {
       return HttpResponse.json(
         { error_detail: '자격 인증 데이터가 제공되지 않습니다.' },

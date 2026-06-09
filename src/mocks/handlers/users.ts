@@ -48,7 +48,7 @@ const mockOtherProfiles: Record<string, UserProfileResponse> = {
 }
 
 export const usersHandlers = [
-  http.get('*/v1/users/:userId/profile', ({ request, params }) => {
+  http.get('*/users/:userId/profile', ({ request, params }) => {
     if (!request.headers.get('Authorization')) {
       return HttpResponse.json(
         { error_detail: '자격 인증 데이터가 제공되지 않습니다.' },
