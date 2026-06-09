@@ -32,23 +32,13 @@ export function isApiError(error: unknown): error is ApiError {
   )
 }
 
-// 상태코드별 고정 문구 — 백엔드 메시지보다 우선 적용
-// 500대는 범위로 처리, 나머지 특정 코드만 명시
-const STATUS_MESSAGES: Partial<Record<number, string>> = {
-  401: '로그인이 필요합니다.',
-  403: '접근 권한이 없습니다.',
-  404: '요청한 정보를 찾을 수 없습니다.',
-  429: '잠시 후 다시 시도해주세요.',
-}
-
 /**
  * 에러에서 토스트에 표시할 문자열을 추출한다.
  *
  * 적용 우선순위:
  * 1. 500대 → "서버 오류가 발생했습니다." 고정
- * 2. 401·403·404·429 → STATUS_MESSAGES 고정 문구
- * 3. 그 외 → 백엔드 error_detail 메시지
- * 4. 백엔드 메시지 없을 때 → fallback.client (400·409·422 등에서 error_detail이 없는 예외 케이스)
+ * 2. 그 외 → 백엔드 error_detail 메시지
+ * 3. 백엔드 메시지 없을 때 → fallback.client (400·409·422 등에서 error_detail이 없는 예외 케이스)
  */
 export function getApiErrorMessage(
   err: unknown,
@@ -57,10 +47,6 @@ export function getApiErrorMessage(
   if (isApiError(err)) {
     // 500대는 공통 문구로 고정
     if (err.status >= 500) return '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
-
-    // 특정 상태코드는 고정 문구 우선
-    const fixed = STATUS_MESSAGES[err.status]
-    if (fixed) return fixed
 
     const { detail } = err
 
