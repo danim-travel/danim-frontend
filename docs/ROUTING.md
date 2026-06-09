@@ -7,7 +7,7 @@ Next.js App Router의 Route Group으로 레이아웃을 분리합니다.
 | 그룹 | 경로 | 특징 |
 |------|------|------|
 | `(public)` | `/login`, `/register`, `/reset-password`, `/social-callback` | SideNav 없음, 비인증 접근 가능 |
-| `(main)` | 그 외 모든 페이지 | SideNav 좌측 고정, 인증 필요 |
+| `(main)` | 그 외 모든 페이지 | SideNav 좌측 고정, `AuthGuard` 적용 — 비로그인 시 `/login` 리다이렉트 |
 
 ---
 
@@ -18,7 +18,7 @@ Next.js App Router의 Route Group으로 레이아웃을 분리합니다.
 | URL | 설명 |
 |-----|------|
 | `/login` | 로그인 (이메일 + 소셜) |
-| `/register` | 회원가입 (이메일·SMS 인증 포함) |
+| `/register` | 회원가입 (이메일 인증 포함) |
 | `/reset-password` | 비밀번호 재설정 (이메일 인증 코드 + 새 비밀번호 설정) |
 | `/social-callback` | 소셜 로그인 콜백 수신 (`?provider=&is_success=`) |
 
