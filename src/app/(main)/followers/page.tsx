@@ -11,12 +11,12 @@ export default function FollowersPage() {
   const [tab, setTab] = useState<"followers" | "following">("followers")
   const userId = useAuthStore(s => s.user?.userId)
 
-  const { data: followers } = useQuery({
+  const { data: followers = [], isLoading: isFollowersLoading } = useQuery({
     queryKey: queryKeys.users.followers(userId ?? ""),
     queryFn: () => getFollowers(userId!),
     enabled: !!userId,
   })
-  const { data: following } = useQuery({
+  const { data: following = [], isLoading: isFollowingLoading } = useQuery({
     queryKey: queryKeys.users.following(userId ?? ""),
     queryFn: () => getFollowing(userId!),
     enabled: !!userId,
@@ -40,7 +40,13 @@ export default function FollowersPage() {
             onChange={k => setTab(k as "followers" | "following")}
           />
           <div className="px-7">
-            <FollowList userId={userId} tab={tab} />
+            <FollowList
+              userId={userId}
+              tab={tab}
+              followers={followers}
+              following={following}
+              isLoading={isFollowersLoading || isFollowingLoading}
+            />
           </div>
         </div>
       </div>

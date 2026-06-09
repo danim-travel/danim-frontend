@@ -1,31 +1,23 @@
 "use client"
-import { useQuery } from "@tanstack/react-query"
 import { Users } from "lucide-react"
 import { EmptyState, UserRowSkeleton } from "@/components/common"
-import { getFollowers, getFollowing } from "@/lib/api/users"
 import { queryKeys } from "@/lib/queryKeys"
+import type { FollowUser } from "@/types"
 import { FollowUserItem } from "./FollowUserItem"
 
 interface FollowListProps {
   userId: string
   tab: "followers" | "following"
+  followers: FollowUser[]
+  following: FollowUser[]
+  isLoading: boolean
 }
 
-export function FollowList({ userId, tab }: FollowListProps) {
+export function FollowList({ userId, tab, followers, following, isLoading }: FollowListProps) {
   const isFollowers = tab === "followers"
   const followersQueryKey = queryKeys.users.followers(userId)
   const followingQueryKey = queryKeys.users.following(userId)
 
-  const { data: followers = [], isLoading: isFollowersLoading } = useQuery({
-    queryKey: followersQueryKey,
-    queryFn: () => getFollowers(userId),
-  })
-  const { data: following = [], isLoading: isFollowingLoading } = useQuery({
-    queryKey: followingQueryKey,
-    queryFn: () => getFollowing(userId),
-  })
-
-  const isLoading = isFollowers ? isFollowersLoading : isFollowingLoading
   const list = isFollowers ? followers : following
 
   // followers ↔ following userId 교집합으로 맞팔 여부 계산
