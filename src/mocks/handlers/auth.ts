@@ -5,6 +5,10 @@
 import { http, HttpResponse } from 'msw'
 import { MOCK_USER, MOCK_ACCESS_TOKEN, MOCK_CREDENTIALS, MOCK_VERIFY_CODE } from '../constants'
 
+// 로그인 성공 시 true로 설정 — token/refresh는 이 플래그가 true일 때만 성공 반환
+// 실제 HttpOnly refresh_token 쿠키를 간소하게 흉내낸 것
+let mockSessionActive = false
+
 export const authHandlers = [
   // 회원가입
   http.post('*/v1/users/signup', async () => {
@@ -56,6 +60,7 @@ export const authHandlers = [
         { status: 401 }
       )
     }
+    mockSessionActive = true
     return HttpResponse.json({ access_token: MOCK_ACCESS_TOKEN })
   }),
 
@@ -68,8 +73,11 @@ export const authHandlers = [
     })
   }),
 
-  // JWT 토큰 재발급 (refreshToken 쿠키 기반)
+  // JWT 토큰 재발급 — mockSessionActive(로그인 여부)가 true일 때만 성공
   http.post('*/v1/users/token/refresh', () => {
+    if (!mockSessionActive) {
+      return HttpResponse.json({ error_detail: '인증이 필요합니다.' }, { status: 401 })
+    }
     return HttpResponse.json({ access_token: MOCK_ACCESS_TOKEN })
   }),
 

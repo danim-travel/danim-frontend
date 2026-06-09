@@ -9,7 +9,7 @@ import { usersHandlers } from './users'
 import type { RequestHandler } from 'msw'
 
 export const handlers: RequestHandler[] = [
-  ...authHandlers,
+  // ...authHandlers,
   ...commentsHandlers,
   ...postsHandlers,
   ...interactionsHandlers,
