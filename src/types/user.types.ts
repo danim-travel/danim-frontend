@@ -24,10 +24,11 @@ export type UserProfileResponse = {
 export interface SignupRequest {
   email_token: string
   password: string
+  password_confirm: string
   nickname: string
   name: string
   /** YYYY-MM-DD */
-  birth_date: string
+  birth_day: string
 }
 
 export interface ConfirmEmailResponse {

@@ -37,6 +37,11 @@ export async function checkNickname(nickname: string): Promise<DetailResponse> {
   return publicClient.post('users/check-nickname', { json: { nickname } }).json<DetailResponse>()
 }
 
+// 비밀번호 재설정 — 이메일 인증 후 발급된 email_token과 새 비밀번호 전송
+export async function resetPassword(data: { email_token: string; new_password: string }): Promise<DetailResponse> {
+  return publicClient.post('users/reset-password', { json: data }).json<DetailResponse>()
+}
+
 // --- 인증 필요 엔드포인트 (Authorization 헤더 자동 첨부) ---
 
 // 내 정보 조회 — Authorization 헤더 필요, 로그인 직후 유저 정보 세팅에 사용

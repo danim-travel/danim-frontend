@@ -6,6 +6,7 @@ import { createApiError, isApiError, type ApiErrorDetail } from '@/lib/apiError'
 const baseClient = ky.create({
   prefixUrl: config.apiUrl,
   credentials: 'include',
+  retry: 0,
 })
 
 // 에러 응답 body를 ApiError로 정규화하는 훅. publicClient·apiClient 양쪽에 공유된다.
@@ -83,7 +84,7 @@ export const apiClient = baseClient.extend({
           const newToken = await acquireRefreshedToken()
           headers.set('Authorization', `Bearer ${newToken}`)
           headers.set('x-is-retry', '1')
-          return await retryClient(request, { ...options, headers })
+          return await retryClient(request.clone(), { ...options, headers })
         } catch {
           return response
         }
