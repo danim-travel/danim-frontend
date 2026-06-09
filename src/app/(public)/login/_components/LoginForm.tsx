@@ -30,7 +30,7 @@ export function LoginForm() {
   } = useForm<LoginFormValues>({ resolver: zodResolver(loginSchema) });
 
   function handleSocialLogin(provider: "kakao" | "google") {
-    window.location.href = `${config.apiUrl}v1/auth/${provider}/login`;
+    window.location.href = `${config.apiUrl}users/social-login/${provider}`;
   }
 
   const onSubmit = handleSubmit(async (data) => {
