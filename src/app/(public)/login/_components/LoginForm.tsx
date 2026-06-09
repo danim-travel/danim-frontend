@@ -7,7 +7,7 @@ import { z } from "zod";
 import { Button, TextField, PasswordField } from "@/components/common";
 import { login, getCurrentUser } from "@/lib/api/auth";
 import { useAuthStore } from "@/store/authStore";
-import { isApiError } from "@/lib/apiClient";
+import { getApiErrorMessage } from "@/lib/apiError";
 import { toast } from "@/store/toastStore";
 import { config } from "@/lib/config";
 import { PASSWORD_RULES } from "../../_constants/passwordValidation";
@@ -35,21 +35,21 @@ export function LoginForm() {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
+      // 1단계: 로그인 → access_token 발급
       const { access_token } = await login(data);
       useAuthStore.getState().setToken(access_token);
+
+      // 2단계: 유저 정보 조회 → 전체 인증 상태 설정
       const me = await getCurrentUser();
       useAuthStore.getState().setAuth(
         { userId: me.user_id, nickname: me.nickname, profileImg: me.profile_img },
         access_token
       );
+
       router.push("/");
     } catch (e) {
       useAuthStore.getState().clearAuth();
-      if (isApiError(e)) {
-        toast.error(typeof e.detail === "string" ? e.detail : "이메일 또는 비밀번호를 확인해주세요.");
-      } else {
-        toast.error("로그인에 실패했습니다. 잠시 후 다시 시도해주세요.");
-      }
+      toast.error(getApiErrorMessage(e, { client: "이메일 또는 비밀번호를 확인해주세요." }));
     }
   });
 
@@ -60,7 +60,7 @@ export function LoginForm() {
           type="button"
           variant="secondary"
           fullWidth
-          className="h-[52px] text-base font-bold bg-kakao text-kakao-fg border-none shadow-none hover:opacity-90"
+          className="h-[52px] text-base font-bold bg-kakao text-kakao-fg border-none shadow-none hover:bg-kakao hover:brightness-90"
           onClick={() => handleSocialLogin("kakao")}
         >
           카카오톡으로 계속하기
@@ -82,7 +82,7 @@ export function LoginForm() {
         <span className="flex-1 h-px bg-border" />
       </div>
 
-      <form onSubmit={onSubmit} className="flex flex-col gap-4">
+      <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
         <TextField
           label="이메일"
           type="email"

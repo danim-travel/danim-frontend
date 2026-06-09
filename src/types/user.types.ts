@@ -31,18 +31,12 @@ export interface SignupRequest {
 }
 
 export interface ConfirmEmailResponse {
+  detail: string
   email_token: string
 }
 
-export interface AuthUserResponse {
-  user_id: string
-  nickname: string
-  profile_img: string | null
-}
-
 export interface SignupResponse {
-  access_token: string
-  user: AuthUserResponse
+  detail: string
 }
 
 export interface TokenRefreshResponse {

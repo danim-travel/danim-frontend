@@ -1,70 +1,52 @@
 import ky, { type HTTPError } from 'ky'
 import { config } from '@/lib/config'
 import { useAuthStore } from '@/store/authStore'
+import { createApiError, isApiError, type ApiErrorDetail } from '@/lib/apiError'
 
-type ApiErrorDetail = string | Record<string, string[]>
-
-export type ApiError = Error & {
-  readonly status: number
-  readonly detail: ApiErrorDetail
-}
-
-export function createApiError(status: number, detail: ApiErrorDetail): ApiError {
-  return Object.assign(
-    new Error(typeof detail === 'string' ? detail : JSON.stringify(detail)),
-    { name: 'ApiError', status, detail }
-  ) as ApiError
-}
-
-export function isApiError(error: unknown): error is ApiError {
-  return (
-    error instanceof Error &&
-    error.name === 'ApiError' &&
-    'status' in error &&
-    'detail' in error
-  )
-}
-
-// ApiError에서 사용자에게 보여줄 메시지를 추출한다.
-// detail이 문자열이면 그대로, 아니면 status 기준으로 fallback을 선택한다.
-export function getApiErrorMessage(
-  err: unknown,
-  fallback: { client: string; server: string }
-): string {
-  if (isApiError(err)) {
-    if (typeof err.detail === 'string' && err.detail) return err.detail
-    return err.status >= 500 ? fallback.server : fallback.client
-  }
-  return fallback.server
-}
+const baseClient = ky.create({
+  prefixUrl: config.apiUrl,
+  credentials: 'include',
+})
 
 // 에러 응답 body를 ApiError로 정규화하는 훅. publicClient·apiClient 양쪽에 공유된다.
 const normalizeErrorHook = [
   async (error: HTTPError) => {
     try {
       const body = await error.response.clone().json() as { error_detail?: ApiErrorDetail }
+      // 없으면(??) ky 기본 에러 메시지(error.message) 사용
       throw createApiError(error.response.status, body.error_detail ?? error.message)
     } catch (e) {
       if (isApiError(e)) throw e
+      // JSON 파싱이 실패한 경우(응답 body가 완전히 비어있을 때, 네트워크 오류로 body 자체를 못 읽었을 때 등등)
       throw createApiError(error.response.status, error.message)
     }
   },
 ]
 
 // 인증 헤더가 붙지 않는 클라이언트. 로그인·회원가입·refresh처럼 access_token이 없는 상태에서 호출하는 엔드포인트 전용.
-export const publicClient = ky.create({
-  prefixUrl: config.apiUrl,
-  credentials: 'include',
+export const publicClient = baseClient.extend({
+  hooks: { beforeError: normalizeErrorHook },
+})
+
+// 401 재시도 전용 클라이언트.
+// baseClient 설정은 공유하되, beforeError만 추가해서 재시도 실패 시 에러 정규화를 유지한다.
+const retryClient = baseClient.extend({
   hooks: { beforeError: normalizeErrorHook },
 })
 
 // 동시에 여러 요청이 401을 받아도 refresh 호출은 한 번만 일어나도록 싱글턴으로 공유한다.
 let refreshPromise: Promise<string> | null = null
 
-function getRefreshPromise(): Promise<string> {
+/**
+ * 401 자동 재시도 전용 토큰 갱신.
+ * - AuthBootstrap의 silent refresh와 달리, 인증된 요청 중 토큰 만료 시 자동으로 호출된다.
+ * - 성공 시 authStore 토큰 갱신, 실패 시 authStore 초기화 + /login 리다이렉트 사이드이펙트 발생.
+ * - 동시 401 응답이 와도 refresh 요청은 한 번만 발생한다(singleton promise).
+ */
+function acquireRefreshedToken(): Promise<string> {
   if (!refreshPromise) {
     refreshPromise = publicClient
-      .post('v1/users/me/refresh')
+      .post('v1/users/token/refresh')
       .json<{ access_token: string }>()
       .then(data => {
         useAuthStore.getState().setToken(data.access_token)
@@ -80,11 +62,10 @@ function getRefreshPromise(): Promise<string> {
   return refreshPromise
 }
 
-export const apiClient = ky.create({
-  prefixUrl: config.apiUrl,
-  credentials: 'include',
+// 인증이 필요한 모든 API 요청에 사용하는 클라이언트.
+// Authorization 헤더 자동 첨부, 401 시 토큰 갱신 재시도, 에러 정규화를 훅으로 처리한다.
+export const apiClient = baseClient.extend({
   hooks: {
-    // 모든 요청에 현재 access_token을 Authorization 헤더로 자동 부착한다.
     beforeRequest: [
       (request) => {
         const token = useAuthStore.getState().accessToken
@@ -93,21 +74,17 @@ export const apiClient = ky.create({
         }
       },
     ],
-    // 401 응답을 받으면 refresh로 새 토큰을 받아 같은 요청을 한 번 재시도한다.
     afterResponse: [
       async (request, options, response) => {
         if (response.status !== 401) return
         const headers = new Headers(options.headers as HeadersInit)
-        // 재시도 요청이 다시 401을 받는 경우 무한 루프를 막기 위한 플래그.
         if (headers.get('x-is-retry')) return
         try {
-          const newToken = await getRefreshPromise()
+          const newToken = await acquireRefreshedToken()
           headers.set('Authorization', `Bearer ${newToken}`)
-          // 재시도임을 표시 — 다음 401에서 또 refresh로 진입하지 않도록.
           headers.set('x-is-retry', '1')
-          return await ky(request, { ...options, headers })
+          return await retryClient(request, { ...options, headers })
         } catch {
-          // getRefreshPromise 내부에서 clearAuth + redirect 처리
           return response
         }
       },
