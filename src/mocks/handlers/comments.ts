@@ -59,8 +59,8 @@ export const getCommentCount = (_postId?: string) => commentsList.length
 let commentIdCounter = 4
 
 export const commentsHandlers = [
-  // 댓글 목록 조회 — GET api/v1/comments?post_id=...
-  http.get('*/v1/comments', ({ request }) => {
+  // 댓글 목록 조회 — GET comments?post_id=...
+  http.get('*/comments', ({ request }) => {
     const url = new URL(request.url)
     const page = Number(url.searchParams.get('page') ?? 1)
     const pageSize = Number(url.searchParams.get('page_size') ?? 10)
@@ -79,8 +79,8 @@ export const commentsHandlers = [
     return HttpResponse.json(response)
   }),
 
-  // 댓글 생성 — POST api/v1/comments
-  http.post('*/v1/comments', async ({ request }) => {
+  // 댓글 생성 — POST comments
+  http.post('*/comments', async ({ request }) => {
     const body = await request.json() as { post_id: string; content?: string; comment_img?: { original_img: string; key: string } }
 
     if (!body.content && !body.comment_img) {
@@ -119,8 +119,8 @@ export const commentsHandlers = [
     return HttpResponse.json(newComment, { status: 201 })
   }),
 
-  // 댓글 수정 — PATCH api/v1/comments/{comment_id}
-  http.patch('*/v1/comments/:commentId', async ({ params, request }) => {
+  // 댓글 수정 — PATCH comments/{comment_id}
+  http.patch('*/comments/:commentId', async ({ params, request }) => {
     const { commentId } = params
     const body = await request.json() as { content?: string; comment_img?: { original_img: string; key: string } }
     const idx = commentsList.findIndex(c => c.comment_id === commentId)
@@ -149,8 +149,8 @@ export const commentsHandlers = [
     })
   }),
 
-  // 댓글 삭제 — DELETE api/v1/comments/{comment_id}
-  http.delete('*/v1/comments/:commentId', ({ params }) => {
+  // 댓글 삭제 — DELETE comments/{comment_id}
+  http.delete('*/comments/:commentId', ({ params }) => {
     const { commentId } = params
     const idx = commentsList.findIndex(c => c.comment_id === commentId)
 
@@ -164,8 +164,8 @@ export const commentsHandlers = [
     return new HttpResponse(null, { status: 204 })
   }),
 
-  // 댓글 이미지 presigned URL 발급 — POST api/v1/comments/presigned-url
-  http.post('*/v1/comments/presigned-url', async ({ request }) => {
+  // 댓글 이미지 presigned URL 발급 — POST comments/presigned-url
+  http.post('*/comments/presigned-url', async ({ request }) => {
     const body = await request.json() as { original_img: string }
     const ext = body.original_img.split('.').pop()?.toLowerCase() ?? 'jpg'
     const allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp']

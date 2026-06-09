@@ -61,7 +61,7 @@ export function usePhotoManager({ spots, active, updateSpot }: UsePhotoManagerAr
     try {
       const uploaded = await Promise.all(
         pairs.map(async ({ file, previewUrl }) => {
-          const { img_url, key } = await uploadImage('v1/posts/presigned-url', file)
+          const { img_url, key } = await uploadImage('posts/presigned-url', file)
           const image: CreatePostSpotImage = { original_img: img_url, key }
           return { image, previewUrl }
         })

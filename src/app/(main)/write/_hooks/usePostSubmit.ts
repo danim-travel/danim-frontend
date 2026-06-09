@@ -38,7 +38,7 @@ export function usePostSubmit({ title, description, spots, thumbnailKey }: UsePo
     const payload = buildPostPayload({ title, description, spots, thumbnailKey: thumbnailKey! })
 
     try {
-      await apiClient.post('v1/posts', { json: payload }).json<DetailResponse>()
+      await apiClient.post('posts', { json: payload }).json<DetailResponse>()
       // 탐색 페이지·마이페이지에 새 게시글 즉시 반영
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.posts.exploreBase }),

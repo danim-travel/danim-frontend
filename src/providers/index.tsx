@@ -13,6 +13,7 @@ import { ToastProvider } from './ToastProvider'
 
 async function initMsw() {
   if (process.env.NODE_ENV !== 'development') return
+  if (typeof window === 'undefined') return
   const { worker } = await import('@/mocks/browser')
   await worker.start({
     onUnhandledRequest: 'bypass',

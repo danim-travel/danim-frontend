@@ -1,6 +1,6 @@
 /**
  * 유저 프로필 관련 타입.
- * GET /api/v1/users/{user_id}/profile 응답 스펙을 따른다.
+ * GET /users/{user_id}/profile 응답 스펙을 따른다.
  */
 
 export type UserProfilePost = {
