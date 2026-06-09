@@ -34,17 +34,16 @@ function AuthBootstrap({ children }: { children: React.ReactNode }) {
   const isHydrated = useAuthStore((s) => s.isHydrated)
 
   useEffect(() => {
-    const { setToken, setHydrated } = useAuthStore.getState()
+    const { setHydrated } = useAuthStore.getState()
     // MSW가 준비된 뒤에 refresh를 호출해야 mock 핸들러가 요청을 가로챌 수 있다.
     mswReady.catch(() => {}).then(async () => {
       try {
         const { access_token } = await refreshToken()
-        setToken(access_token)
         const me = await getCurrentUser()
         const { setAuth } = useAuthStore.getState()
         setAuth({ userId: me.user_id, nickname: me.nickname, profileImg: me.profile_img }, access_token)
       } catch {
-        // refresh 실패 = 비로그인 상태 유지
+        // refresh 또는 getCurrentUser 실패 = 비로그인 상태 유지
       } finally {
         setHydrated()
       }
