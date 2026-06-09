@@ -4,8 +4,7 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/common";
 import { signup } from "@/lib/api/auth";
-import { isApiError } from "@/lib/apiClient";
-import { useAuthStore } from "@/store/authStore";
+import { getApiErrorMessage } from "@/lib/apiError";
 import { toast } from "@/store/toastStore";
 import { AccountSection } from "./AccountSection";
 import { ProfileSection } from "./ProfileSection";
@@ -28,40 +27,33 @@ export function RegisterForm() {
     },
   });
 
+  // 폼 제출 시 유효성 검사 실행 후 콜백 호출하는 함수
+  // onSubmit 비동기 함수가 실행 중인 동안 true → 버튼 비활성화에 사용
   const { handleSubmit, formState: { isSubmitting } } = methods;
 
   const onSubmit = handleSubmit(async (data) => {
     try {
       const birthDate = `${data.birthYear}-${data.birthMonth.padStart(2, "0")}-${data.birthDay.padStart(2, "0")}`;
-      const response = await signup({
+      await signup({
         email_token: data.emailToken,
         password: data.password,
         nickname: data.nickname,
         name: data.name,
         birth_date: birthDate,
       });
-      useAuthStore.getState().setAuth(
-        {
-          userId: response.user.user_id,
-          nickname: response.user.nickname,
-          profileImg: response.user.profile_img,
-        },
-        response.access_token
-      );
-      toast.success("회원가입이 완료되었습니다.");
-      router.push("/");
+      toast.success("회원가입이 완료되었습니다. 로그인해주세요.");
+      router.push("/login");
     } catch (e) {
-      if (isApiError(e)) {
-        toast.error(typeof e.detail === "string" ? e.detail : "입력 정보를 확인해주세요.");
-      } else {
-        toast.error("회원가입에 실패했습니다. 잠시 후 다시 시도해주세요.");
-      }
+      toast.error(getApiErrorMessage(e, {
+        client: "입력 정보를 확인해주세요.",
+        server: "회원가입에 실패했습니다. 잠시 후 다시 시도해주세요.",
+      }));
     }
   });
 
   return (
     <FormProvider {...methods}>
-      <form onSubmit={onSubmit}>
+      <form onSubmit={onSubmit} noValidate>
         <div className="flex flex-col gap-5">
           <AccountSection />
           <ProfileSection />
