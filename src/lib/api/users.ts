@@ -1,5 +1,21 @@
 import { apiClient } from '@/lib/apiClient'
-import type { FollowListResponse, FollowResponse } from '@/types'
+import type { MeDetailResponse, UpdateUserRequest, ChangePasswordRequest, DetailResponse, FollowListResponse, FollowResponse } from '@/types'
+
+export async function getMe(): Promise<MeDetailResponse> {
+  return apiClient.get('users/me/detail').json<MeDetailResponse>()
+}
+
+export async function updateUser(data: UpdateUserRequest): Promise<MeDetailResponse> {
+  return apiClient.patch('users/me', { json: data }).json<MeDetailResponse>()
+}
+
+export async function deleteUser(): Promise<DetailResponse> {
+  return apiClient.delete('users/me').json<DetailResponse>()
+}
+
+export async function changePassword(data: ChangePasswordRequest): Promise<DetailResponse> {
+  return apiClient.patch('users/me/password', { json: data }).json<DetailResponse>()
+}
 
 export async function getFollowers(userId: string): Promise<FollowListResponse> {
   return apiClient.get(`users/${userId}/followers`).json<FollowListResponse>()

@@ -59,6 +59,27 @@ export interface CurrentUserResponse {
   profile_img: string | null
 }
 
+export interface MeDetailResponse {
+  user_id: string
+  name: string
+  email: string
+  birth_date: string
+  nickname: string
+  profile_img: string | null
+  intro: string
+}
+
+export interface UpdateUserRequest {
+  nickname?: string
+  intro?: string
+  profile_img?: string | null
+}
+
+export interface ChangePasswordRequest {
+  current_password: string
+  new_password: string
+}
+
 export type FollowUser = {
   user_id: string
   nickname: string
