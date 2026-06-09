@@ -1,8 +1,8 @@
 /**
- * 유저 관련 Mock 핸들러. 프로필 조회, 팔로우/언팔로우, 팔로워/팔로잉 목록 조회 시 사용한다.
+ * 유저 관련 Mock 핸들러. 마이페이지/타인 프로필 조회, 내 정보 수정/탈퇴, 팔로워/팔로잉 목록 조회 시 사용한다.
  */
 import { http, HttpResponse, type HttpResponseResolver } from 'msw'
-import type { UserProfilePost, UserProfileResponse, FollowResponse, FollowUser } from '@/types'
+import type { UserProfilePost, UserProfileResponse, FollowResponse, FollowUser, MeDetailResponse, UpdateUserRequest } from '@/types'
 import { MOCK_USER } from '../constants'
 
 const mockHeights = [320, 480, 260, 560, 400, 300, 520, 380, 440, 280, 500, 360, 420, 600, 340, 460, 240, 540, 390, 470]
@@ -23,6 +23,17 @@ const mockUserProfile: UserProfileResponse = {
   is_following: false,
   posts_count: mockPosts.length,
   posts: mockPosts,
+}
+
+// 내 정보 수정 핸들러에서 공유하는 mutable mock
+let mockMe: MeDetailResponse = {
+  user_id: 'mock-user-id',
+  name: '홍길동',
+  email: 'test@danim.app',
+  birth_date: '1995-08-14',
+  nickname: 'test_nickname',
+  profile_img: 'https://picsum.photos/seed/userprofile/200/200',
+  intro: '여행을 좋아하는 사람입니다.',
 }
 
 // 추후 UI 확인용 mock 데이터 (팔로워/팔로잉 목록)
@@ -74,14 +85,20 @@ const mockOtherProfiles: Record<string, UserProfileResponse> = {
   },
 }
 
-// trailing slash 유무에 무관하게 처리하기 위해 두 패턴을 모두 등록한다.
-const handleFollowers: HttpResponseResolver = ({ request, params }) => {
+function requireAuth(request: Request) {
   if (!request.headers.get('Authorization')) {
     return HttpResponse.json(
       { error_detail: '자격 인증 데이터가 제공되지 않습니다.' },
       { status: 401 },
     )
   }
+  return null
+}
+
+// trailing slash 유무에 무관하게 처리하기 위해 두 패턴을 모두 등록한다.
+const handleFollowers: HttpResponseResolver = ({ request, params }) => {
+  const authError = requireAuth(request as Request)
+  if (authError) return authError
   const userId = params.userId as string
   if (userId === 'not-found') {
     return HttpResponse.json(
@@ -93,12 +110,8 @@ const handleFollowers: HttpResponseResolver = ({ request, params }) => {
 }
 
 const handleFollowing: HttpResponseResolver = ({ request, params }) => {
-  if (!request.headers.get('Authorization')) {
-    return HttpResponse.json(
-      { error_detail: '자격 인증 데이터가 제공되지 않습니다.' },
-      { status: 401 },
-    )
-  }
+  const authError = requireAuth(request as Request)
+  if (authError) return authError
   const userId = params.userId as string
   if (userId === 'not-found') {
     return HttpResponse.json(
@@ -124,14 +137,40 @@ export const usersHandlers = [
   //   })
   // }),
 
-  http.get('*/users/:userId/profile', ({ request, params }) => {
-    if (!request.headers.get('Authorization')) {
-      return HttpResponse.json(
-        { error_detail: '자격 인증 데이터가 제공되지 않습니다.' },
-        { status: 401 },
-      )
-    }
+  http.get('*/users/me/detail', ({ request }) => {
+    const authError = requireAuth(request)
+    if (authError) return authError
+    return HttpResponse.json(mockMe)
+  }),
 
+  http.patch('*/users/me', async ({ request }) => {
+    const authError = requireAuth(request)
+    if (authError) return authError
+    const body = await request.json() as UpdateUserRequest
+    mockMe = {
+      ...mockMe,
+      ...(body.nickname !== undefined && { nickname: body.nickname }),
+      ...(body.intro !== undefined && { intro: body.intro }),
+      ...(body.profile_img !== undefined && { profile_img: body.profile_img }),
+    }
+    return HttpResponse.json(mockMe)
+  }),
+
+  http.delete('*/users/me', ({ request }) => {
+    const authError = requireAuth(request)
+    if (authError) return authError
+    return HttpResponse.json({ detail: '회원 탈퇴가 완료되었습니다.' })
+  }),
+
+  http.patch('*/users/me/password', async ({ request }) => {
+    const authError = requireAuth(request)
+    if (authError) return authError
+    return HttpResponse.json({ detail: '비밀번호가 변경되었습니다.' })
+  }),
+
+  http.get('*/users/:userId/profile', ({ request, params }) => {
+    const authError = requireAuth(request)
+    if (authError) return authError
     const userId = params.userId as string
     if (userId === 'not-found') {
       return HttpResponse.json(
@@ -139,20 +178,6 @@ export const usersHandlers = [
         { status: 404 },
       )
     }
-
-    // 실제 API로 로그인한 경우 localStorage의 auth-storage에서 실제 유저 정보를 읽어 반환
-    try {
-      const raw = localStorage.getItem('auth-storage')
-      const storedUser = raw ? JSON.parse(raw)?.state?.user : null
-      if (storedUser && userId === storedUser.userId) {
-        return HttpResponse.json({
-          ...mockUserProfile,
-          nickname: storedUser.nickname,
-          profile_img: storedUser.profileImg ?? null,
-        })
-      }
-    } catch { /* localStorage 접근 실패 시 mock 데이터로 fallback */ }
-
     return HttpResponse.json(mockOtherProfiles[userId] ?? mockUserProfile)
   }),
 ]
