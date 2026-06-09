@@ -4,7 +4,8 @@ import { TextField, PasswordField, VerificationField } from "@/components/common
 import { PasswordStrength } from "../../_components";
 import { PASSWORD_RULES } from "../../_constants/passwordValidation";
 import { EMAIL_PATTERN } from "../../_constants/emailValidation";
-import { useEmailVerification } from "../_hooks/useEmailVerification";
+import { sanitizeVerificationCode } from "../../_constants/verificationCode";
+import { useEmailVerification } from "../../_hooks/useEmailVerification";
 import type { RegisterFormValues } from "../_schema";
 
 export function AccountSection() {
@@ -63,7 +64,7 @@ export function AccountSection() {
         inputMode="numeric"
         placeholder="인증 코드 6자리 입력"
         value={code}
-        onChange={(e) => setCode(e.target.value)}
+        onChange={(e) => setCode(sanitizeVerificationCode(e.target.value))}
         actionLabel={verified ? "완료" : "확인"}
         actionVariant="outline"
         actionDisabled={confirmLoading || verified || !codeSent} // 코드 발송 전엔 비활성화

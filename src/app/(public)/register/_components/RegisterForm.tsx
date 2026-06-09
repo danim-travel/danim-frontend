@@ -20,6 +20,7 @@ export function RegisterForm() {
       password: "",
       passwordConfirm: "",
       nickname: "",
+      nicknameChecked: false,
       name: "",
       birthYear: "",
       birthMonth: "",
@@ -37,9 +38,10 @@ export function RegisterForm() {
       await signup({
         email_token: data.emailToken,
         password: data.password,
+        password_confirm: data.passwordConfirm,
         nickname: data.nickname,
         name: data.name,
-        birth_date: birthDate,
+        birth_day: birthDate,
       });
       toast.success("회원가입이 완료되었습니다. 로그인해주세요.");
       router.push("/login");

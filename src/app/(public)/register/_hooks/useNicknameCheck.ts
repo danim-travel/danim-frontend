@@ -14,16 +14,18 @@ export function useNicknameCheck() {
   const [result, setResult] = useState<NicknameCheckResult | null>(null);
 
   // "중복 확인" 버튼 클릭 → API 호출 → result에 성공/실패 메시지 저장
-  async function checkDuplicate(nickname: string) {
+  async function checkDuplicate(nickname: string): Promise<boolean> {
     setChecking(true);
     try {
       const { detail } = await checkNickname(nickname);
       setResult({ ok: true, message: detail });
+      return true;
     } catch (e) {
       setResult({
         ok: false,
         message: getApiErrorMessage(e, { client: "중복된 닉네임입니다." }),
       });
+      return false;
     } finally {
       setChecking(false);
     }
