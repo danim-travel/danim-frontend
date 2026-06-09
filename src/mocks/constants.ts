@@ -8,3 +8,10 @@ export const MOCK_USER = {
   nickname: '다님유저',
   profileImg: null,
 } as const
+
+export const MOCK_CREDENTIALS = {
+  email: 'test@test.com',
+  password: 'Test1234!',
+} as const
+
+export const MOCK_VERIFY_CODE = '123456'
