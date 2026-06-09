@@ -20,12 +20,12 @@ export function usePostDetail(postId: string) {
 
   const query = useQuery({
     queryKey: detailKey,
-    queryFn: () => apiClient.get(`v1/posts/${postId}`).json<PostDetail>(),
+    queryFn: () => apiClient.get(`posts/${postId}`).json<PostDetail>(),
     refetchOnWindowFocus: false,
   })
 
   const likeMutation = useLikeMutation<PostDetail>({
-    buildEndpoint: () => `v1/posts/${postId}/like`,
+    buildEndpoint: () => `posts/${postId}/like`,
     queryKey: detailKey,
     optimisticUpdater: (old, { wasLiked }) => {
       if (!old) return old
@@ -40,8 +40,8 @@ export function usePostDetail(postId: string) {
   const bookmarkMutation = useMutation({
     mutationFn: (wasBookmarked: boolean) =>
       wasBookmarked
-        ? apiClient.delete(`v1/posts/${postId}/bookmark`).json<BookmarkResponse>()
-        : apiClient.post(`v1/posts/${postId}/bookmark`).json<BookmarkResponse>(),
+        ? apiClient.delete(`posts/${postId}/bookmark`).json<BookmarkResponse>()
+        : apiClient.post(`posts/${postId}/bookmark`).json<BookmarkResponse>(),
     onMutate: async (wasBookmarked) => {
       await queryClient.cancelQueries({ queryKey: detailKey })
       const previous = queryClient.getQueryData<PostDetail>(detailKey)

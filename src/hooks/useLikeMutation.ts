@@ -6,7 +6,7 @@ interface UseLikeMutationOptions<TCacheData, TVariables extends { wasLiked: bool
   /**
    * 좋아요/취소 엔드포인트의 베이스 경로.
    * wasLiked=true 이면 DELETE, false 이면 POST 를 호출한다.
-   * 예) `v1/posts/${postId}/like`, `v1/comments/${commentId}/like`
+   * 예) `posts/${postId}/like`, `comments/${commentId}/like`
    */
   buildEndpoint: (variables: TVariables) => string
   /** 옵티미스틱 업데이트 대상 쿼리 키 */
