@@ -46,7 +46,7 @@ let refreshPromise: Promise<string> | null = null
 function acquireRefreshedToken(): Promise<string> {
   if (!refreshPromise) {
     refreshPromise = publicClient
-      .post('v1/users/token/refresh')
+      .post('users/token/refresh')
       .json<{ access_token: string }>()
       .then(data => {
         useAuthStore.getState().setToken(data.access_token)
