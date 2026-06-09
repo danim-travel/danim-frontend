@@ -722,7 +722,7 @@ export default function ShowcasePage() {
           <SectionHeader
             title="PostModal"
             path="src/components/PostModal.tsx"
-            description="게시글 상세 모달. postId로 내부 fetch (GET /v1/posts/:postId)."
+            description="게시글 상세 모달. postId로 내부 fetch (GET /posts/:postId)."
             props={[
               { name: "postId",       type: "string",    desc: "조회할 게시물 ID" },
               { name: "onClose",      type: "() => void",desc: "모달 닫기 콜백" },
