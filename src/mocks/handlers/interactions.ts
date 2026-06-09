@@ -23,7 +23,7 @@ export const commentLikeCounts = new Map<string, number>([
 export const interactionsHandlers = [
   // ── 게시글 좋아요 ───────────────────────────────
 
-  http.post('*/v1/posts/:postId/like', ({ params }) => {
+  http.post('*/posts/:postId/like', ({ params }) => {
     const postId = params.postId as string
     if (likedPosts.has(postId)) {
       return HttpResponse.json(
@@ -38,7 +38,7 @@ export const interactionsHandlers = [
     return HttpResponse.json(response, { status: 201 })
   }),
 
-  http.delete('*/v1/posts/:postId/like', ({ params }) => {
+  http.delete('*/posts/:postId/like', ({ params }) => {
     const postId = params.postId as string
     const wasLiked = likedPosts.delete(postId)
     const current = postLikeCounts.get(postId) ?? 0
@@ -50,7 +50,7 @@ export const interactionsHandlers = [
 
   // ── 댓글 좋아요 ────────────────────────────────
 
-  http.post('*/v1/comments/:commentId/like', ({ params }) => {
+  http.post('*/comments/:commentId/like', ({ params }) => {
     const commentId = params.commentId as string
     if (likedComments.has(commentId)) {
       return HttpResponse.json(
@@ -65,7 +65,7 @@ export const interactionsHandlers = [
     return HttpResponse.json(response, { status: 201 })
   }),
 
-  http.delete('*/v1/comments/:commentId/like', ({ params }) => {
+  http.delete('*/comments/:commentId/like', ({ params }) => {
     const commentId = params.commentId as string
     const wasLiked = likedComments.delete(commentId)
     const current = commentLikeCounts.get(commentId) ?? 0
@@ -77,7 +77,7 @@ export const interactionsHandlers = [
 
   // ── 게시글 북마크 ──────────────────────────────
 
-  http.post('*/v1/posts/:postId/bookmark', ({ params }) => {
+  http.post('*/posts/:postId/bookmark', ({ params }) => {
     const postId = params.postId as string
     if (bookmarkedPosts.has(postId)) {
       return HttpResponse.json(
@@ -92,7 +92,7 @@ export const interactionsHandlers = [
     return HttpResponse.json(response, { status: 201 })
   }),
 
-  http.delete('*/v1/posts/:postId/bookmark', ({ params }) => {
+  http.delete('*/posts/:postId/bookmark', ({ params }) => {
     const postId = params.postId as string
     const wasBookmarked = bookmarkedPosts.delete(postId)
     const current = postBookmarkCounts.get(postId) ?? 0

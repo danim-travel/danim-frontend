@@ -11,7 +11,7 @@ let mockSessionActive = false
 
 export const authHandlers = [
   // 회원가입
-  http.post('*/v1/users/signup', async () => {
+  http.post('*/users/signup', async () => {
     return HttpResponse.json(
       { detail: '회원가입이 완료되었습니다.' },
       { status: 201 }
@@ -19,7 +19,7 @@ export const authHandlers = [
   }),
 
   // 통합 이메일 인증 발송
-  http.post('*/v1/users/verification/send-email', async ({ request }) => {
+  http.post('*/users/verification/send-email', async ({ request }) => {
     const body = await request.json() as { purpose?: string }
     const detail = body.purpose === 'find_password'
       ? '비밀번호 재설정 코드가 전송되었습니다.'
@@ -28,7 +28,7 @@ export const authHandlers = [
   }),
 
   // 통합 이메일 인증 검증 — mock 코드: 123456
-  http.post('*/v1/users/verification/verify-email', async ({ request }) => {
+  http.post('*/users/verification/verify-email', async ({ request }) => {
     const body = await request.json() as { code?: string; purpose?: string }
     if (body.code !== MOCK_VERIFY_CODE) {
       return HttpResponse.json(
@@ -46,7 +46,7 @@ export const authHandlers = [
   }),
 
   // 이메일 로그인 — mock 계정: test@test.com / Test1234!
-  http.post('*/v1/users/login', async ({ request }) => {
+  http.post('*/users/login', async ({ request }) => {
     const body = await request.json() as { email?: string; password?: string }
     if (!body.email || !body.password) {
       return HttpResponse.json(
@@ -65,7 +65,7 @@ export const authHandlers = [
   }),
 
   // 내 정보 조회
-  http.get('*/v1/users/me', () => {
+  http.get('*/users/me', () => {
     return HttpResponse.json({
       user_id: MOCK_USER.userId,
       nickname: MOCK_USER.nickname,
@@ -74,7 +74,7 @@ export const authHandlers = [
   }),
 
   // JWT 토큰 재발급 — mockSessionActive(로그인 여부)가 true일 때만 성공
-  http.post('*/v1/users/token/refresh', () => {
+  http.post('*/users/token/refresh', () => {
     if (!mockSessionActive) {
       return HttpResponse.json({ error_detail: '인증이 필요합니다.' }, { status: 401 })
     }
@@ -82,7 +82,7 @@ export const authHandlers = [
   }),
 
   // 닉네임 중복 확인
-  http.post('*/v1/users/check-nickname', async ({ request }) => {
+  http.post('*/users/check-nickname', async ({ request }) => {
     const body = await request.json() as { nickname?: string }
     if (body.nickname === MOCK_USER.nickname) {
       return HttpResponse.json(
