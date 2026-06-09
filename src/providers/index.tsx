@@ -39,7 +39,7 @@ function AuthBootstrap({ children }: { children: React.ReactNode }) {
     // MSW가 준비된 뒤에 refresh를 호출해야 mock 핸들러가 요청을 가로챌 수 있다.
     mswReady.then(() => {
       publicClient
-        .post('v1/users/me/refresh')
+        .post('users/me/refresh')
         .json<{ access_token: string }>()
         .then(async ({ access_token }) => {
           setToken(access_token)
