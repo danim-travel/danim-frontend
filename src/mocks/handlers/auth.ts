@@ -3,7 +3,7 @@
  * signup / email-verify / login / me / token-refresh 엔드포인트를 처리한다.
  */
 import { http, HttpResponse } from 'msw'
-import { MOCK_USER, MOCK_ACCESS_TOKEN, MOCK_CREDENTIALS, MOCK_VERIFY_CODE } from '../constants'
+import { MOCK_USER, MOCK_ACCESS_TOKEN, MOCK_CREDENTIALS, MOCK_VERIFY_CODE, MOCK_EMAIL_TOKEN } from '../constants'
 
 // 로그인 성공 시 true로 설정 — token/refresh는 이 플래그가 true일 때만 성공 반환
 // 실제 HttpOnly refresh_token 쿠키를 간소하게 흉내낸 것
@@ -41,7 +41,7 @@ export const authHandlers = [
       : '이메일 인증에 성공하였습니다.'
     return HttpResponse.json({
       detail,
-      email_token: 'mock_email_token_verified',
+      email_token: MOCK_EMAIL_TOKEN,
     })
   }),
 
@@ -64,21 +64,24 @@ export const authHandlers = [
     return HttpResponse.json({ access_token: MOCK_ACCESS_TOKEN })
   }),
 
-  // 내 정보 조회
-  http.get('*/users/me', () => {
-    return HttpResponse.json({
-      user_id: MOCK_USER.userId,
-      nickname: MOCK_USER.nickname,
-      profile_img: MOCK_USER.profileImg,
-    })
-  }),
-
   // JWT 토큰 재발급 — mockSessionActive(로그인 여부)가 true일 때만 성공
   http.post('*/users/token/refresh', () => {
     if (!mockSessionActive) {
       return HttpResponse.json({ error_detail: '인증이 필요합니다.' }, { status: 401 })
     }
     return HttpResponse.json({ access_token: MOCK_ACCESS_TOKEN })
+  }),
+
+  // 비밀번호 재설정 — email_token + new_password
+  http.post('*/users/reset-password', async ({ request }) => {
+    const body = await request.json() as { email_token?: string; new_password?: string }
+    if (body.email_token !== MOCK_EMAIL_TOKEN) {
+      return HttpResponse.json(
+        { error_detail: '유효하지 않은 인증 토큰입니다.' },
+        { status: 400 }
+      )
+    }
+    return HttpResponse.json({ detail: '비밀번호가 재설정되었습니다.' })
   }),
 
   // 닉네임 중복 확인

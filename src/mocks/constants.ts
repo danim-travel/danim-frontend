@@ -15,3 +15,5 @@ export const MOCK_CREDENTIALS = {
 } as const
 
 export const MOCK_VERIFY_CODE = '123456'
+
+export const MOCK_EMAIL_TOKEN = 'mock_email_token_verified'
