@@ -1,8 +1,9 @@
 "use client";
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { getCurrentUser, refreshMeToken } from "@/lib/api/auth";
+import { getCurrentUser, refreshToken } from "@/lib/api/auth";
 import { useAuthStore } from "@/store/authStore";
+import { getApiErrorMessage } from "@/lib/apiError";
 import { toast } from "@/store/toastStore";
 
 export function SocialCallbackHandler() {
@@ -20,7 +21,7 @@ export function SocialCallbackHandler() {
 
     async function handleCallback() {
       try {
-        const { access_token } = await refreshMeToken();
+        const { access_token } = await refreshToken();
         useAuthStore.getState().setToken(access_token);
         const me = await getCurrentUser();
         useAuthStore.getState().setAuth(
@@ -28,15 +29,18 @@ export function SocialCallbackHandler() {
           access_token
         );
         router.replace("/");
-      } catch {
-        toast.error("소셜 로그인에 실패했습니다. 다시 시도해주세요.");
+      } catch (e) {
+        toast.error(getApiErrorMessage(e, {
+          client: "소셜 로그인에 실패했습니다. 다시 시도해주세요.",
+          server: "소셜 로그인에 실패했습니다. 잠시 후 다시 시도해주세요.",
+        }));
         router.replace("/login");
       }
     }
 
     handleCallback();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // router, searchParams는 Next.js가 안정적인 참조를 보장하므로 deps에 포함해도 무한 루프 없음
+  }, [router, searchParams]);
 
   return (
     <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />

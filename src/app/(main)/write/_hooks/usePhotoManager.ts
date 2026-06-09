@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { uploadImage } from '@/lib/uploadImage'
-import { getApiErrorMessage } from '@/lib/apiClient'
+import { getApiErrorMessage } from '@/lib/apiError'
 import { toast } from '@/store/toastStore'
 import type { CreatePostSpotImage } from '@/types'
 import { MAX_PHOTOS } from '../_constants'

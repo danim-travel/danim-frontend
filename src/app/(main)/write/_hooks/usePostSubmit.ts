@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { apiClient, getApiErrorMessage } from '@/lib/apiClient'
+import { apiClient } from '@/lib/apiClient'
+import { getApiErrorMessage } from '@/lib/apiError'
 import { toast } from '@/store/toastStore'
 import { queryKeys } from '@/lib/queryKeys'
 import { useAuthStore } from '@/store/authStore'
