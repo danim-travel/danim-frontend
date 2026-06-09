@@ -6,8 +6,8 @@ import { http, HttpResponse } from 'msw'
 import { MOCK_USER, MOCK_ACCESS_TOKEN, MOCK_CREDENTIALS, MOCK_VERIFY_CODE, MOCK_EMAIL_TOKEN } from '../constants'
 
 // 로그인 성공 시 true로 설정 — token/refresh는 이 플래그가 true일 때만 성공 반환
-// 실제 HttpOnly refresh_token 쿠키를 간소하게 흉내낸 것
-let mockSessionActive = false
+// sessionStorage로 유지해 페이지 새로고침 후에도 로그인 상태가 복원되도록 한다.
+let mockSessionActive = sessionStorage.getItem('mockSession') === 'true'
 
 export const authHandlers = [
   // 회원가입
@@ -61,6 +61,7 @@ export const authHandlers = [
       )
     }
     mockSessionActive = true
+    sessionStorage.setItem('mockSession', 'true')
     return HttpResponse.json({ access_token: MOCK_ACCESS_TOKEN })
   }),
 
