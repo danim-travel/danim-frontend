@@ -33,8 +33,8 @@ interface FollowUserItemProps {
 
 type FollowCache = FollowUser[] | undefined
 
-function applyIsFollowing(cache: FollowCache, targetId: string, isFollowing: boolean): FollowCache {
-  return cache?.map(u => u.user_id === targetId ? { ...u, is_following: isFollowing } : u)
+function applyIsFollowing(cache: FollowCache, targetId: string, isFollowing: boolean): FollowUser[] {
+  return (cache ?? []).map(u => u.user_id === targetId ? { ...u, is_following: isFollowing } : u)
 }
 
 export function FollowUserItem({ user, followersQueryKey, followingQueryKey, isMutualFollow }: FollowUserItemProps) {

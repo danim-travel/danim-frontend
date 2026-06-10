@@ -45,7 +45,7 @@ export default function FollowersPage() {
               tab={tab}
               followers={followers}
               following={following}
-              isLoading={isFollowersLoading || isFollowingLoading}
+              isLoading={tab === "followers" ? isFollowersLoading : isFollowingLoading}
             />
           </div>
         </div>
