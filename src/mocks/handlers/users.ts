@@ -5,10 +5,12 @@ import { http, HttpResponse, type HttpResponseResolver } from 'msw'
 import type { UserProfilePost, UserProfileResponse, FollowResponse, FollowUser } from '@/types'
 import { MOCK_USER } from '../constants'
 
+const mockHeights = [320, 480, 260, 560, 400, 300, 520, 380, 440, 280, 500, 360, 420, 600, 340, 460, 240, 540, 390, 470]
+
 const mockPosts: UserProfilePost[] = Array.from({ length: 20 }, (_, i) => ({
   post_id: `01HZXK9P${String(i + 1).padStart(2, '0')}ABCDEFGHJKLMNPQRST`,
   title: `여행 기록 ${i + 1}`,
-  thumbnail: `https://picsum.photos/seed/userpost${i + 1}/480/480`,
+  thumbnail: `https://picsum.photos/seed/userpost${i + 1}/480/${mockHeights[i % mockHeights.length]}`,
 }))
 
 const mockUserProfile: UserProfileResponse = {
@@ -108,7 +110,6 @@ const handleFollowing: HttpResponseResolver = ({ request, params }) => {
 }
 
 export const usersHandlers = [
-  // 내 정보 조회 — 실제 API 테스트 시 주석 해제
   // http.get('*/users/me', ({ request }) => {
   //   if (!request.headers.get('Authorization')) {
   //     return HttpResponse.json(
@@ -138,6 +139,19 @@ export const usersHandlers = [
         { status: 404 },
       )
     }
+
+    // 실제 API로 로그인한 경우 localStorage의 auth-storage에서 실제 유저 정보를 읽어 반환
+    try {
+      const raw = localStorage.getItem('auth-storage')
+      const storedUser = raw ? JSON.parse(raw)?.state?.user : null
+      if (storedUser && userId === storedUser.userId) {
+        return HttpResponse.json({
+          ...mockUserProfile,
+          nickname: storedUser.nickname,
+          profile_img: storedUser.profileImg ?? null,
+        })
+      }
+    } catch { /* localStorage 접근 실패 시 mock 데이터로 fallback */ }
 
     return HttpResponse.json(mockOtherProfiles[userId] ?? mockUserProfile)
   }),
