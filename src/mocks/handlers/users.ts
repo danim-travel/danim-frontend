@@ -108,6 +108,42 @@ const handleFollowing: HttpResponseResolver = ({ request, params }) => {
 }
 
 export const usersHandlers = [
+  // 내 정보 조회 — 백엔드 개발 완료 전 임시 mock
+  http.get('*/users/me', ({ request }) => {
+    if (!request.headers.get('Authorization')) {
+      return HttpResponse.json(
+        { error_detail: '자격 인증 데이터가 제공되지 않습니다.' },
+        { status: 401 },
+      )
+    }
+    return HttpResponse.json({
+      user_id: MOCK_USER.userId,
+      nickname: MOCK_USER.nickname,
+      profile_img: MOCK_USER.profileImg,
+    })
+  }),
+
+  http.get('*/users/:userId/profile', ({ request, params }) => {
+    if (!request.headers.get('Authorization')) {
+      return HttpResponse.json(
+        { error_detail: '자격 인증 데이터가 제공되지 않습니다.' },
+        { status: 401 },
+      )
+    }
+
+    const userId = params.userId as string
+    if (userId === 'not-found') {
+      return HttpResponse.json(
+        { error_detail: '존재하지 않는 유저입니다.' },
+        { status: 404 },
+      )
+    }
+
+    return HttpResponse.json(mockOtherProfiles[userId] ?? mockUserProfile)
+  }),
+]
+
+export const followHandlers = [
   http.get('*/users/:userId/followers/', handleFollowers),
   http.get('*/users/:userId/followers', handleFollowers),
 
@@ -194,24 +230,5 @@ export const usersHandlers = [
 
     const response: FollowResponse = { is_followed: false, follower_count: followerCount }
     return HttpResponse.json(response)
-  }),
-
-  http.get('*/users/:userId/profile', ({ request, params }) => {
-    if (!request.headers.get('Authorization')) {
-      return HttpResponse.json(
-        { error_detail: '자격 인증 데이터가 제공되지 않습니다.' },
-        { status: 401 },
-      )
-    }
-
-    const userId = params.userId as string
-    if (userId === 'not-found') {
-      return HttpResponse.json(
-        { error_detail: '존재하지 않는 유저입니다.' },
-        { status: 404 },
-      )
-    }
-
-    return HttpResponse.json(mockOtherProfiles[userId] ?? mockUserProfile)
   }),
 ]

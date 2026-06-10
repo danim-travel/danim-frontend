@@ -5,7 +5,7 @@ import { authHandlers } from './auth'
 import { commentsHandlers } from './comments'
 import { postsHandlers } from './posts'
 import { interactionsHandlers } from './interactions'
-import { usersHandlers } from './users'
+import { usersHandlers, followHandlers } from './users'
 import type { RequestHandler } from 'msw'
 
 export const handlers: RequestHandler[] = [
@@ -14,4 +14,5 @@ export const handlers: RequestHandler[] = [
   ...postsHandlers,
   ...interactionsHandlers,
   ...usersHandlers,
+  ...followHandlers,
 ]

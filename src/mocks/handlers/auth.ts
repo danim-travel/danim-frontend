@@ -84,21 +84,6 @@ export const authHandlers = [
     return HttpResponse.json({ detail: '비밀번호가 재설정되었습니다.' })
   }),
 
-  // 내 정보 조회 — Authorization 헤더 필요
-  http.get('*/users/me', ({ request }) => {
-    if (!request.headers.get('Authorization')) {
-      return HttpResponse.json(
-        { error_detail: '자격 인증 데이터가 제공되지 않습니다.' },
-        { status: 401 },
-      )
-    }
-    return HttpResponse.json({
-      user_id: MOCK_USER.userId,
-      nickname: MOCK_USER.nickname,
-      profile_img: MOCK_USER.profileImg,
-    })
-  }),
-
   // 닉네임 중복 확인
   http.post('*/users/check-nickname', async ({ request }) => {
     const body = await request.json() as { nickname?: string }
