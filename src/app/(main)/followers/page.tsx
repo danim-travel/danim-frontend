@@ -26,7 +26,7 @@ export default function FollowersPage() {
 
   const tabItems = [
     { key: "followers", label: "팔로워", count: followers?.length },
-    { key: "following", label: "팔로잉", count: following?.length },
+    { key: "following", label: "팔로잉", count: following.filter(u => u.is_following).length },
   ]
 
   return (
