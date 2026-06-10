@@ -41,7 +41,7 @@ type CapturedRequest = { url: string; method: string; body: string | null }
 async function installFetchSpy(page: Page) {
   await page.addInitScript(() => {
     const orig = window.fetch.bind(window)
-    ;(window as Window & { __fetchCaptures: CapturedRequest[] }).__fetchCaptures = [] as CapturedRequest[]
+    ;(window as unknown as Window & { __fetchCaptures: CapturedRequest[] }).__fetchCaptures = [] as CapturedRequest[]
     window.fetch = async (input, init) => {
       const url = input instanceof Request ? input.url : String(input)
       const method = input instanceof Request ? input.method : (init?.method ?? 'GET')
@@ -56,7 +56,7 @@ async function installFetchSpy(page: Page) {
         }
       } catch { /* ignore */ }
 
-      ;(window as Window & { __fetchCaptures: CapturedRequest[] }).__fetchCaptures.push({ url, method, body })
+      ;(window as unknown as Window & { __fetchCaptures: CapturedRequest[] }).__fetchCaptures.push({ url, method, body })
       return orig(input, init)
     }
   })
