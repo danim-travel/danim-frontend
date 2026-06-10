@@ -109,7 +109,7 @@ export function ProfileSection() {
         actionLoading={checking}
         onAction={async () => {
           const ok = await checkDuplicate(nicknameField.value);
-          setValue("nicknameChecked", ok, { shouldValidate: true });
+          setValue("nicknameChecked", ok, { shouldValidate: ok });
         }}
         helperText={
           errors.nickname?.message ??

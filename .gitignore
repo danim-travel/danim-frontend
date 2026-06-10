@@ -10,6 +10,8 @@
 
 # testing
 /coverage
+/test-results
+/playwright-report
 
 # next.js
 /.next/
@@ -44,3 +46,5 @@ docs/local/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+certificates
