@@ -58,3 +58,12 @@ export interface CurrentUserResponse {
   nickname: string
   profile_img: string | null
 }
+
+export type FollowUser = {
+  user_id: string
+  nickname: string
+  profile_img: string | null
+  is_following: boolean
+}
+
+export type FollowListResponse = FollowUser[]
