@@ -18,3 +18,4 @@ export * from "./Toast/Toast";
 export * from "./Toggle/Toggle";
 export * from "./feedback/EmptyState";
 export * from "./feedback/Skeleton";
+export * from "./PageContainer";

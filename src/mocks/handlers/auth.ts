@@ -9,6 +9,12 @@ import { MOCK_USER, MOCK_ACCESS_TOKEN, MOCK_CREDENTIALS, MOCK_VERIFY_CODE, MOCK_
 // sessionStorage로 유지해 페이지 새로고침 후에도 로그인 상태가 복원되도록 한다.
 let mockSessionActive = sessionStorage.getItem('mockSession') === 'true'
 
+export const mockAuthUser = {
+  user_id: 'mock-user-id',
+  nickname: 'test_nickname',
+  profile_img: 'https://picsum.photos/seed/userprofile/200/200',
+}
+
 export const authHandlers = [
   // 회원가입
   http.post('*/users/signup', async () => {
@@ -95,5 +101,8 @@ export const authHandlers = [
       )
     }
     return HttpResponse.json({ detail: '사용가능한 닉네임 입니다.' })
+  }),
+  http.get('*/v1/users/me', () => {
+    return HttpResponse.json(mockAuthUser)
   }),
 ]
