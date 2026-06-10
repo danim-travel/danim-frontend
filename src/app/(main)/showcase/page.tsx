@@ -87,7 +87,7 @@ export default function ShowcasePage() {
   const [stepperCurrent,   setStepperCurrent]   = useState(1);
 
   return (
-    <div className="h-full overflow-y-auto bg-bg">
+    <div className="min-h-full bg-bg">
       <div className="max-w-4xl mx-auto px-8 py-10">
 
         {/* 헤더 + 목차 */}

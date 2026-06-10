@@ -10,7 +10,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     <AuthGuard>
       <div className="flex h-full">
         <SideNav />
-        <main className="flex-1 min-w-0 h-full overflow-hidden">{children}</main>
+        <main className="flex-1 min-w-0 h-full overflow-y-auto overscroll-contain">{children}</main>
       </div>
     </AuthGuard>
   )
