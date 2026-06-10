@@ -4,6 +4,7 @@
 import { authHandlers } from './auth'
 import { commentsHandlers } from './comments'
 import { postsHandlers } from './posts'
+import { mainFeedHandlers } from './mainFeed'
 import { interactionsHandlers } from './interactions'
 import { usersHandlers, followHandlers } from './users'
 import type { RequestHandler } from 'msw'
@@ -11,6 +12,8 @@ import type { RequestHandler } from 'msw'
 export const handlers: RequestHandler[] = [
   // ...authHandlers,
   ...commentsHandlers,
+  // mainFeed가 동적 라우트 *./posts/:postId 보다 먼저 매칭되도록 앞에 둔다.
+  ...mainFeedHandlers,
   ...postsHandlers,
   ...interactionsHandlers,
   ...usersHandlers,

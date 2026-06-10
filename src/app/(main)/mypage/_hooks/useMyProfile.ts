@@ -11,7 +11,7 @@ export function useMyProfile(userId: string) {
   return useQuery({
     queryKey: queryKeys.users.profile(userId),
     queryFn: () =>
-      apiClient.get(`v1/users/${userId}/profile`).json<UserProfileResponse>(),
+      apiClient.get(`users/${userId}/profile`).json<UserProfileResponse>(),
     refetchOnWindowFocus: false,
   })
 }

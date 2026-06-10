@@ -86,3 +86,46 @@ export type PostPresignedUrlResponse = {
   img_url: string
   key: string
 }
+
+// 메인(팔로잉) 피드 타입
+export type MainFeedUser = {
+  user_id: string
+  nickname: string
+  profile_img: string | null
+}
+
+export type MainFeedPost = {
+  post_id: string
+  thumbnail: string
+  description: string
+}
+
+export type MainFeedSpotLocation = {
+  place_name: string
+  address_name: string
+  road_address_name: string
+  x: string
+  y: string
+}
+
+export type MainFeedSpot = {
+  spot_id: string
+  location: MainFeedSpotLocation
+  order: number
+}
+
+export type MainFeedItem = {
+  user: MainFeedUser
+  post: MainFeedPost
+  spots: MainFeedSpot[]
+  spot_count: number
+  comment_count: number
+  like_count: number
+  is_liked: boolean
+  is_bookmarked: boolean
+}
+
+export type MainFeedResponse = {
+  next: string | null
+  results: MainFeedItem[]
+}

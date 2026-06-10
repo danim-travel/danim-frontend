@@ -102,7 +102,7 @@ export const authHandlers = [
     }
     return HttpResponse.json({ detail: '사용가능한 닉네임 입니다.' })
   }),
-  http.get('*/v1/users/me', () => {
+  http.get('*/users/me', () => {
     return HttpResponse.json(mockAuthUser)
   }),
 ]
