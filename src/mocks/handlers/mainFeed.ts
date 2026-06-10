@@ -30,7 +30,7 @@ const mockSpots = [
 ]
 
 // 25개 — 마지막 페이지가 5개로 부분 채워지는 엣지 케이스 포함
-const ALL_FEED_ITEMS: MainFeedItem[] = Array.from({ length: 25 }, (_, i) => {
+export const ALL_FEED_ITEMS: MainFeedItem[] = Array.from({ length: 25 }, (_, i) => {
   const spotCount = (i % 3) + 1
   return {
     user: {
