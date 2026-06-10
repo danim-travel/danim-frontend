@@ -1,23 +1,22 @@
 import { http, HttpResponse } from 'msw'
 import type { LikeResponse, BookmarkResponse } from '@/types'
+import {
+  likedPosts,
+  likedComments,
+  bookmarkedPosts,
+  postLikeCounts,
+  postBookmarkCounts,
+  commentLikeCounts,
+} from '../lib/mockState'
 
-export const likedPosts = new Set<string>()
-// comment-2는 초기 상태에서 사용자가 좋아요를 누른 상태
-export const likedComments = new Set<string>(['comment-2'])
-export const bookmarkedPosts = new Set<string>()
-
-// 게시글/댓글별 좋아요·북마크 카운트(현재 사용자의 like 포함).
-export const postLikeCounts = new Map<string, number>([
-  ['showcase-post', 24],
-])
-export const postBookmarkCounts = new Map<string, number>([
-  ['showcase-post', 8],
-])
-export const commentLikeCounts = new Map<string, number>([
-  ['comment-1', 2],
-  ['comment-2', 5],
-  ['comment-3', 0],
-])
+export {
+  likedPosts,
+  likedComments,
+  bookmarkedPosts,
+  postLikeCounts,
+  postBookmarkCounts,
+  commentLikeCounts,
+}
 
 
 export const interactionsHandlers = [

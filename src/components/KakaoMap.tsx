@@ -31,9 +31,10 @@ interface KakaoMapProps {
   selectedPost: Post | null;
   onBoundsChange?: (bounds: BoundsData) => void;
   onPinClick?: (post: Post, pinIndex: number) => void;
+  onCurrentLocation?: () => void;
 }
 
-function KakaoMap({ selectedPost, onBoundsChange, onPinClick }: KakaoMapProps) {
+function KakaoMap({ selectedPost, onBoundsChange, onPinClick, onCurrentLocation }: KakaoMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<kakao.maps.Map | null>(null);
   const overlaysRef = useRef<kakao.maps.CustomOverlay[]>([]);
@@ -119,6 +120,7 @@ function KakaoMap({ selectedPost, onBoundsChange, onPinClick }: KakaoMapProps) {
         clearGroup();
         map.setCenter(new kakao.maps.LatLng(coords.latitude, coords.longitude));
         map.setLevel(3);
+        onCurrentLocation?.();
       },
       () => setLocError("위치 권한이 거부되었습니다.")
     );

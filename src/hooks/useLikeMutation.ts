@@ -30,6 +30,11 @@ interface UseLikeMutationOptions<TCacheData, TVariables extends { wasLiked: bool
    * pendingId 정리 등 cleanup에 사용한다.
    */
   onSettled?: (variables: TVariables) => void
+  /**
+   * onSuccess 이후 추가 캐시 동기화 등 부수 작업 (선택).
+   * 다른 쿼리 키의 캐시를 같이 업데이트할 때 사용한다.
+   */
+  onAfterSuccess?: (res: LikeResponse, variables: TVariables) => void
 }
 
 /**
@@ -48,6 +53,7 @@ export function useLikeMutation<TCacheData, TVariables extends { wasLiked: boole
   successUpdater,
   onBeforeMutate,
   onSettled,
+  onAfterSuccess,
 }: UseLikeMutationOptions<TCacheData, TVariables>) {
   const queryClient = useQueryClient()
 
@@ -72,6 +78,7 @@ export function useLikeMutation<TCacheData, TVariables extends { wasLiked: boole
     },
     onSuccess: (res, variables) => {
       queryClient.setQueryData<TCacheData>(queryKey, (old) => successUpdater(old, res, variables))
+      onAfterSuccess?.(res, variables)
     },
     onSettled: (_res, _err, variables) => {
       onSettled?.(variables)

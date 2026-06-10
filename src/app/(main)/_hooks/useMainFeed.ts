@@ -1,4 +1,4 @@
-import { useInfiniteQuery } from '@tanstack/react-query'
+import { useInfiniteQuery, type InfiniteData } from '@tanstack/react-query'
 import { apiClient } from '@/lib/apiClient'
 import { queryKeys } from '@/lib/queryKeys'
 import type { MainFeedResponse } from '@/types'
@@ -16,7 +16,7 @@ export function useMainFeed() {
   return useInfiniteQuery<
     MainFeedResponse,
     Error,
-    MainFeedResponse,
+    InfiniteData<MainFeedResponse>,
     typeof queryKeys.posts.mainFeed,
     string | null
   >({
