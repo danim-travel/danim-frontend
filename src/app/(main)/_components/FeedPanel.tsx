@@ -48,7 +48,7 @@ export function FeedPanel({
   return (
     <aside className="w-[500px] p-7 shrink-0 h-full flex flex-col bg-bg-subtle rounded-2xl overflow-hidden shadow-sm">
       {/* 헤더 */}
-      <header className="bg-bg-card mb-5">
+      <header className=" mb-5">
         <h2 className="text-section-title font-bold">팔로잉 피드</h2>
       </header>
 
