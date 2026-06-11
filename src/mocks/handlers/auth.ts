@@ -10,9 +10,9 @@ import { MOCK_USER, MOCK_ACCESS_TOKEN, MOCK_CREDENTIALS, MOCK_VERIFY_CODE, MOCK_
 let mockSessionActive = sessionStorage.getItem('mockSession') === 'true'
 
 export const mockAuthUser = {
-  user_id: 'mock-user-id',
-  nickname: 'test_nickname',
-  profile_img: 'https://picsum.photos/seed/userprofile/200/200',
+  user_id: MOCK_USER.userId,
+  nickname: MOCK_USER.nickname,
+  profile_img: MOCK_USER.profileImg,
 }
 
 export const authHandlers = [
