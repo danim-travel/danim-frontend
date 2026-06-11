@@ -63,27 +63,18 @@ export function FollowUserItem({ user, followersQueryKey, followingQueryKey, isM
     queryClient.invalidateQueries({ queryKey: followingQueryKey })
   }
 
-  const followMutation = useMutation({
-    mutationFn: () => followUser(user.user_id),
-    onMutate: () => prepareOptimistic(true),
+  const toggleMutation = useMutation({
+    mutationFn: (shouldFollow: boolean) =>
+      shouldFollow ? followUser(user.user_id) : unfollowUser(user.user_id),
+    onMutate: (shouldFollow) => prepareOptimistic(shouldFollow),
     onError: (err, _, context) => {
       rollback(context)
-      toast.error(getApiErrorMessage(err, { client: "팔로우에 실패했습니다." }))
+      toast.error(getApiErrorMessage(err, { client: "팔로우 변경에 실패했습니다." }))
     },
     onSettled: invalidateBoth,
   })
 
-  const unfollowMutation = useMutation({
-    mutationFn: () => unfollowUser(user.user_id),
-    onMutate: () => prepareOptimistic(false),
-    onError: (err, _, context) => {
-      rollback(context)
-      toast.error(getApiErrorMessage(err, { client: "팔로우 취소에 실패했습니다." }))
-    },
-    onSettled: invalidateBoth,
-  })
-
-  const isPending = followMutation.isPending || unfollowMutation.isPending
+  const isPending = toggleMutation.isPending
 
   const mutualBadge = isMutualFollow ? (
     <span className="shrink-0 px-2 py-0.5 rounded-full text-[11px] font-medium text-primary bg-(--color-primary-soft)">
@@ -111,7 +102,7 @@ export function FollowUserItem({ user, followersQueryKey, followingQueryKey, isM
             leftIcon={<Check size={14} />}
             loading={isPending}
             disabled={isPending}
-            onClick={() => unfollowMutation.mutate()}
+            onClick={() => toggleMutation.mutate(false)}
           >
             팔로잉
           </Button>
@@ -121,7 +112,7 @@ export function FollowUserItem({ user, followersQueryKey, followingQueryKey, isM
             size="sm"
             loading={isPending}
             disabled={isPending}
-            onClick={() => followMutation.mutate()}
+            onClick={() => toggleMutation.mutate(true)}
           >
             팔로우
           </Button>
