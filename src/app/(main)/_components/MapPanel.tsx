@@ -12,13 +12,14 @@ const KakaoMap = dynamic(() => import("@/components/KakaoMap"), {
 
 interface MapPanelProps {
   focusedPost: MainFeedItem | null;
-  onPinClick: (postId: string) => void;
+  focusedPostIndex: number;
+  onPinClick: (postId: string, spotIdx: number) => void;
   /** 현재위치 이동 시 포커스 초기화 (핀/폴리라인 제거) */
   onResetFocus?: () => void;
 }
 
-export function MapPanel({ focusedPost, onPinClick, onResetFocus }: MapPanelProps) {
-  const pinColor = usePinColor();
+export function MapPanel({ focusedPost, focusedPostIndex, onPinClick, onResetFocus }: MapPanelProps) {
+  const pinColor = usePinColor(focusedPostIndex);
 
   const mapPost = useMemo<Post | null>(() => {
     if (!focusedPost) return null;
@@ -38,7 +39,7 @@ export function MapPanel({ focusedPost, onPinClick, onResetFocus }: MapPanelProp
     <section className="relative flex-1 min-w-0 h-full rounded-2xl overflow-hidden shadow-sm">
       <KakaoMap
         selectedPost={mapPost}
-        onPinClick={(post) => onPinClick(post.post_id)}
+        onPinClick={(post, pinIndex) => onPinClick(post.post_id, pinIndex)}
         onCurrentLocation={onResetFocus}
       />
 

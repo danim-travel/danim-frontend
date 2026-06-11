@@ -31,6 +31,13 @@
   --color-white: #FFFFFF;
   --color-black: #000000;
 
+  /* ── Primitive: Pin ────────────────────────── */
+  --color-pin-1: #ff6b81;
+  --color-pin-2: #1e90ff;
+  --color-pin-3: #3ECBA0;
+  --color-pin-4: #a29bfe;
+  --color-pin-5: #485460;
+
   /* ── Brand: Social ──────────────────────────── */
   --color-kakao:    #FEE500;
   --color-kakao-fg: #191600;
