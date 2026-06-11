@@ -30,9 +30,9 @@ export async function getFollowing(userId: string): Promise<FollowListResponse> 
 }
 
 export async function followUser(userId: string): Promise<FollowResponse> {
-  return apiClient.post(`users/${userId}/follow`).json<FollowResponse>()
+  return apiClient.post(`follow/${userId}`).json<FollowResponse>()
 }
 
 export async function unfollowUser(userId: string): Promise<FollowResponse> {
-  return apiClient.delete(`users/${userId}/follow`).json<FollowResponse>()
+  return apiClient.delete(`follow/${userId}`).json<FollowResponse>()
 }
