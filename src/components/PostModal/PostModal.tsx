@@ -22,10 +22,15 @@ interface Props {
   onGoToMain?: () => void;
   showGoToMain?: boolean;
   className?: string;
+  // undefined = 데이터 로드 후 썸네일이 있는 spot으로 자동 이동 (댓글 클릭)
+  // number  = 해당 spot 바로 오픈 (마커 클릭)
+  initialSpotIdx?: number;
 }
 
-export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, className }: Props) {
-  const [activeSpotIdx, setActiveSpotIdx] = useState(0);
+const urlPathname = (url: string) => { try { return new URL(url).pathname } catch { return url } }
+
+export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, className, initialSpotIdx }: Props) {
+  const [userSelectedIdx, setUserSelectedIdx] = useState<number | null>(null);
 
   const { data, isLoading, isError, likeMutation, bookmarkMutation } = usePostDetail(postId);
   const { data: commentsData } = useCommentsQuery(postId);
@@ -50,8 +55,20 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
 
   const spots = useMemo(
     () => (data?.spots ? [...data.spots].sort((a, b) => a.order - b.order) : []),
-    [data?.spots]
+    [data]
   );
+
+  // initialSpotIdx 없으면(댓글 클릭) thumbnail URL pathname으로 spot 탐색 — presigned URL 대응
+  const thumbnailSpotIdx = useMemo(() => {
+    if (initialSpotIdx !== undefined || !data) return undefined;
+    const thumbnailPath = urlPathname(data.post.thumbnail);
+    const idx = spots.findIndex((spot) =>
+      spot.images.some((img) => urlPathname(img.img_url) === thumbnailPath)
+    );
+    return idx !== -1 ? idx : 0;
+  }, [data, initialSpotIdx, spots]);
+
+  const activeSpotIdx = userSelectedIdx ?? thumbnailSpotIdx ?? initialSpotIdx ?? 0;
 
   // activeSpotIdx가 범위를 벗어나면(예: 데이터 재조회로 스팟 수 감소 시) 첫 번째로 복원
   const activeSpot = spots[activeSpotIdx] ?? spots[0];
@@ -94,10 +111,12 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
 
   return (
     <div
+      data-testid="post-modal-backdrop"
       className={`fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[2px] ${className ?? ""}`}
       onClick={onClose}
     >
       <div
+        data-testid="post-modal"
         className="bg-bg-card rounded-3xl overflow-hidden flex shadow-[0_32px_80px_-12px_rgba(0,0,0,0.35)] w-[1000px] max-w-[96vw] max-h-[92vh] relative"
         onClick={(e) => e.stopPropagation()}
       >
@@ -132,7 +151,7 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
               spots={spots}
               activeSpotIdx={activeSpotIdx}
               activeSpot={activeSpot}
-              onSelectSpot={setActiveSpotIdx}
+              onSelectSpot={setUserSelectedIdx}
             />
             <DetailPane
               data={data}

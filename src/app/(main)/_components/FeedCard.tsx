@@ -16,9 +16,10 @@ interface FeedCardProps {
   feed: MainFeedItem;
   isFocused: boolean;
   onClick: () => void;
+  onCommentClick?: () => void;
 }
 
-export function FeedCard({ feed, isFocused, onClick }: FeedCardProps) {
+export function FeedCard({ feed, isFocused, onClick, onCommentClick }: FeedCardProps) {
   const addressName = feed.spots[0]?.location.address_name ?? "";
   const region = addressName ? extractRegion(addressName) : "";
   const queryClient = useQueryClient();
@@ -147,10 +148,14 @@ export function FeedCard({ feed, isFocused, onClick }: FeedCardProps) {
             <Heart size={16} className={cn(feed.is_liked && "fill-error text-error")} />
             <span data-testid="like-count">{feed.like_count}</span>
           </button>
-          <span className="flex items-center gap-1 text-text-muted text-body-sm">
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onCommentClick?.(); }}
+            className="flex items-center gap-1 text-text-muted text-body-sm hover:text-primary transition-colors"
+          >
             <MessageCircle size={16} />
             <span>{feed.comment_count}</span>
-          </span>
+          </button>
           <button
             type="button"
             data-testid="bookmark-button"
