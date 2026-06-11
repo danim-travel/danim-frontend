@@ -10,11 +10,11 @@ import type { RequestHandler } from 'msw'
 
 export const handlers: RequestHandler[] = [
   // ...authHandlers,
-  ...commentsHandlers,
+  // ...commentsHandlers,
   // mainFeed가 동적 라우트 *./posts/:postId 보다 먼저 매칭되도록 앞에 둔다.
-  ...mainFeedHandlers,
-  ...postsHandlers,
-  ...interactionsHandlers,
-  ...usersHandlers,
-  ...followHandlers,
+  // ...mainFeedHandlers,
+  // ...postsHandlers,
+  // ...interactionsHandlers,
+  // ...usersHandlers,
+  // ...followHandlers,
 ]
