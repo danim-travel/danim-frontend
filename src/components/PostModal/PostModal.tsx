@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useScrollLock } from "@/hooks/useScrollLock";
 import { X } from "lucide-react";
-import { IconButton, UserRowSkeleton, EmptyState } from "@/components/common";
+import { IconButton, UserRowSkeleton } from "@/components/common";
+import { toast } from "@/store/toastStore";
 import { usePostDetail } from "@/hooks/usePostDetail";
 import { useCommentsQuery } from "@/hooks/useCommentsQuery";
 import { useCommentMutations } from "@/hooks/useCommentMutations";
@@ -44,6 +45,13 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
   const currentUserId = useAuthStore((s) => s.user?.userId) ?? (config.isDev ? SHOWCASE_MOCK_USER_ID : null);
 
   useScrollLock(true);
+
+  useEffect(() => {
+    if (isError) {
+      toast.error("게시글을 불러올 수 없습니다.");
+      onClose();
+    }
+  }, [isError, onClose]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -123,12 +131,6 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
         {!data && isLoading && (
           <div className="w-full h-[500px] flex items-center justify-center">
             <UserRowSkeleton rows={3} />
-          </div>
-        )}
-
-        {!data && isError && (
-          <div className="w-full h-[500px] flex items-center justify-center">
-            <EmptyState title="게시글을 불러올 수 없습니다." />
           </div>
         )}
 
