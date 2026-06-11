@@ -59,6 +59,33 @@ export interface CurrentUserResponse {
   profile_img: string | null
 }
 
+export interface MeDetailResponse {
+  user_id: string
+  name: string
+  email: string
+  birth_date: string
+  nickname: string
+  profile_img: string | null
+  intro: string
+}
+
+export interface UpdateUserRequest {
+  nickname?: string
+  intro?: string
+  profile_img?: string | null
+}
+
+export interface ChangePasswordRequest {
+  password: string
+  new_password: string
+}
+
+export interface ProfileImagePresignedResponse {
+  presigned_url: string
+  img_url: string
+  key: string
+}
+
 export type FollowUser = {
   user_id: string
   nickname: string
@@ -67,3 +94,21 @@ export type FollowUser = {
 }
 
 export type FollowListResponse = FollowUser[]
+
+export type SmsVerificationPurpose = 'signup' | 'find_email' | 'phone_change'
+
+export interface SendSmsRequest {
+  phone_number: string
+  purpose: SmsVerificationPurpose
+}
+
+export interface VerifySmsRequest {
+  phone_number: string
+  code: string
+  purpose: SmsVerificationPurpose
+}
+
+export interface VerifySmsResponse {
+  detail: string
+  sms_token: string
+}

@@ -13,6 +13,7 @@ export interface ModalProps {
   footer?: React.ReactNode;
   footerAlign?: ModalFooterAlign;
   placement?: "center" | "bottom";
+  className?: string;
   children?: React.ReactNode;
 }
 
@@ -29,6 +30,7 @@ export function Modal({
   footer,
   footerAlign = "end",
   placement = "center",
+  className,
   children,
 }: ModalProps) {
   const bottom = placement === "bottom";
@@ -66,7 +68,8 @@ export function Modal({
               "flex flex-col gap-6 max-w-full w-full",
               bottom
                 ? "bg-(--sheet-bg) shadow-(--sheet-shadow) rounded-t-sheet p-6"
-                : "max-w-(--modal-max-width) bg-(--modal-bg) shadow-modal rounded-modal p-8"
+                : "max-w-(--modal-max-width) bg-(--modal-bg) shadow-modal rounded-modal p-8",
+              className,
             )}
             initial={bottom ? { y: "100%" } : { opacity: 0, scale: 0.95, y: 8 }}
             animate={bottom ? { y: 0 } : { opacity: 1, scale: 1, y: 0 }}

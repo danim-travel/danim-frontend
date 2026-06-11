@@ -12,6 +12,7 @@ export const queryKeys = {
     explore: (search?: string) => ['posts', 'explore', search] as const,
   },
   users: {
+    me: ['users', 'me'] as const,
     profile: (userId: string) => ['users', userId, 'profile'] as const,
     followers: (userId: string) => ['users', userId, 'followers'] as const,
     following: (userId: string) => ['users', userId, 'following'] as const,
