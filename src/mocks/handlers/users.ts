@@ -75,6 +75,7 @@ const mockOtherProfiles: Record<string, UserProfileResponse> = {
   },
 }
 
+/** Authorization 헤더가 없으면 401 응답을 반환하고, 있으면 null을 반환한다. */
 function requireAuth(request: Request) {
   if (!request.headers.get('Authorization')) {
     return HttpResponse.json(
@@ -86,6 +87,7 @@ function requireAuth(request: Request) {
 }
 
 // trailing slash 유무에 무관하게 처리하기 위해 두 패턴을 모두 등록한다.
+/** 팔로워 목록 GET 요청 핸들러. mockFollowers를 반환한다. */
 const handleFollowers: HttpResponseResolver = ({ request, params }) => {
   const authError = requireAuth(request as Request)
   if (authError) return authError
@@ -99,6 +101,7 @@ const handleFollowers: HttpResponseResolver = ({ request, params }) => {
   return HttpResponse.json(mockFollowers)
 }
 
+/** 팔로잉 목록 GET 요청 핸들러. mockFollowings를 반환한다. */
 const handleFollowing: HttpResponseResolver = ({ request, params }) => {
   const authError = requireAuth(request as Request)
   if (authError) return authError
