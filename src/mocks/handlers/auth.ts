@@ -91,6 +91,16 @@ export const authHandlers = [
     return HttpResponse.json({ detail: '비밀번호가 재설정되었습니다.' })
   }),
 
+  // 로그아웃 — mockSession 초기화
+  http.post('*/users/logout', ({ request }) => {
+    if (!request.headers.get('Authorization')) {
+      return HttpResponse.json({ error_detail: '자격 인증 데이터가 제공되지 않습니다.' }, { status: 401 })
+    }
+    mockSessionActive = false
+    sessionStorage.removeItem('mockSession')
+    return HttpResponse.json({ detail: '로그아웃되었습니다.' })
+  }),
+
   // 닉네임 중복 확인
   http.post('*/users/check-nickname', async ({ request }) => {
     const body = await request.json() as { nickname?: string }
