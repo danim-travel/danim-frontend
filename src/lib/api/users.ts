@@ -1,38 +1,47 @@
 import { apiClient } from '@/lib/apiClient'
 import type { MeDetailResponse, UpdateUserRequest, ChangePasswordRequest, DetailResponse, ProfileImagePresignedResponse, FollowListResponse, FollowResponse } from '@/types'
 
+/** 내 상세 정보(닉네임·이메일·소개 등)를 조회한다. */
 export async function getMe(): Promise<MeDetailResponse> {
   return apiClient.get('users/me/detail').json<MeDetailResponse>()
 }
 
+/** 내 프로필(닉네임·소개·프로필 이미지)을 수정한다. */
 export async function updateUser(data: UpdateUserRequest): Promise<MeDetailResponse> {
   return apiClient.patch('users/me', { json: data }).json<MeDetailResponse>()
 }
 
+/** 회원 탈퇴 처리한다. */
 export async function deleteUser(): Promise<DetailResponse> {
   return apiClient.delete('users/me').json<DetailResponse>()
 }
 
+/** 비밀번호를 변경한다. */
 export async function changePassword(data: ChangePasswordRequest): Promise<DetailResponse> {
   return apiClient.post('users/change-password', { json: data }).json<DetailResponse>()
 }
 
+/** 프로필 이미지 업로드용 S3 presigned URL을 발급한다. */
 export async function getProfileImagePresignedUrl(fileName: string): Promise<ProfileImagePresignedResponse> {
   return apiClient.post('users/me/profile-image/presigned-url', { json: { original_img: fileName } }).json<ProfileImagePresignedResponse>()
 }
 
+/** 특정 유저의 팔로워 목록을 조회한다. */
 export async function getFollowers(userId: string): Promise<FollowListResponse> {
   return apiClient.get(`users/${userId}/followers`).json<FollowListResponse>()
 }
 
+/** 특정 유저의 팔로잉 목록을 조회한다. */
 export async function getFollowing(userId: string): Promise<FollowListResponse> {
   return apiClient.get(`users/${userId}/following`).json<FollowListResponse>()
 }
 
+/** 특정 유저를 팔로우한다. */
 export async function followUser(userId: string): Promise<FollowResponse> {
-  return apiClient.post(`users/${userId}/follow`).json<FollowResponse>()
+  return apiClient.post(`follow/${userId}`).json<FollowResponse>()
 }
 
+/** 특정 유저를 언팔로우한다. */
 export async function unfollowUser(userId: string): Promise<FollowResponse> {
-  return apiClient.delete(`users/${userId}/follow`).json<FollowResponse>()
+  return apiClient.delete(`follow/${userId}`).json<FollowResponse>()
 }
