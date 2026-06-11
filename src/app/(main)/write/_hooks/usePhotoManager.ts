@@ -67,11 +67,6 @@ export function usePhotoManager({ spots, active, updateSpot }: UsePhotoManagerAr
         })
       )
 
-      if (!aliveRef.current) {
-        uploaded.forEach(({ previewUrl }) => URL.revokeObjectURL(previewUrl))
-        return
-      }
-
       // 업로드는 async라 완료될 때쯤엔 사용자가 다른 spot으로 탭을 전환했을 수 있음 -> 의도한 spot에서만 작동
       const targetSpot = spotsRef.current.find((s) => s.id === targetSpotId)
       if (targetSpot) {
@@ -92,9 +87,7 @@ export function usePhotoManager({ spots, active, updateSpot }: UsePhotoManagerAr
       toast.error(getApiErrorMessage(err, { client: '사진 업로드에 실패했습니다.' }))
     } finally {
       e.target.value = ''
-      if (aliveRef.current) {
-        setIsUploadingPhoto(false)
-      }
+      setIsUploadingPhoto(false)
     }
   }
 

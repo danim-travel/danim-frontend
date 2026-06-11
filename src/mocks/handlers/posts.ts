@@ -217,8 +217,8 @@ export const postsHandlers = [
     })
   }),
 
-  // S3 presigned URL PUT 요청 — CORS 우회용 mock
-  http.put('https://*.s3.ap-northeast-2.amazonaws.com/*', () => {
+  // S3 presigned URL POST 요청 — CORS 우회용 mock
+  http.post('https://*.s3.ap-northeast-2.amazonaws.com/*', () => {
     return new HttpResponse(null, { status: 200 })
   }),
 ]

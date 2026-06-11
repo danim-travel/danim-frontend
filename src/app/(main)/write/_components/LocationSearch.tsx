@@ -74,7 +74,7 @@ export default function LocationSearch({ value, onChange, singleMode = false }: 
     const newPlace: CreatePostSpotLocation = {
       place_name: place.place_name,
       address_name: place.address_name,
-      road_address_name: place.road_address_name,
+      road_address_name: place.road_address_name || place.address_name,
       x: place.x,
       y: place.y,
     }
