@@ -11,29 +11,13 @@ import { Spinner } from "@/components/ui/spinner"
 import { AccountSection } from "./_components/AccountSection"
 import { BasicInfoSection } from "./_components/BasicInfoSection"
 import { ProfileSection } from "./_components/ProfileSection"
+import type { MeDetailResponse } from "@/types"
 
 export default function SettingsPage() {
-  const queryClient = useQueryClient()
-  const setAuth = useAuthStore(s => s.setAuth)
-  const accessToken = useAuthStore(s => s.accessToken)
-
   const { data: me, isLoading } = useQuery({
     queryKey: queryKeys.users.me,
     queryFn: getMe,
   })
-
-  const [nickname, setNickname] = useState<string>("")
-  const [intro, setIntro] = useState<string>("")
-  const [profileImg, setProfileImg] = useState<string | null>(null)
-  const [initialized, setInitialized] = useState(false)
-  const [isPending, setIsPending] = useState(false)
-
-  if (me && !initialized) {
-    setNickname(me.nickname)
-    setIntro(me.intro)
-    setProfileImg(me.profile_img)
-    setInitialized(true)
-  }
 
   if (isLoading || !me) {
     return (
@@ -43,15 +27,29 @@ export default function SettingsPage() {
     )
   }
 
+  return <SettingsForm me={me} />
+}
+
+// me 가 준비된 뒤 마운트되므로 useState 초기값을 me 로부터 안전하게 설정할 수 있다
+function SettingsForm({ me }: { me: MeDetailResponse }) {
+  const queryClient = useQueryClient()
+  const setAuth = useAuthStore(s => s.setAuth)
+  const accessToken = useAuthStore(s => s.accessToken)
+
+  const [nickname, setNickname] = useState(me.nickname)
+  const [intro, setIntro] = useState(me.intro)
+  const [profileImg, setProfileImg] = useState<string | null>(me.profile_img)
+  const [isPending, setIsPending] = useState(false)
+
   const isDirty =
     nickname !== me.nickname ||
     intro !== me.intro ||
     profileImg !== me.profile_img
 
   function handleCancel() {
-    setNickname(me!.nickname)
-    setIntro(me!.intro)
-    setProfileImg(me!.profile_img)
+    setNickname(me.nickname)
+    setIntro(me.intro)
+    setProfileImg(me.profile_img)
   }
 
   async function handleSave() {
@@ -59,12 +57,12 @@ export default function SettingsPage() {
     setIsPending(true)
     try {
       const updated = await updateUser({
-        nickname: nickname !== me!.nickname ? nickname : undefined,
-        intro: intro !== me!.intro ? intro : undefined,
-        profile_img: profileImg !== me!.profile_img ? profileImg : undefined,
+        nickname: nickname !== me.nickname ? nickname : undefined,
+        intro: intro !== me.intro ? intro : undefined,
+        profile_img: profileImg !== me.profile_img ? profileImg : undefined,
       })
       queryClient.setQueryData(queryKeys.users.me, updated)
-      if (accessToken) {
+      if (accessToken && (updated.nickname !== me.nickname || updated.profile_img !== me.profile_img)) {
         setAuth(
           { userId: updated.user_id, nickname: updated.nickname, profileImg: updated.profile_img },
           accessToken,
