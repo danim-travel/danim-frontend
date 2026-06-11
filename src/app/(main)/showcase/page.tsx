@@ -87,7 +87,7 @@ export default function ShowcasePage() {
   const [stepperCurrent,   setStepperCurrent]   = useState(1);
 
   return (
-    <div className="h-full overflow-y-auto bg-bg">
+    <div className="min-h-full bg-bg">
       <div className="max-w-4xl mx-auto px-8 py-10">
 
         {/* 헤더 + 목차 */}
@@ -722,7 +722,7 @@ export default function ShowcasePage() {
           <SectionHeader
             title="PostModal"
             path="src/components/PostModal.tsx"
-            description="게시글 상세 모달. postId로 내부 fetch (GET /v1/posts/:postId)."
+            description="게시글 상세 모달. postId로 내부 fetch (GET /posts/:postId)."
             props={[
               { name: "postId",       type: "string",    desc: "조회할 게시물 ID" },
               { name: "onClose",      type: "() => void",desc: "모달 닫기 콜백" },

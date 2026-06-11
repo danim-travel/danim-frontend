@@ -6,12 +6,14 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
-import { isApiError, publicClient } from '@/lib/apiClient'
+import { isApiError } from '@/lib/apiError'
+import { refreshToken, getCurrentUser } from '@/lib/api/auth'
 import { useAuthStore } from '@/store/authStore'
 import { ToastProvider } from './ToastProvider'
 
 async function initMsw() {
   if (process.env.NODE_ENV !== 'development') return
+  if (typeof window === 'undefined') return
   const { worker } = await import('@/mocks/browser')
   await worker.start({
     onUnhandledRequest: 'bypass',
@@ -34,13 +36,23 @@ function AuthBootstrap({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const { setToken, setHydrated } = useAuthStore.getState()
     // MSW가 준비된 뒤에 refresh를 호출해야 mock 핸들러가 요청을 가로챌 수 있다.
-    mswReady.then(() => {
-      publicClient
-        .post('v1/users/me/refresh')
-        .json<{ access_token: string }>()
-        .then(({ access_token }) => setToken(access_token))
-        .catch(() => {})
-        .finally(() => setHydrated())
+    mswReady.catch(() => {}).then(async () => {
+      try {
+        const { access_token } = await refreshToken()
+        // refreshToken 성공 시 즉시 저장 — getCurrentUser 실패해도 /login으로 튕기지 않음
+        setToken(access_token)
+        try {
+          const me = await getCurrentUser()
+          const { setAuth } = useAuthStore.getState()
+          setAuth({ userId: me.user_id, nickname: me.nickname, profileImg: me.profile_img }, access_token)
+        } catch {
+          // getCurrentUser 실패 — 토큰은 유효하므로 유지, user는 null 상태로 진입
+        }
+      } catch {
+        // refreshToken 실패 = 비로그인 상태 유지 (accessToken 이미 null)
+      } finally {
+        setHydrated()
+      }
     })
   }, [])
 

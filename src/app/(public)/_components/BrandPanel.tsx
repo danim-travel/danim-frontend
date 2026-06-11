@@ -3,7 +3,7 @@ const FEATURES = ["실시간 여행 위치 공유", "감성 여행 사진 피드
 /** 로그인 화면 좌측 브랜드 인트로. lg 이상에서만 노출. */
 export function BrandPanel() {
   return (
-    <div className="hidden lg:flex flex-col gap-7 max-w-[480px] shrink-0">
+    <div className="flex flex-col gap-7 max-w-[480px] shrink-0">
       {/* 로고 */}
       <div className="flex items-center gap-3">
         <div className="w-14 h-14 rounded-md bg-primary flex items-center justify-center shadow-brand-strong shrink-0">

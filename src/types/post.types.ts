@@ -8,8 +8,8 @@ export type SpotLocation = {
   place_name: string
   address_name: string
   road_address_name: string
-  x: number
-  y: number
+  x: string
+  y: string
 }
 
 export type Spot = {
@@ -24,7 +24,7 @@ export type PostDetail = {
   post: {
     post_id: string
     title: string
-    content: string
+    description: string
     thumbnail: string
     created_at: string
   }
@@ -46,4 +46,86 @@ export type Post = {
   post_id: string
   color: string
   pins: { lat: number; lng: number; label: string; body: string }[]
+}
+
+// 게시글 작성 요청 타입
+export type CreatePostSpotLocation = {
+  place_name: string
+  address_name: string
+  road_address_name: string
+  x: string // 카카오맵 API가 string으로 반환
+  y: string
+}
+
+export type CreatePostSpotImage = {
+  original_img: string
+  key: string // S3 key
+}
+
+export type CreatePostSpot = {
+  order: number
+  content: string
+  location: CreatePostSpotLocation
+  images: CreatePostSpotImage[]
+}
+
+export type CreatePostRequest = {
+  title: string
+  description: string
+  thumbnail: string
+  spots: CreatePostSpot[]
+}
+
+// presigned URL 타입
+export type PostPresignedUrlRequest = {
+  original_img: string
+}
+
+export type PostPresignedUrlResponse = {
+  presigned_url: string
+  img_url: string
+  key: string
+}
+
+// 메인(팔로잉) 피드 타입
+export type MainFeedUser = {
+  user_id: string
+  nickname: string
+  profile_img: string | null
+}
+
+export type MainFeedPost = {
+  post_id: string
+  thumbnail: string
+  description: string
+}
+
+export type MainFeedSpotLocation = {
+  place_name: string
+  address_name: string
+  road_address_name: string
+  x: string
+  y: string
+}
+
+export type MainFeedSpot = {
+  spot_id: string
+  location: MainFeedSpotLocation
+  order: number
+}
+
+export type MainFeedItem = {
+  user: MainFeedUser
+  post: MainFeedPost
+  spots: MainFeedSpot[]
+  spot_count: number
+  comment_count: number
+  like_count: number
+  is_liked: boolean
+  is_bookmarked: boolean
+}
+
+export type MainFeedResponse = {
+  next: string | null
+  results: MainFeedItem[]
 }

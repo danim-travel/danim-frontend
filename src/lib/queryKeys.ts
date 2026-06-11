@@ -7,9 +7,12 @@ export const queryKeys = {
     all: ['posts'] as const,
     detail: (postId: string) => ['posts', postId] as const,
     main: ['posts', 'main'] as const,
+    mainFeed: ['posts', 'main', 'feed'] as const,
+    exploreBase: ['posts', 'explore'] as const,
     explore: (search?: string) => ['posts', 'explore', search] as const,
   },
   users: {
+    me: ['users', 'me'] as const,
     profile: (userId: string) => ['users', userId, 'profile'] as const,
     followers: (userId: string) => ['users', userId, 'followers'] as const,
     following: (userId: string) => ['users', userId, 'following'] as const,

@@ -16,9 +16,10 @@ src/
 │   ├── globals.css
 │   │
 │   ├── (main)/                     # SideNav가 있는 인증 필요 페이지 그룹
-│   │   ├── layout.tsx              # SideNav 포함 레이아웃
+│   │   ├── layout.tsx              # SideNav + AuthGuard 적용 레이아웃
 │   │   ├── page.tsx                # 홈 (팔로잉 피드 + 지도)
 │   │   ├── _components/            # (main) 전용 공통 컴포넌트
+│   │   │   ├── AuthGuard.tsx           # 비로그인 사용자 /login 리다이렉트
 │   │   │   ├── NotificationDrawer.tsx  # 알림 드로어 (SideNav 아이콘으로 토글)
 │   │   │   └── SearchDrawer.tsx        # 유저 검색 드로어 (SideNav 아이콘으로 토글)
 │   │   ├── explore/
@@ -49,10 +50,20 @@ src/
 │   │       └── page.tsx
 │   │
 │   └── (public)/                   # SideNav 없는 비인증 페이지 그룹
+│       ├── _constants/             # (public) 그룹 공통 상수 (이메일·비밀번호 규칙 등)
 │       ├── login/
 │       │   ├── page.tsx
 │       │   └── _components/
-│       └── register/
+│       ├── register/
+│       │   ├── page.tsx
+│       │   ├── _components/
+│       │   ├── _constants/         # 닉네임 유효성 규칙
+│       │   ├── _hooks/             # useEmailVerification, useNicknameCheck
+│       │   └── _schema.ts          # Zod 회원가입 스키마
+│       ├── reset-password/
+│       │   ├── page.tsx
+│       │   └── _components/
+│       └── social-callback/
 │           ├── page.tsx
 │           └── _components/
 │
@@ -72,6 +83,7 @@ src/
 │
 ├── lib/
 │   ├── apiClient.ts                # ky 기반 API 클라이언트 (단일 진입점)
+│   ├── apiError.ts                 # ApiError 타입·createApiError·getApiErrorMessage
 │   ├── config.ts                   # 환경변수 접근점
 │   ├── queryKeys.ts                # TanStack Query 키 상수
 │   └── utils.ts                   # cn() 유틸
@@ -92,6 +104,7 @@ src/
 └── types/
     ├── index.ts                    # 공통 타입 + 도메인 타입 re-export
     ├── post.types.ts               # 게시글 관련 타입
+    ├── user.types.ts               # 유저 관련 타입
     └── kakao.d.ts                  # KakaoMap SDK 타입 선언
 ```
 

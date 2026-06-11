@@ -53,6 +53,7 @@ Page / Component
 - **KakaoMap SDK는 `dynamic()` import만 사용** (SSR 비활성화 필수)
 - **`any` 타입 사용 금지**
 - **쿼리 키 하드코딩 금지** → `src/lib/queryKeys.ts` 경유
+- **catch 블록 에러 메시지는 `getApiErrorMessage` 사용** → `src/lib/apiError.ts` 경유, 고정 문자열 직접 사용 금지
 
 ### 컴포넌트 분류
 
@@ -86,7 +87,7 @@ Page / Component
 | `/write/[postId]/edit` | 여행 기록 수정 (작성 폼 컴포넌트 재활용) |
 | `/mypage` | 마이페이지: 프로필 + 뱃지 + 게시글 그리드 |
 | `/users/[userId]` | 타인 프로필 조회 |
-| `/settings` | 설정: 프로필 편집, 휴대폰 인증, 비밀번호, 탈퇴 |
+| `/settings` | 설정: 프로필 편집, 비밀번호, 탈퇴 |
 | `/followers` | 팔로워/팔로잉 목록 |
 | `/dm` | DM: 대화 목록 (대화방 미선택 상태) |
 | `/dm/[roomId]` | DM: 특정 대화방 (좌측 목록 고정, 우측 채팅) |
@@ -105,17 +106,21 @@ Page / Component
 
 **앱 초기화 시 silent refresh 흐름:**
 ```
-앱 마운트 → POST /api/v1/users/me/refresh (쿠키 자동 포함)
-  ├─ 성공 → access_token Zustand 저장 → 인증 상태 복원
-  └─ 실패 → 비로그인 상태 유지
+앱 마운트 → POST v1/users/token/refresh (쿠키 자동 포함)
+  ├─ 성공 → access_token Zustand 저장 → isHydrated = true → 인증 상태 복원
+  └─ 실패 → 비로그인 상태 유지 → isHydrated = true
 ```
 
 **소셜 로그인 콜백 흐름:**
 ```
 /social-callback?provider=kakao&is_success=true 수신
-  → POST /api/v1/users/me/refresh → access_token 발급
+  → POST v1/users/token/refresh → access_token 발급
   → / 로 이동
 ```
+
+**라우팅 가드:**
+- `(main)` 그룹 전체에 `AuthGuard` 적용 (`(main)/layout.tsx`)
+- `isHydrated=false`(silent refresh 진행 중)일 때는 리다이렉트하지 않음 → 로그인 사용자가 새로고침 시 튕기는 현상 방지
 
 ---
 
@@ -123,10 +128,12 @@ Page / Component
 
 ```
 src/lib/apiClient.ts              # ky 기반 API 클라이언트 (단일 진입점)
+src/lib/apiError.ts               # ApiError 타입·createApiError·getApiErrorMessage
 src/lib/config.ts                 # 환경변수 접근점 (process.env 직접 사용 금지)
 src/lib/queryKeys.ts              # TanStack Query 키 상수
 src/types/index.ts                # 전역 타입 정의 진입점
 src/providers/index.tsx           # Providers + AuthBootstrap + MSW 초기화 (개발 환경)
+src/app/(main)/_components/AuthGuard.tsx  # 비로그인 사용자 /login 리다이렉트
 docs/CONVENTION.md                # 브랜치·커밋·PR 컨벤션
 docs/PROJECT_STRUCTURE.md         # 프로젝트 폴더 구조 규칙
 ```

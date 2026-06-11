@@ -28,19 +28,19 @@ export default function SpotImages({ spot }: { spot: Spot }) {
 
   return (
     <div className="flex-1 min-h-0 relative w-full overflow-hidden group bg-bg">
-      {/* 블러 백드롭 — 비율이 박스와 다른 이미지를 letterbox 없이 채움 */}
-      <Image
+      {/* 블러 백드롭 — 장식용이라 최적화 불필요, 메인 이미지와 동일 URL로 브라우저 캐시 재사용 */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
         src={images[idx].img_url}
         alt=""
         aria-hidden
-        fill
-        className="object-cover blur-2xl scale-110 opacity-60"
-        sizes={IMAGE_SIZES}
+        className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-60"
       />
       <Image
         src={images[idx].img_url}
         alt={spot.location.place_name}
         fill
+        priority
         className="object-contain relative"
         sizes={IMAGE_SIZES}
       />

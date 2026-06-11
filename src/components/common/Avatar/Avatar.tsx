@@ -25,14 +25,14 @@ export function Avatar({ src, initial, size = "md", ring, colorClass = "bg-prima
   const inner = (
     <div
       className={cn(
-        "relative overflow-hidden grid place-items-center rounded-avatar font-bold border-2 border-bg-card text-text-inverse shrink-0",
+        "relative overflow-hidden grid place-items-center rounded-avatar font-bold ring-2 ring-bg-card text-text-inverse shrink-0",
         !src && colorClass,
         box,
         text
       )}
     >
       {src
-        ? <Image src={src} alt="" fill className="object-cover" />
+        ? <Image src={src} alt="" fill sizes="112px" className="object-cover" />
         : initial
       }
     </div>

@@ -23,7 +23,7 @@ export function useCommentMutations(postId: string) {
   const createMutation = useMutation({
     mutationFn: (payload: Omit<CommentCreateRequest, 'post_id'>) =>
       apiClient
-        .post('v1/comments', { json: { post_id: postId, ...payload } })
+        .post('comments', { json: { post_id: postId, ...payload } })
         .json<CommentCreateResponse>(),
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: postDetailKey })
@@ -46,7 +46,7 @@ export function useCommentMutations(postId: string) {
 
   const updateMutation = useMutation({
     mutationFn: ({ commentId, ...payload }: { commentId: string } & CommentUpdateRequest) =>
-      apiClient.patch(`v1/comments/${commentId}`, { json: payload }).json<CommentUpdateResponse>(),
+      apiClient.patch(`comments/${commentId}`, { json: payload }).json<CommentUpdateResponse>(),
     onMutate: async ({ commentId, content }) => {
       await queryClient.cancelQueries({ queryKey: commentsKey })
       const previous = queryClient.getQueryData<CommentsListResponse>(commentsKey)
@@ -73,7 +73,7 @@ export function useCommentMutations(postId: string) {
 
   const deleteMutation = useMutation({
     mutationFn: async (commentId: string): Promise<void> => {
-      await apiClient.delete(`v1/comments/${commentId}`)
+      await apiClient.delete(`comments/${commentId}`)
     },
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: postDetailKey })
@@ -97,7 +97,7 @@ export function useCommentMutations(postId: string) {
   })
 
   const likeMutation = useLikeMutation<CommentsListResponse, { commentId: string; wasLiked: boolean }>({
-    buildEndpoint: ({ commentId }) => `v1/comments/${commentId}/like`,
+    buildEndpoint: ({ commentId }) => `comments/${commentId}/like`,
     queryKey: commentsKey,
     optimisticUpdater: (old, { commentId, wasLiked }) => {
       if (!old) return old
@@ -127,7 +127,7 @@ export function useCommentMutations(postId: string) {
   const presignedUrlMutation = useMutation({
     mutationFn: (payload: CommentPresignedUrlRequest) =>
       apiClient
-        .post('v1/comments/presigned-url', { json: payload })
+        .post('comments/presigned-url', { json: payload })
         .json<CommentPresignedUrlResponse>(),
   })
 

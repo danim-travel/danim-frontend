@@ -9,7 +9,9 @@ type ActivePanel = 'search' | 'notification' | null
 
 interface UIState {
   postModalId: string | null
-  openPostModal: (postId: string) => void
+  // undefined = 썸네일이 있는 spot을 모달 로드 후 자동 탐색, number = 해당 spot 바로 오픈
+  postModalSpotIdx: number | undefined
+  openPostModal: (postId: string, spotIdx?: number) => void
   closePostModal: () => void
 
   activePanel: ActivePanel
@@ -19,8 +21,9 @@ interface UIState {
 
 export const useUIStore = create<UIState>((set) => ({
   postModalId: null,
-  openPostModal: (postId) => set({ postModalId: postId }),
-  closePostModal: () => set({ postModalId: null }),
+  postModalSpotIdx: undefined,
+  openPostModal: (postId, spotIdx) => set({ postModalId: postId, postModalSpotIdx: spotIdx }),
+  closePostModal: () => set({ postModalId: null, postModalSpotIdx: undefined }),
 
   activePanel: null,
   setActivePanel: (panel) => set({ activePanel: panel }),

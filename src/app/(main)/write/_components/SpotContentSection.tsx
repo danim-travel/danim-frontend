@@ -1,0 +1,62 @@
+'use client'
+
+import { memo } from 'react'
+import dynamic from 'next/dynamic'
+import { FieldLabel } from '@/components/common'
+import type { SpotFormData } from '../_hooks/useWriteForm'
+
+const LocationSearch = dynamic(() => import('./LocationSearch'), { ssr: false })
+
+interface SpotContentSectionProps {
+  active: SpotFormData
+  activeIdx: number
+  updateSpot: (id: string, updates: Partial<SpotFormData>) => void
+}
+
+const SpotContentSection = memo(function SpotContentSection({
+  active,
+  activeIdx,
+  updateSpot,
+}: SpotContentSectionProps) {
+  return (
+    <>
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <FieldLabel>본문</FieldLabel>
+          <span className="text-nav text-text-placeholder">{activeIdx + 1}번 위치</span>
+        </div>
+        <div className="relative">
+          {/* key로 spot 전환 시 textarea를 강제 리마운트 — 이전 spot 입력값이 남는 DOM 상태 초기화 */}
+          <textarea
+            key={active.id}
+            value={active.content}
+            onChange={(e) => updateSpot(active.id, { content: e.target.value })}
+            placeholder="이 장소에서의 이야기를 들려주세요..."
+            maxLength={500}
+            rows={5}
+            className="w-full px-4 py-3 rounded-xl border border-border text-body-sm outline-none focus:border-primary transition-colors resize-none bg-white"
+          />
+          <span className="absolute bottom-3 right-4 text-nav text-text-disabled">
+            {active.content.length}/500
+          </span>
+        </div>
+      </div>
+
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <FieldLabel>위치 / 장소</FieldLabel>
+          <span className="text-nav text-text-placeholder">{activeIdx + 1}번 위치</span>
+        </div>
+        {/* key로 spot 전환 시 검색 입력·결과 상태 초기화 */}
+        <LocationSearch
+          key={active.id}
+          value={active.location ? [active.location] : []}
+          onChange={(places) => updateSpot(active.id, { location: places[0] ?? null })}
+          singleMode
+        />
+      </div>
+    </>
+  )
+})
+
+export default SpotContentSection

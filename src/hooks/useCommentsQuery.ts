@@ -8,7 +8,7 @@ export function useCommentsQuery(postId: string) {
     queryKey: queryKeys.comments.list(postId),
     queryFn: () =>
       apiClient
-        .get('v1/comments', { searchParams: { post_id: postId, page: 1, page_size: 20 } })
+        .get('comments', { searchParams: { post_id: postId, page: 1, page_size: 20 } })
         .json<CommentsListResponse>(),
     staleTime: 30_000,
     refetchOnWindowFocus: false,
