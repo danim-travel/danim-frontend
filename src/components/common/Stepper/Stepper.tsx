@@ -31,7 +31,7 @@ export function Stepper({ steps, current, showLabels = true, onStepClick }: Step
   return (
     <div className="flex flex-col gap-1.5">
       {/* 상단: 마커 + 연결선 */}
-      <div className="flex items-center">
+      <div className={cn("flex items-center", steps.length === 1 && "justify-center")}>
         {steps.map((_, i) => {
           const state: StepState =
             i < current ? "completed" : i === current ? "active" : "default";
@@ -73,7 +73,7 @@ export function Stepper({ steps, current, showLabels = true, onStepClick }: Step
 
       {/* 하단: 라벨 */}
       {showLabels && (
-        <div className="flex items-start">
+        <div className={cn("flex items-start", steps.length === 1 && "justify-center")}>
           {steps.map((s, i) => {
             const state: StepState =
               i < current ? "completed" : i === current ? "active" : "default";

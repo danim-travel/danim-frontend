@@ -13,7 +13,7 @@ export async function uploadImage(endpoint: string, file: File): Promise<Presign
     .post(endpoint, { json: { original_img: file.name } })
     .json<PresignedUrlResponse>()
 
-  const s3Res = await fetch(presigned_url, { method: 'PUT', body: file })
+  const s3Res = await fetch(presigned_url, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } })
   if (!s3Res.ok) throw new Error(`S3 upload failed: ${s3Res.status}`)
 
   return { presigned_url, img_url, key }

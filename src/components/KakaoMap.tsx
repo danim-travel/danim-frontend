@@ -38,7 +38,7 @@ function KakaoMap({ selectedPost, onBoundsChange, onPinClick, onCurrentLocation 
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<kakao.maps.Map | null>(null);
   const overlaysRef = useRef<kakao.maps.CustomOverlay[]>([]);
-  const polylineRef = useRef<kakao.maps.Polyline | null>(null);
+  const polylinesRef = useRef<kakao.maps.Polyline[]>([]);
   const [status, setStatus] = useState<Status>("loading");
   const [locError, setLocError] = useState("");
 
@@ -58,8 +58,8 @@ function KakaoMap({ selectedPost, onBoundsChange, onPinClick, onCurrentLocation 
   const clearGroup = () => {
     overlaysRef.current.forEach((o) => o.setMap(null));
     overlaysRef.current = [];
-    polylineRef.current?.setMap(null);
-    polylineRef.current = null;
+    polylinesRef.current.forEach((p) => p.setMap(null));
+    polylinesRef.current = [];
   };
 
   const applyPost = (post: Post) => {
@@ -86,13 +86,18 @@ function KakaoMap({ selectedPost, onBoundsChange, onPinClick, onCurrentLocation 
       );
     });
 
-    polylineRef.current = new kakao.maps.Polyline({
-      path, map,
-      strokeWeight: 3,
-      strokeColor: post.color,
-      strokeOpacity: 0.85,
-      strokeStyle: "solid",
-    });
+    for (let i = 0; i < path.length - 1; i++) {
+      polylinesRef.current.push(
+        new kakao.maps.Polyline({
+          path: [path[i], path[i + 1]],
+          map,
+          strokeWeight: 3,
+          strokeColor: post.color,
+          strokeOpacity: 1,
+          strokeStyle: "solid",
+        })
+      );
+    }
 
     map.setBounds(bounds, 80, 80, 80, 80);
   };
