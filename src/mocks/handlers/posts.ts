@@ -50,8 +50,8 @@ const showcaseFallback: PostDetail = {
         place_name: '성산일출봉',
         address_name: '제주특별자치도 서귀포시 성산읍 성산리',
         road_address_name: '제주특별자치도 서귀포시 성산읍 일출로 284-12',
-        x: 126.942767,
-        y: 33.458806,
+        x: '126.942767',
+        y: '33.458806',
       },
       images: [
         {
@@ -74,8 +74,8 @@ const showcaseFallback: PostDetail = {
         place_name: '섭지코지',
         address_name: '제주특별자치도 서귀포시 성산읍 신양리',
         road_address_name: '제주특별자치도 서귀포시 성산읍 섭지코지로',
-        x: 126.930318,
-        y: 33.440234,
+        x: '126.930318',
+        y: '33.440234',
       },
       images: [
         {
@@ -111,8 +111,8 @@ function buildPostDetail(postId: string): PostDetail {
       place_name: s.location.place_name,
       address_name: s.location.address_name,
       road_address_name: s.location.road_address_name,
-      x: Number(s.location.x),
-      y: Number(s.location.y),
+      x: s.location.x,
+      y: s.location.y,
     },
     images: (() => {
       const imgCount = ((itemIndex * 3 + j * 7) % 5) + 1
