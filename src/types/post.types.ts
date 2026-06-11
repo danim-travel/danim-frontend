@@ -8,8 +8,8 @@ export type SpotLocation = {
   place_name: string
   address_name: string
   road_address_name: string
-  x: number
-  y: number
+  x: string
+  y: string
 }
 
 export type Spot = {
