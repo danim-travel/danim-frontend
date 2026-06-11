@@ -1,5 +1,5 @@
 import { apiClient } from '@/lib/apiClient'
-import type { MeDetailResponse, UpdateUserRequest, ChangePasswordRequest, DetailResponse, FollowListResponse, FollowResponse } from '@/types'
+import type { MeDetailResponse, UpdateUserRequest, ChangePasswordRequest, DetailResponse, ProfileImagePresignedResponse, FollowListResponse, FollowResponse } from '@/types'
 
 export async function getMe(): Promise<MeDetailResponse> {
   return apiClient.get('users/me/detail').json<MeDetailResponse>()
@@ -14,7 +14,11 @@ export async function deleteUser(): Promise<DetailResponse> {
 }
 
 export async function changePassword(data: ChangePasswordRequest): Promise<DetailResponse> {
-  return apiClient.patch('users/me/password', { json: data }).json<DetailResponse>()
+  return apiClient.post('users/change-password', { json: data }).json<DetailResponse>()
+}
+
+export async function getProfileImagePresignedUrl(fileName: string): Promise<ProfileImagePresignedResponse> {
+  return apiClient.post('users/me/profile-image/presigned-url', { json: { original_img: fileName } }).json<ProfileImagePresignedResponse>()
 }
 
 export async function getFollowers(userId: string): Promise<FollowListResponse> {

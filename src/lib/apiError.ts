@@ -1,7 +1,8 @@
-// 백엔드 error_detail 필드 형태 두 가지
+// 백엔드 error_detail 필드 형태 세 가지
 // - 문자열: "중복된 닉네임입니다."
+// - 배열:   ["현재 비밀번호가 틀렸습니다."]
 // - 객체:   { nickname: ["닉네임은 필수 항목입니다."] } or { detail: "세션 만료" }
-export type ApiErrorDetail = string | Record<string, string | string[]>
+export type ApiErrorDetail = string | string[] | Record<string, string | string[]>
 
 // API 에러 타입 — 기본 Error에 status(HTTP 상태코드)와 detail(에러 내용)을 추가
 export type ApiError = Error & {
@@ -53,6 +54,10 @@ export function getApiErrorMessage(
     // detail이 문자열이면 그대로 반환
     // 예: "유효하지 않은 토큰입니다."
     if (typeof detail === 'string' && detail) return detail
+
+    // detail이 배열이면 첫 번째 요소 반환
+    // 예: ["현재 비밀번호가 틀렸습니다."] → "현재 비밀번호가 틀렸습니다."
+    if (Array.isArray(detail) && detail.length > 0) return detail[0]
 
     if (typeof detail === 'object') {
       const first = Object.values(detail)[0] // 첫 번째 필드의 값

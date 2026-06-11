@@ -26,8 +26,8 @@ const eslintConfig = defineConfig([
     },
   },
   {
-    // config.ts는 process.env 접근이 허용되는 유일한 파일
-    files: ['src/lib/config.ts'],
+    // config.ts와 env.ts는 process.env 접근이 허용되는 유일한 파일
+    files: ['src/lib/config.ts', 'src/lib/env.ts'],
     rules: {
       'no-restricted-syntax': 'off',
     },

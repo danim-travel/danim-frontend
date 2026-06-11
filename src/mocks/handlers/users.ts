@@ -3,7 +3,6 @@
  */
 import { http, HttpResponse, type HttpResponseResolver } from 'msw'
 import type { UserProfilePost, UserProfileResponse, FollowResponse, FollowUser, MeDetailResponse, UpdateUserRequest } from '@/types'
-import { MOCK_USER } from '../constants'
 
 const mockHeights = [320, 480, 260, 560, 400, 300, 520, 380, 440, 280, 500, 360, 420, 600, 340, 460, 240, 540, 390, 470]
 
@@ -162,11 +161,26 @@ export const usersHandlers = [
     return HttpResponse.json({ detail: '회원 탈퇴가 완료되었습니다.' })
   }),
 
-  http.patch('*/users/me/password', async ({ request }) => {
+  http.post('*/users/change-password', async ({ request }) => {
     const authError = requireAuth(request)
     if (authError) return authError
-    return HttpResponse.json({ detail: '비밀번호가 변경되었습니다.' })
+    return HttpResponse.json({ detail: '비밀번호 변경이 완료되었습니다.' })
   }),
+
+  http.post('*/users/me/profile-image/presigned-url', async ({ request }) => {
+    const authError = requireAuth(request)
+    if (authError) return authError
+    const body = await request.json() as { original_img: string }
+    const mockImgUrl = `https://picsum.photos/seed/${encodeURIComponent(body.original_img)}/200/200`
+    return HttpResponse.json({
+      presigned_url: 'http://localhost:3000/mock-s3-upload',
+      img_url: mockImgUrl,
+      key: `profile-images/${body.original_img}`,
+    })
+  }),
+
+  // presigned URL S3 업로드 mock
+  http.put('*/mock-s3-upload', () => new HttpResponse(null, { status: 200 })),
 
   http.get('*/users/:userId/profile', ({ request, params }) => {
     const authError = requireAuth(request)
@@ -206,10 +220,8 @@ export const followHandlers = [
     }
 
     if (followState[userId]) {
-      return HttpResponse.json(
-        { error_detail: '이미 팔로우한 유저입니다.' },
-        { status: 409 },
-      )
+      const profile = mockOtherProfiles[userId]
+      return HttpResponse.json({ is_followed: true, follower_count: profile?.follower ?? 1 })
     }
 
     followState[userId] = true
@@ -247,10 +259,8 @@ export const followHandlers = [
     }
 
     if (!followState[userId]) {
-      return HttpResponse.json(
-        { error_detail: '팔로우하지 않은 유저입니다.' },
-        { status: 409 },
-      )
+      const profile = mockOtherProfiles[userId]
+      return HttpResponse.json({ is_followed: false, follower_count: profile?.follower ?? 0 })
     }
 
     followState[userId] = false
