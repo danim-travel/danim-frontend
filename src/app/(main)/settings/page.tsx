@@ -2,6 +2,7 @@
 import { useState } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { getMe, updateUser } from "@/lib/api/users"
+import { checkNickname } from "@/lib/api/auth"
 import { getApiErrorMessage } from "@/lib/apiError"
 import { queryKeys } from "@/lib/queryKeys"
 import { useAuthStore } from "@/store/authStore"
@@ -39,29 +40,50 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
   const [nickname, setNickname] = useState(me.nickname)
   const [intro, setIntro] = useState(me.intro)
   const [profileImg, setProfileImg] = useState<string | null>(me.profile_img)
+  // undefined = 변경 없음 / null = 이미지 삭제 / string = 새 S3 key
+  const [profileKey, setProfileKey] = useState<string | null | undefined>(undefined)
+  const [nicknameError, setNicknameError] = useState<string | undefined>(undefined)
   const [isPending, setIsPending] = useState(false)
 
   const isDirty =
     nickname !== me.nickname ||
     intro !== me.intro ||
-    profileImg !== me.profile_img
+    profileKey !== undefined
 
   function handleCancel() {
     setNickname(me.nickname)
     setIntro(me.intro)
     setProfileImg(me.profile_img)
+    setProfileKey(undefined)
+    setNicknameError(undefined)
+    toast.success("변경사항이 취소되었습니다.")
+  }
+
+  async function handleNicknameBlur() {
+    if (nickname === me.nickname) {
+      setNicknameError(undefined)
+      return
+    }
+    try {
+      await checkNickname(nickname)
+      setNicknameError(undefined)
+    } catch (err) {
+      setNicknameError(getApiErrorMessage(err, { client: "이미 사용 중인 닉네임입니다." }))
+    }
   }
 
   async function handleSave() {
-    if (!isDirty || isPending) return
+    if (!isDirty || isPending || nicknameError) return
     setIsPending(true)
     try {
       const updated = await updateUser({
         nickname: nickname !== me.nickname ? nickname : undefined,
         intro: intro !== me.intro ? intro : undefined,
-        profile_img: profileImg !== me.profile_img ? profileImg : undefined,
+        key: profileKey !== undefined ? profileKey : undefined,
       })
       queryClient.setQueryData(queryKeys.users.me, updated)
+      setProfileImg(updated.profile_img)
+      setProfileKey(undefined)
       if (accessToken && (updated.nickname !== me.nickname || updated.profile_img !== me.profile_img)) {
         setAuth(
           { userId: updated.user_id, nickname: updated.nickname, profileImg: updated.profile_img },
@@ -87,12 +109,18 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
           profileImg={profileImg}
           onIntroChange={setIntro}
           onProfileImgChange={setProfileImg}
+          onProfileKeyChange={setProfileKey}
         />
 
         <BasicInfoSection
           me={me}
           nickname={nickname}
-          onNicknameChange={setNickname}
+          nicknameError={nicknameError}
+          onNicknameChange={(v) => {
+            setNickname(v)
+            setNicknameError(undefined)
+          }}
+          onNicknameBlur={() => { void handleNicknameBlur() }}
         />
 
         <AccountSection />
@@ -111,7 +139,7 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
             type="button"
             variant="primary"
             loading={isPending}
-            disabled={!isDirty}
+            disabled={!isDirty || !!nicknameError}
             onClick={handleSave}
           >
             변경사항 저장

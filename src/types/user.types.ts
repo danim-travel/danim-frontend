@@ -72,7 +72,7 @@ export interface MeDetailResponse {
 export interface UpdateUserRequest {
   nickname?: string
   intro?: string
-  profile_img?: string | null
+  key?: string | null
 }
 
 export interface ChangePasswordRequest {

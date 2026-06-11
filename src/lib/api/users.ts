@@ -11,9 +11,9 @@ export async function updateUser(data: UpdateUserRequest): Promise<MeDetailRespo
   return apiClient.patch('users/me', { json: data }).json<MeDetailResponse>()
 }
 
-/** 회원 탈퇴 처리한다. */
-export async function deleteUser(): Promise<DetailResponse> {
-  return apiClient.delete('users/me').json<DetailResponse>()
+/** 회원 탈퇴 처리한다. 성공 시 204 No Content 반환. */
+export async function deleteUser(): Promise<void> {
+  await apiClient.delete('users/me')
 }
 
 /** 비밀번호를 변경한다. */

@@ -2,7 +2,7 @@
  * 유저 관련 Mock 핸들러. 마이페이지/타인 프로필 조회, 내 정보 수정/탈퇴, 팔로워/팔로잉 목록 조회 시 사용한다.
  */
 import { http, HttpResponse, type HttpResponseResolver } from 'msw'
-import type { UserProfilePost, UserProfileResponse, FollowUser, MeDetailResponse, UpdateUserRequest } from '@/types'
+import type { UserProfilePost, UserProfileResponse, FollowUser, MeDetailResponse } from '@/types'
 
 const mockHeights = [320, 480, 260, 560, 400, 300, 520, 380, 440, 280, 500, 360, 420, 600, 340, 460, 240, 540, 390, 470]
 
@@ -25,7 +25,7 @@ const mockUserProfile: UserProfileResponse = {
 }
 
 // 내 정보 수정 핸들러에서 공유하는 mutable mock
-let mockMe: MeDetailResponse = {
+const mockMe: MeDetailResponse = {
   user_id: 'mock-user-id',
   name: '홍길동',
   email: 'test@danim.app',
@@ -115,66 +115,52 @@ const handleFollowing: HttpResponseResolver = ({ request, params }) => {
   return HttpResponse.json(mockFollowings)
 }
 
+// 내정보수정 관련 API가 개발 완료되어 실제 API로 전환. 아래 핸들러는 비활성화.
 export const usersHandlers = [
-  // http.get('*/users/me', ({ request }) => {
-  //   if (!request.headers.get('Authorization')) {
-  //     return HttpResponse.json(
-  //       { error_detail: '자격 인증 데이터가 제공되지 않습니다.' },
-  //       { status: 401 },
-  //     )
+  // http.get('*/users/me/detail', ({ request }) => {
+  //   const authError = requireAuth(request)
+  //   if (authError) return authError
+  //   return HttpResponse.json(mockMe)
+  // }),
+
+  // http.patch('*/users/me', async ({ request }) => {
+  //   const authError = requireAuth(request)
+  //   if (authError) return authError
+  //   const body = await request.json() as UpdateUserRequest
+  //   mockMe = {
+  //     ...mockMe,
+  //     ...(body.nickname !== undefined && { nickname: body.nickname }),
+  //     ...(body.intro !== undefined && { intro: body.intro }),
+  //     ...(body.key !== undefined && { profile_img: body.key ?? null }),
   //   }
+  //   return HttpResponse.json(mockMe)
+  // }),
+
+  // http.delete('*/users/me', ({ request }) => {
+  //   const authError = requireAuth(request)
+  //   if (authError) return authError
+  //   return new HttpResponse(null, { status: 204 })
+  // }),
+
+  // http.post('*/users/change-password', async ({ request }) => {
+  //   const authError = requireAuth(request)
+  //   if (authError) return authError
+  //   return HttpResponse.json({ detail: '비밀번호 변경이 완료되었습니다.' })
+  // }),
+
+  // http.post('*/users/me/profile-image/presigned-url', async ({ request }) => {
+  //   const authError = requireAuth(request)
+  //   if (authError) return authError
+  //   const body = await request.json() as { original_img: string }
+  //   const mockImgUrl = `https://picsum.photos/seed/${encodeURIComponent(body.original_img)}/200/200`
   //   return HttpResponse.json({
-  //     user_id: MOCK_USER.userId,
-  //     nickname: MOCK_USER.nickname,
-  //     profile_img: MOCK_USER.profileImg,
+  //     presigned_url: 'http://localhost:3000/mock-s3-upload',
+  //     img_url: mockImgUrl,
+  //     key: `profile-images/${body.original_img}`,
   //   })
   // }),
 
-  http.get('*/users/me/detail', ({ request }) => {
-    const authError = requireAuth(request)
-    if (authError) return authError
-    return HttpResponse.json(mockMe)
-  }),
-
-  http.patch('*/users/me', async ({ request }) => {
-    const authError = requireAuth(request)
-    if (authError) return authError
-    const body = await request.json() as UpdateUserRequest
-    mockMe = {
-      ...mockMe,
-      ...(body.nickname !== undefined && { nickname: body.nickname }),
-      ...(body.intro !== undefined && { intro: body.intro }),
-      ...(body.profile_img !== undefined && { profile_img: body.profile_img }),
-    }
-    return HttpResponse.json(mockMe)
-  }),
-
-  http.delete('*/users/me', ({ request }) => {
-    const authError = requireAuth(request)
-    if (authError) return authError
-    return HttpResponse.json({ detail: '회원 탈퇴가 완료되었습니다.' })
-  }),
-
-  http.post('*/users/change-password', async ({ request }) => {
-    const authError = requireAuth(request)
-    if (authError) return authError
-    return HttpResponse.json({ detail: '비밀번호 변경이 완료되었습니다.' })
-  }),
-
-  http.post('*/users/me/profile-image/presigned-url', async ({ request }) => {
-    const authError = requireAuth(request)
-    if (authError) return authError
-    const body = await request.json() as { original_img: string }
-    const mockImgUrl = `https://picsum.photos/seed/${encodeURIComponent(body.original_img)}/200/200`
-    return HttpResponse.json({
-      presigned_url: 'http://localhost:3000/mock-s3-upload',
-      img_url: mockImgUrl,
-      key: `profile-images/${body.original_img}`,
-    })
-  }),
-
-  // presigned URL S3 업로드 mock
-  http.put('*/mock-s3-upload', () => new HttpResponse(null, { status: 200 })),
+  // http.put('*/mock-s3-upload', () => new HttpResponse(null, { status: 200 })),
 
   http.get('*/users/:userId/profile', ({ request, params }) => {
     const authError = requireAuth(request)
