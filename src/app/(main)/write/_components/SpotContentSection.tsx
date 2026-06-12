@@ -13,6 +13,7 @@ interface SpotContentSectionProps {
   activeIdx: number
   updateSpot: (id: string, updates: Partial<SpotFormData>) => void
   contentError?: string
+  locationError?: string
 }
 
 const SpotContentSection = memo(function SpotContentSection({
@@ -20,6 +21,7 @@ const SpotContentSection = memo(function SpotContentSection({
   activeIdx,
   updateSpot,
   contentError,
+  locationError,
 }: SpotContentSectionProps) {
   const hasContentError = Boolean(contentError)
 
@@ -37,6 +39,7 @@ const SpotContentSection = memo(function SpotContentSection({
             value={active.content}
             onChange={(e) => updateSpot(active.id, { content: e.target.value })}
             placeholder="이 장소에서의 이야기를 들려주세요..."
+            autoComplete="off"
             maxLength={500}
             rows={5}
             className={cn(
@@ -59,7 +62,7 @@ const SpotContentSection = memo(function SpotContentSection({
 
       <div>
         <div className="flex items-center justify-between mb-2">
-          <FieldLabel>위치 / 장소</FieldLabel>
+          <FieldLabel required>위치 / 장소</FieldLabel>
           <span className="text-nav text-text-placeholder">{activeIdx + 1}번 위치</span>
         </div>
         {/* key로 spot 전환 시 검색 입력·결과 상태 초기화 */}
@@ -69,6 +72,11 @@ const SpotContentSection = memo(function SpotContentSection({
           onChange={(places) => updateSpot(active.id, { location: places[0] ?? null })}
           singleMode
         />
+        {locationError && (
+          <span className="block mt-2 text-caption text-(--input-text-error)">
+            {locationError}
+          </span>
+        )}
       </div>
     </>
   )

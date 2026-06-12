@@ -88,6 +88,7 @@ export function PasswordChangeModal({ open, onClose }: PasswordChangeModalProps)
           onChange={e => { setCurrentPassword(e.target.value); setCurrentPasswordError(undefined) }}
           required
           autoComplete="current-password"
+          name="danim-current-password"
           error={currentPasswordError}
         />
         <PasswordField
@@ -97,6 +98,7 @@ export function PasswordChangeModal({ open, onClose }: PasswordChangeModalProps)
           onChange={e => { setNewPassword(e.target.value); setNewPasswordError(undefined) }}
           required
           autoComplete="new-password"
+          name="danim-new-password"
           helperText="영문, 숫자, 특수문자 포함 8자 이상"
           error={newPasswordError}
         />
@@ -107,6 +109,7 @@ export function PasswordChangeModal({ open, onClose }: PasswordChangeModalProps)
           onChange={e => { setConfirmPassword(e.target.value); setConfirmPasswordError(undefined) }}
           required
           autoComplete="new-password"
+          name="danim-confirm-password"
           error={confirmPasswordError}
         />
       </form>

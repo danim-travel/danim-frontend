@@ -23,6 +23,7 @@ const DescriptionSection = memo(function DescriptionSection({
       value={description}
       onChange={(e) => setDescription(e.target.value)}
       placeholder="여행을 한 줄로 소개해보세요"
+      autoComplete="off"
       maxLength={MAX_LENGTH}
       rightSlot={
         <span className="text-nav text-text-disabled">

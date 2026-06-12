@@ -58,6 +58,8 @@ export function ResetPasswordForm() {
           type="text"
           inputMode="numeric"
           placeholder="인증 코드 6자리 입력"
+          name="danim-email-code"
+          autoComplete="one-time-code"
           value={code}
           onChange={(e) => setCode(sanitizeVerificationCode(e.target.value))}
           actionLabel={verified ? "완료" : "확인"}

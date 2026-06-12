@@ -17,6 +17,7 @@ const TitleSection = memo(function TitleSection({ title, setTitle, error }: Titl
       value={title}
       onChange={(e) => setTitle(e.target.value)}
       placeholder="여행의 제목을 입력하세요"
+      autoComplete="off"
       maxLength={50}
       rightSlot={<span className="text-nav text-text-disabled">{title.length}/50</span>}
       error={error}

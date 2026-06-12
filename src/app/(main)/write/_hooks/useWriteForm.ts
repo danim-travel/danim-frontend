@@ -47,6 +47,7 @@ export function useWriteForm() {
       active: spot.active,
       selectSpot,
       addSpot: spot.addSpot,
+      removeSpot: spot.removeSpot,
       updateSpot: spot.updateSpot,
       reorderSpots: spot.reorderSpots,
     },
