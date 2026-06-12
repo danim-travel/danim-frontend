@@ -2,7 +2,7 @@
  * 유저 관련 Mock 핸들러. 마이페이지/타인 프로필 조회, 내 정보 수정/탈퇴, 팔로워/팔로잉 목록 조회 시 사용한다.
  */
 import { http, HttpResponse, type HttpResponseResolver } from 'msw'
-import type { UserProfilePost, UserProfileResponse, FollowUser, MeDetailResponse } from '@/types'
+import type { UserProfilePost, UserProfileResponse, FollowUser } from '@/types'
 
 const mockHeights = [320, 480, 260, 560, 400, 300, 520, 380, 440, 280, 500, 360, 420, 600, 340, 460, 240, 540, 390, 470]
 
@@ -22,18 +22,6 @@ const mockUserProfile: UserProfileResponse = {
   is_following: false,
   posts_count: mockPosts.length,
   posts: mockPosts,
-}
-
-// 내 정보 수정 핸들러에서 공유하는 mutable mock
-const mockMe: MeDetailResponse = {
-  user_id: 'mock-user-id',
-  name: '홍길동',
-  email: 'test@danim.app',
-  birth_day: '1995-08-14',
-  nickname: 'test_nickname',
-  profile_img: 'https://picsum.photos/seed/userprofile/200/200',
-  intro: '여행을 좋아하는 사람입니다.',
-  phone_number: null,
 }
 
 // 추후 UI 확인용 mock 데이터 (팔로워/팔로잉 목록)

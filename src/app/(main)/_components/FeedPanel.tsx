@@ -54,6 +54,8 @@ export function FeedPanel({
     <aside className="w-[500px] p-7 shrink-0 h-full flex flex-col bg-bg-subtle rounded-2xl overflow-hidden shadow-sm">
       {/* 헤더 */}
       <header className="mb-5 relative">
+        {/* h2를 먼저 두어 키보드·스크린리더 포커스 순서가 시각 순서와 일치하도록 한다 */}
+        <h2 className="text-section-title font-bold">{title ?? "팔로잉 피드"}</h2>
         {onBack && (
           <button
             type="button"
@@ -64,7 +66,6 @@ export function FeedPanel({
             돌아가기
           </button>
         )}
-        <h2 className="text-section-title font-bold">{title ?? "팔로잉 피드"}</h2>
       </header>
 
       {/* 카드 리스트 */}

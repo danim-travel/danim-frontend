@@ -8,7 +8,8 @@ interface BuildPostMenuArgs {
 }
 
 export function buildPostContextMenu({ isOwner, postId, onEdit, onDelete }: BuildPostMenuArgs) {
-  const shareUrl = `${window.location.origin}/?post=${postId}`;
+  // postId를 URL 인코딩해 특수문자가 포함된 경우에도 올바른 URL이 생성되도록 한다
+  const shareUrl = `${window.location.origin}/?post=${encodeURIComponent(postId)}`;
 
   const commonMenuItems = [
     {

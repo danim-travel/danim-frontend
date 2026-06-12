@@ -38,8 +38,9 @@ export default function HomePage() {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useMainFeed();
   const prefetchPostDetail = usePrefetchPostDetail();
 
+  // soloPostId가 없을 때 queryKeys.posts.detail("")로 빈 캐시 항목이 생기지 않도록 키를 조건부 구성
   const { data: soloDetail } = useQuery({
-    queryKey: queryKeys.posts.detail(soloPostId ?? ""),
+    queryKey: soloPostId ? queryKeys.posts.detail(soloPostId) : ["_disabled"],
     queryFn: () => apiClient.get(`posts/${soloPostId}`).json<PostDetail>(),
     enabled: !!soloPostId,
     refetchOnWindowFocus: false,
