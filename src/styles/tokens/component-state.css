@@ -150,4 +150,7 @@
 
   /* ── Modal max-width ────────────────────── */
   --modal-max-width: 560px;
+
+  /* ── List ───────────────────────────────── */
+  --list-item-height: 60px;
 }
