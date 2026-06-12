@@ -23,11 +23,11 @@ export function usePostSubmit({ title, description, spots, thumbnailKey }: UsePo
   const userId = useAuthStore((s) => s.user?.userId)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // 제목 입력, 위치가 있는 스팟 존재, 썸네일 선택 모두 충족해야 제출 가능
+  // 전체 제목·소개 입력, 모든 스팟에 본문·위치·사진 1장, 썸네일 선택 모두 충족해야 제출 가능
   const canSubmit =
     title.trim().length > 0 &&
     description.trim().length > 0 &&
-    spots.some((s) => s.location !== null) &&
+    spots.every((s) => s.content.trim().length > 0 && s.location !== null && s.images.length > 0) &&
     thumbnailKey !== null &&
     !isSubmitting
 
