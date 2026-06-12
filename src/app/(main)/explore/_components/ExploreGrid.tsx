@@ -38,7 +38,7 @@ export function ExploreGrid({
 
   if (isLoading) {
     return (
-      <div className="columns-4 gap-3">
+      <div data-testid="explore-skeleton" className="columns-4 gap-3">
         {Array.from({ length: 12 }).map((_, i) => (
           <div key={i} className="mb-3 break-inside-avoid">
             <Skeleton height={[460, 360, 540, 580, 320, 380, 340, 420, 522, 400, 480, 362][i]} radius="card" />
@@ -59,10 +59,11 @@ export function ExploreGrid({
 
   return (
     <>
-      <div className="columns-4 gap-3">
+      <div data-testid="explore-grid" className="columns-4 gap-3">
         {posts.map((post) => (
           <div
             key={post.post_id}
+            data-testid="explore-post-card"
             className="mb-3 break-inside-avoid cursor-pointer group"
             onClick={() => onPostClick(post.post_id)}
           >
@@ -92,7 +93,7 @@ export function ExploreGrid({
       <div ref={sentinelRef} className="h-1" />
 
       {isFetchingNextPage && (
-        <div className="columns-4 gap-3 mt-0">
+        <div data-testid="explore-loading-more" className="columns-4 gap-3 mt-0">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="mb-3 break-inside-avoid">
               <Skeleton height={180} radius="card" />
