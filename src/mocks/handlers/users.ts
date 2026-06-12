@@ -166,7 +166,7 @@ export const usersHandlers = [
     const authError = requireAuth(request)
     if (authError) return authError
     const search = new URL(request.url).searchParams.get('search')?.toLowerCase().trim() ?? ''
-    if (!search) return HttpResponse.json([])
+    if (!search) return HttpResponse.json({ results: [] })
     const results = mockSearchUsers.filter((u) => u.nickname.toLowerCase().includes(search))
     return HttpResponse.json({ results })
   }),

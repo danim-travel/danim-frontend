@@ -4,12 +4,14 @@ import { useRouter } from "next/navigation"
 import { useQuery } from "@tanstack/react-query"
 import { Avatar, UserRow, UserRowSkeleton, EmptyState, SideDrawer, SearchBar } from "@/components/common"
 import { useUIStore } from "@/store/uiStore"
+import { useAuthStore } from "@/store/authStore"
 import { searchUsers } from "@/lib/api/users"
 import { queryKeys } from "@/lib/queryKeys"
 
 export function SearchDrawer() {
   const router = useRouter()
   const { activePanel, closePanel } = useUIStore()
+  const myUserId = useAuthStore((s) => s.user?.userId)
   const isOpen = activePanel === "search"
   const [query, setQuery] = useState("")
   const [debouncedQuery, setDebouncedQuery] = useState("")
@@ -76,13 +78,13 @@ export function SearchDrawer() {
                   avatar={
                     <Avatar
                       src={user.profile_img ?? undefined}
-                      initial={user.nickname[0].toUpperCase()}
+                      initial={user.nickname[0]?.toUpperCase() ?? "?"}
                       size="md"
                     />
                   }
                   title={user.nickname}
                   onClick={() => {
-                    router.push(`/users/${user.user_id}`)
+                    router.push(user.user_id === myUserId ? "/mypage" : `/users/${user.user_id}`)
                     handleClose()
                   }}
                   className="px-8 h-(--list-item-height) hover:bg-bg-subtle transition-colors"
