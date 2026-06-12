@@ -33,6 +33,7 @@ const mockMe: MeDetailResponse = {
   nickname: 'test_nickname',
   profile_img: 'https://picsum.photos/seed/userprofile/200/200',
   intro: '여행을 좋아하는 사람입니다.',
+  phone_number: null,
 }
 
 // 추후 UI 확인용 mock 데이터 (팔로워/팔로잉 목록)
