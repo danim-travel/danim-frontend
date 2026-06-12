@@ -1,5 +1,5 @@
 import { apiClient } from '@/lib/apiClient'
-import type { MeDetailResponse, UpdateUserRequest, ChangePasswordRequest, DetailResponse, ProfileImagePresignedResponse, FollowListResponse, FollowResponse } from '@/types'
+import type { MeDetailResponse, UpdateUserRequest, ChangePasswordRequest, DetailResponse, ProfileImagePresignedResponse, FollowListResponse, FollowResponse, UserSearchResponse } from '@/types'
 
 /** 내 상세 정보(닉네임·이메일·소개 등)를 조회한다. */
 export async function getMe(): Promise<MeDetailResponse> {
@@ -44,4 +44,10 @@ export async function followUser(userId: string): Promise<FollowResponse> {
 /** 특정 유저를 언팔로우한다. */
 export async function unfollowUser(userId: string): Promise<FollowResponse> {
   return apiClient.delete(`follow/${userId}`).json<FollowResponse>()
+}
+
+/** 닉네임으로 유저를 검색한다. */
+export async function searchUsers(nickname: string): Promise<UserSearchResponse> {
+  const res = await apiClient.get('users', { searchParams: { search: nickname } }).json<{ results: UserSearchResponse }>()
+  return res.results
 }

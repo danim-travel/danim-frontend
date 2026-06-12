@@ -20,3 +20,4 @@ export * from "./feedback/EmptyState";
 export * from "./feedback/Skeleton";
 export * from "./PageContainer";
 export * from "./SettingsRow/SettingsRow";
+export * from "./SideDrawer/SideDrawer";

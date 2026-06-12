@@ -4,13 +4,17 @@
  */
 import SideNav from '@/components/SideNav'
 import { AuthGuard } from './_components/AuthGuard'
+import { SearchDrawer } from './_components/SearchDrawer'
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthGuard>
-      <div className="flex h-full">
-        <SideNav />
+      <div className="flex h-full relative">
+        <div className="relative z-(--z-sidenav) shrink-0 h-full">
+          <SideNav />
+        </div>
         <main className="flex-1 min-w-0 h-full overflow-y-auto overscroll-contain">{children}</main>
+        <SearchDrawer />
       </div>
     </AuthGuard>
   )

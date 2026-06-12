@@ -96,6 +96,14 @@ export type FollowUser = {
 
 export type FollowListResponse = FollowUser[]
 
+export type UserSearchResult = {
+  user_id: string
+  nickname: string
+  profile_img: string | null
+}
+
+export type UserSearchResponse = UserSearchResult[]
+
 export type SmsVerificationPurpose = 'signup' | 'find_email' | 'phone_change'
 
 export interface SendSmsRequest {
