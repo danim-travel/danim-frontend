@@ -37,13 +37,21 @@ export function useEmailVerification({ onVerified, purpose }: UseEmailVerificati
   // "확인" 버튼 클릭 → 입력한 코드 검증 → 성공 시 email_token 발급
   async function confirmCode(email: string) {
     setConfirmError(undefined);
+    if (!code.trim()) {
+      setConfirmError("인증코드를 입력해주세요.");
+      return;
+    }
+    if (code.length < 6) {
+      setConfirmError("인증코드 6자리를 입력해주세요.");
+      return;
+    }
     setConfirmLoading(true);
     try {
       const { email_token } = await confirmEmailCode(email, code, purpose);
       setVerified(true);
       onVerified(email_token); // 발급된 토큰을 폼의 emailToken 필드에 주입
     } catch (e) {
-      setConfirmError(getApiErrorMessage(e, { client: "코드 확인에 실패했습니다." }));
+      setConfirmError(getApiErrorMessage(e, { client: "인증코드가 올바르지 않습니다." }));
     } finally {
       setConfirmLoading(false);
     }

@@ -85,6 +85,7 @@ export function LoginForm() {
         <TextField
           label="이메일"
           type="email"
+          required
           placeholder="이메일 주소를 입력하세요"
           autoComplete="email"
           {...register("email")}
@@ -93,6 +94,7 @@ export function LoginForm() {
         <div className="flex flex-col gap-2">
           <PasswordField
             label="비밀번호"
+            required
             placeholder="비밀번호를 입력하세요"
             autoComplete="current-password"
             maxLength={PASSWORD_RULES.maxLength}

@@ -31,6 +31,7 @@ export function DeleteAccountModal({ open, onClose }: DeleteAccountModalProps) {
 
   const [agreed, setAgreed] = useState(false)
   const [confirmPhrase, setConfirmPhrase] = useState("")
+  const [confirmPhraseError, setConfirmPhraseError] = useState<string | undefined>()
   const [isPending, setIsPending] = useState(false)
   const canDelete = agreed && confirmPhrase === "삭제하겠습니다"
 
@@ -38,9 +39,19 @@ export function DeleteAccountModal({ open, onClose }: DeleteAccountModalProps) {
     onClose()
     setAgreed(false)
     setConfirmPhrase("")
+    setConfirmPhraseError(undefined)
   }
 
   async function handleDelete() {
+    if (confirmPhrase.trim().length === 0) {
+      setConfirmPhraseError("확인 문구를 입력해주세요")
+      return
+    }
+    if (confirmPhrase !== "삭제하겠습니다") {
+      setConfirmPhraseError("\"삭제하겠습니다\"를 정확히 입력해주세요")
+      return
+    }
+
     setIsPending(true)
     try {
       await deleteUser()
@@ -63,7 +74,7 @@ export function DeleteAccountModal({ open, onClose }: DeleteAccountModalProps) {
       footer={
         <>
           <Button variant="outline" onClick={handleClose}>취소</Button>
-          <Button variant="primary" loading={isPending} disabled={!canDelete || isPending} onClick={handleDelete}>
+          <Button variant="primary" loading={isPending} disabled={isPending} onClick={handleDelete}>
             확인
           </Button>
         </>
@@ -118,7 +129,8 @@ export function DeleteAccountModal({ open, onClose }: DeleteAccountModalProps) {
             required
             placeholder="삭제하겠습니다"
             value={confirmPhrase}
-            onChange={e => setConfirmPhrase(e.target.value)}
+            onChange={e => { setConfirmPhrase(e.target.value); setConfirmPhraseError(undefined) }}
+            error={confirmPhraseError}
           />
         </div>
       </div>

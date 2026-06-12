@@ -1,6 +1,7 @@
 'use client'
 
 import { memo } from 'react'
+import { cn } from '@/lib/utils'
 import dynamic from 'next/dynamic'
 import { FieldLabel } from '@/components/common'
 import type { SpotFormData } from '../_hooks/useWriteForm'
@@ -11,18 +12,22 @@ interface SpotContentSectionProps {
   active: SpotFormData
   activeIdx: number
   updateSpot: (id: string, updates: Partial<SpotFormData>) => void
+  contentError?: string
 }
 
 const SpotContentSection = memo(function SpotContentSection({
   active,
   activeIdx,
   updateSpot,
+  contentError,
 }: SpotContentSectionProps) {
+  const hasContentError = Boolean(contentError)
+
   return (
     <>
       <div>
         <div className="flex items-center justify-between mb-2">
-          <FieldLabel>본문</FieldLabel>
+          <FieldLabel required>본문</FieldLabel>
           <span className="text-nav text-text-placeholder">{activeIdx + 1}번 위치</span>
         </div>
         <div className="relative">
@@ -34,12 +39,22 @@ const SpotContentSection = memo(function SpotContentSection({
             placeholder="이 장소에서의 이야기를 들려주세요..."
             maxLength={500}
             rows={5}
-            className="w-full px-4 py-3 rounded-xl border border-border text-body-sm outline-none focus:border-primary transition-colors resize-none bg-white"
+            className={cn(
+              "w-full px-4 py-3 rounded-xl border text-body-sm outline-none transition-colors resize-none bg-white",
+              hasContentError
+                ? "border-(--input-border-error)"
+                : "border-border focus:border-primary"
+            )}
           />
           <span className="absolute bottom-3 right-4 text-nav text-text-disabled">
             {active.content.length}/500
           </span>
         </div>
+        {hasContentError && (
+          <span className="block mt-2 text-caption text-(--input-text-error)">
+            {contentError}
+          </span>
+        )}
       </div>
 
       <div>
