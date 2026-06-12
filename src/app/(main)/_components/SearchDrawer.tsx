@@ -18,8 +18,17 @@ export function SearchDrawer() {
 
   const handleClose = () => {
     closePanel()
-    setQuery("")
   }
+
+  // exit 애니메이션(250ms) 완료 후 검색 상태 초기화 — 닫히는 중 flash 방지
+  useEffect(() => {
+    if (isOpen) return
+    const t = setTimeout(() => {
+      setQuery("")
+      setDebouncedQuery("")
+    }, 250)
+    return () => clearTimeout(t)
+  }, [isOpen])
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQuery(query.trim()), 300)
@@ -27,9 +36,9 @@ export function SearchDrawer() {
   }, [query])
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: queryKeys.users.search(debouncedQuery || undefined),
+    queryKey: queryKeys.users.search(debouncedQuery),
     queryFn: () => searchUsers(debouncedQuery),
-    enabled: !!debouncedQuery,
+    enabled: debouncedQuery.length > 0,
     staleTime: 30_000,
   })
 
@@ -54,23 +63,23 @@ export function SearchDrawer() {
 
       {/* 결과 영역 */}
       <div className="flex-1 overflow-y-auto">
-        {!debouncedQuery && (
+        {!query && (
           <p className="px-8 text-body-sm text-text-muted py-6">
             닉네임을 입력해 유저를 검색하세요
           </p>
         )}
-        {debouncedQuery && isLoading && (
+        {query && isLoading && (
           <div data-testid="search-loading" className="px-8 pt-2">
             <UserRowSkeleton rows={5} />
           </div>
         )}
-        {debouncedQuery && !isLoading && isError && (
+        {query && !isLoading && isError && (
           <EmptyState title="검색 중 오류가 발생했습니다" description="잠시 후 다시 시도해주세요." />
         )}
-        {debouncedQuery && !isLoading && !isError && data?.length === 0 && (
+        {query && !isLoading && !isError && data?.length === 0 && (
           <EmptyState title="검색 결과가 없어요" description="다른 닉네임을 입력해보세요." />
         )}
-        {debouncedQuery && !isLoading && !isError && data && data.length > 0 && (
+        {query && !isLoading && !isError && data && data.length > 0 && (
           <ul data-testid="search-results">
             {data.map((user) => (
               <li key={user.user_id} data-testid="user-search-result">
