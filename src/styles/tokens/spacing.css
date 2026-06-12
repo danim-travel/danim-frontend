@@ -42,8 +42,10 @@
   --duration-normal: 160ms;
 
   /* ── Z-index ─────────────────────────────────── */
-  --z-drawer: 5;
-  --z-modal:  100;
+  /* --z-sidenav > --z-drawer: 사이드바가 드로어 위에 위치해 드로어가 뒤에서 슬라이드됨 */
+  --z-drawer:  5;
+  --z-sidenav: 10;
+  --z-modal:   100;
 
   /* ── Icon size ───────────────────────────────── */
   --icon-size-sm: 14px;

@@ -36,12 +36,14 @@ type NavLinkProps = {
   label?: string
   Icon: LucideIcon
   active: boolean
+  onClick?: () => void
 }
 
-function NavLink({ href, label, Icon, active }: NavLinkProps) {
+function NavLink({ href, label, Icon, active, onClick }: NavLinkProps) {
   return (
     <Link
       href={href}
+      onClick={onClick}
       className={`flex flex-col items-center justify-center gap-1 w-full py-3 rounded-xl transition-all ${active ? 'bg-primary/10' : 'hover:bg-bg-subtle'}`}
     >
       <Icon className={`w-[22px] h-[22px] ${active ? 'text-primary' : 'text-text-disabled'}`} strokeWidth={active ? 2.5 : 2} />
@@ -52,13 +54,13 @@ function NavLink({ href, label, Icon, active }: NavLinkProps) {
 
 export default function SideNav() {
   const pathname = usePathname()
-  const { setActivePanel } = useUIStore()
+  const { activePanel, setActivePanel, closePanel } = useUIStore()
   const user = useAuthStore((s) => s.user)
 
   return (
     <nav className="w-(--sidebar-width) bg-bg-card border-r border-border flex flex-col items-center shrink-0 h-full py-4">
       {/* 메인 로고, 클릭하면 홈으로 이동 */}
-      <Link href="/" className="mb-5">
+      <Link href="/" onClick={closePanel} className="mb-5">
         <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-md hover:shadow-lg transition-shadow">
           <span className="text-text-inverse text-card-title">✈️</span>
         </div>
@@ -74,19 +76,20 @@ export default function SideNav() {
             label={label}
             Icon={Icon}
             active={pathname === href || pathname.startsWith(href + '/')}
+            onClick={closePanel}
           />
         ))}
 
         {/* 검색, 알림 버튼 */}
-        <NavButton label="검색" Icon={Search} onClick={() => setActivePanel('search')} />
+        <NavButton label="검색" Icon={Search} onClick={() => activePanel === 'search' ? closePanel() : setActivePanel('search')} />
         <NavButton label="알림" Icon={Bell} onClick={() => setActivePanel('notification')} />
       </div>
 
       {/* 하단 설정, 마이페이지 */}
       <div className="flex flex-col items-center gap-3 px-2 w-full">
-        <NavLink href="/settings" Icon={Settings} active={pathname === '/settings'} />
+        <NavLink href="/settings" Icon={Settings} active={pathname === '/settings'} onClick={closePanel} />
 
-        <Link href="/mypage">
+        <Link href="/mypage" onClick={closePanel}>
           {user?.profileImg ? (
             <img
               src={user.profileImg}
