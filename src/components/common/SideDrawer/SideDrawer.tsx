@@ -23,6 +23,7 @@ export function SideDrawer({ open, onClose, title, children, className }: SideDr
           animate={{ x: 0 }}
           exit={{ x: "-100%" }}
           transition={{ type: "tween", duration: 0.25, ease: "easeInOut" }}
+          data-testid="side-drawer"
           className={cn(
             "absolute top-0 h-full bg-bg-card border-r border-border rounded-tr-modal rounded-br-modal shadow-overlay flex flex-col overflow-hidden",
             className

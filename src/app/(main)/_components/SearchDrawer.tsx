@@ -58,7 +58,7 @@ export function SearchDrawer() {
           </p>
         )}
         {debouncedQuery && isLoading && (
-          <div className="px-8 pt-2">
+          <div data-testid="search-loading" className="px-8 pt-2">
             <UserRowSkeleton rows={5} />
           </div>
         )}
@@ -69,9 +69,9 @@ export function SearchDrawer() {
           <EmptyState title="검색 결과가 없어요" description="다른 닉네임을 입력해보세요." />
         )}
         {debouncedQuery && !isLoading && !isError && data && data.length > 0 && (
-          <ul>
+          <ul data-testid="search-results">
             {data.map((user) => (
-              <li key={user.user_id}>
+              <li key={user.user_id} data-testid="user-search-result">
                 <UserRow
                   avatar={
                     <Avatar
