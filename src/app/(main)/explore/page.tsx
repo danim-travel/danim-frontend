@@ -1,5 +1,6 @@
 "use client"
 import { useState, useEffect, useCallback } from "react"
+import { useRouter } from "next/navigation"
 import { useQueryState } from "nuqs"
 import { PageContainer, SearchBar } from "@/components/common"
 import { toast } from "@/store/toastStore"
@@ -12,6 +13,7 @@ const CATEGORIES = ["전체", "경기", "강원", "충청", "전라", "경상", 
 type Category = (typeof CATEGORIES)[number]
 
 export default function ExplorePage() {
+  const router = useRouter()
   const [search, setSearch] = useQueryState("search", { defaultValue: "" })
   const [inputValue, setInputValue] = useState(search)
   const [category, setCategory] = useState<Category>("전체")
@@ -81,6 +83,11 @@ export default function ExplorePage() {
         <PostModal
           postId={postModalId}
           onClose={() => setPostModalId(null)}
+          showGoToMain
+          onGoToMain={() => {
+            sessionStorage.setItem("scrollToPostId", postModalId)
+            router.push(`/?solo=${postModalId}`)
+          }}
         />
       )}
     </PageContainer>

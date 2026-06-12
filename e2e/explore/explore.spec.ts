@@ -139,6 +139,30 @@ async function scrollExploreToBottom(page: Page) {
   })
 }
 
+/**
+ * page.route로 posts/:postId 및 comments 요청을 stub한다.
+ * POST_DETAIL_STUB은 Node.js 컨텍스트 변수이므로 addInitScript 클로저 직렬화 대신
+ * Playwright 쪽에서 처리해야 한다.
+ */
+async function setupPostDetailRoutes(page: Page) {
+  await page.route(/\/posts\/mock_[a-zA-Z0-9_]+$/, async (route) => {
+    if (route.request().method() !== 'GET') return route.continue()
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: POST_DETAIL_STUB,
+    })
+  })
+  await page.route(/\/comments(\?|$)/, async (route) => {
+    if (route.request().method() !== 'GET') return route.continue()
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ next: null, results: [] }),
+    })
+  })
+}
+
 // ─── 1. 초기 렌더링 ────────────────────────────────────────────────────────────
 
 test.describe('탐색 페이지 — 초기 렌더링', () => {
@@ -405,30 +429,9 @@ test.describe('탐색 페이지 — 카테고리 실패', () => {
 // ─── 6. 게시글 클릭 — 성공 ─────────────────────────────────────────────────────
 
 test.describe('탐색 페이지 — 게시글 클릭 성공', () => {
-  /** posts/:postId와 comments를 stub하는 override */
-  function postDetailOverrides(
-    _input: RequestInfo | URL,
-    method: string,
-    url: string,
-  ): Response | null | undefined {
-    // mock_ 으로 시작하는 postId 패턴 (explore/main 제외)
-    if (/\/posts\/mock_[a-zA-Z0-9_]+$/.test(url) && method === 'GET') {
-      return new Response(POST_DETAIL_STUB, {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      })
-    }
-    if (/\/comments(\?|$)/.test(url) && method === 'GET') {
-      return new Response(
-        JSON.stringify({ next: null, results: [] }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } },
-      )
-    }
-    return null
-  }
-
   test('게시글 카드 클릭 시 PostModal이 열린다', async ({ page }) => {
-    await bootstrapAuthedPage(page, postDetailOverrides)
+    await bootstrapAuthedPage(page)
+    await setupPostDetailRoutes(page)
     await page.goto('/explore')
     await waitForExploreLoaded(page)
 
@@ -438,7 +441,8 @@ test.describe('탐색 페이지 — 게시글 클릭 성공', () => {
   })
 
   test('클릭한 카드의 postId로 API 요청이 전송된다', async ({ page }) => {
-    await bootstrapAuthedPage(page, postDetailOverrides)
+    await bootstrapAuthedPage(page)
+    await setupPostDetailRoutes(page)
     await page.goto('/explore')
     await waitForExploreLoaded(page)
 
@@ -453,7 +457,8 @@ test.describe('탐색 페이지 — 게시글 클릭 성공', () => {
   })
 
   test('모달 닫기 버튼 클릭 시 모달이 사라진다', async ({ page }) => {
-    await bootstrapAuthedPage(page, postDetailOverrides)
+    await bootstrapAuthedPage(page)
+    await setupPostDetailRoutes(page)
     await page.goto('/explore')
     await waitForExploreLoaded(page)
 
@@ -465,7 +470,8 @@ test.describe('탐색 페이지 — 게시글 클릭 성공', () => {
   })
 
   test('모달 backdrop 클릭 시 모달이 닫힌다', async ({ page }) => {
-    await bootstrapAuthedPage(page, postDetailOverrides)
+    await bootstrapAuthedPage(page)
+    await setupPostDetailRoutes(page)
     await page.goto('/explore')
     await waitForExploreLoaded(page)
 
@@ -482,7 +488,8 @@ test.describe('탐색 페이지 — 게시글 클릭 성공', () => {
   })
 
   test('모달 닫은 후 다시 다른 카드를 클릭하면 새 모달이 열린다', async ({ page }) => {
-    await bootstrapAuthedPage(page, postDetailOverrides)
+    await bootstrapAuthedPage(page)
+    await setupPostDetailRoutes(page)
     await page.goto('/explore')
     await waitForExploreLoaded(page)
 
@@ -531,22 +538,16 @@ test.describe('탐색 페이지 — 게시글 클릭 실패', () => {
   })
 
   test('게시글 상세 API 지연 중 모달 내 스켈레톤이 표시된다', async ({ page }) => {
-    await bootstrapAuthedPage(page, (_input, method, url) => {
-      if (/\/posts\/mock_[a-zA-Z0-9_]+$/.test(url) && method === 'GET') {
-        return new Response(
-          new ReadableStream({
-            start(controller) {
-              // 2초 지연 — 스켈레톤이 표시되는 동안 검증
-              setTimeout(() => {
-                controller.enqueue(new TextEncoder().encode(POST_DETAIL_STUB))
-                controller.close()
-              }, 2000)
-            },
-          }),
-          { status: 200, headers: { 'Content-Type': 'application/json' } },
-        )
-      }
-      return null
+    await bootstrapAuthedPage(page)
+    // POST_DETAIL_STUB은 Node.js 컨텍스트 변수이므로 page.route로 처리, 2초 지연
+    await page.route(/\/posts\/mock_[a-zA-Z0-9_]+$/, async (route) => {
+      if (route.request().method() !== 'GET') return route.continue()
+      await new Promise<void>((resolve) => setTimeout(resolve, 2000))
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: POST_DETAIL_STUB,
+      })
     })
 
     await page.goto('/explore')
@@ -587,6 +588,22 @@ test.describe('탐색 페이지 — 무한 스크롤', () => {
     await scrollExploreToBottom(page)
     // 25개 총합 (마지막 페이지: 1개)
     await expect(page.locator('[data-testid="explore-post-card"]')).toHaveCount(25, { timeout: 10000 })
+
+    // 마지막 페이지 도달 후 cursor 요청이 추가로 발생하지 않는다
+    const capturesBefore = await getCaptures(page)
+    const cursorCountBefore = capturesBefore.filter(
+      (c) => /\/posts\/explore\?.*cursor=/.test(c.url) && c.method === 'GET',
+    ).length
+
+    await scrollExploreToBottom(page)
+    await page.waitForTimeout(500)
+
+    const capturesAfter = await getCaptures(page)
+    const cursorCountAfter = capturesAfter.filter(
+      (c) => /\/posts\/explore\?.*cursor=/.test(c.url) && c.method === 'GET',
+    ).length
+
+    expect(cursorCountAfter).toBe(cursorCountBefore)
   })
 
   test('다음 페이지 로드 중 로딩 스켈레톤이 표시된다', async ({ page }) => {

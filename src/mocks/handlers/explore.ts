@@ -33,7 +33,7 @@ const CATEGORY_KEYWORDS: Record<string, string[]> = {
 // ALL_FEED_ITEMS → ExplorePost 변환 (타이틀 포함한 검색용 내부 타입)
 const EXPLORE_ITEMS = ALL_FEED_ITEMS.map((item, i) => ({
   post_id: item.post.post_id,
-  thumbnail: `https://picsum.photos/seed/explore${i + 1}/480/${MOCK_HEIGHTS[i % MOCK_HEIGHTS.length]}`,
+  thumbnail: `https://picsum.photos/seed/feedpost${i + 1}/480/${MOCK_HEIGHTS[i % MOCK_HEIGHTS.length]}`,
   like_count: item.like_count,
   comment_count: item.comment_count,
   _title: MOCK_TITLES[i % MOCK_TITLES.length],
