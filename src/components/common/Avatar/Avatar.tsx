@@ -26,12 +26,12 @@ export function Avatar({ src, initial, size = "md", ring, colorClass = "bg-prima
     <div
       className={cn(
         "relative overflow-hidden grid place-items-center rounded-avatar font-bold ring-2 ring-bg-card text-text-inverse shrink-0",
-        !src && colorClass,
+        !src?.startsWith('http') && colorClass,
         box,
         text
       )}
     >
-      {src
+      {src?.startsWith('http')
         ? <Image src={src} alt="" fill sizes="112px" className="object-cover" />
         : initial
       }
