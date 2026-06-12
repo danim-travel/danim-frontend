@@ -16,6 +16,7 @@ export const queryKeys = {
     profile: (userId: string) => ['users', userId, 'profile'] as const,
     followers: (userId: string) => ['users', userId, 'followers'] as const,
     following: (userId: string) => ['users', userId, 'following'] as const,
+    search: (query?: string) => ['users', 'search', query] as const,
   },
   bookmarks: ['bookmarks'] as const,
   comments: {

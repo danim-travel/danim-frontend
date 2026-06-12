@@ -2,7 +2,7 @@
  * 유저 관련 Mock 핸들러. 마이페이지/타인 프로필 조회, 내 정보 수정/탈퇴, 팔로워/팔로잉 목록 조회 시 사용한다.
  */
 import { http, HttpResponse, type HttpResponseResolver } from 'msw'
-import type { UserProfilePost, UserProfileResponse, FollowUser } from '@/types'
+import type { UserProfilePost, UserProfileResponse, FollowUser, UserSearchResult } from '@/types'
 
 const mockHeights = [320, 480, 260, 560, 400, 300, 520, 380, 440, 280, 500, 360, 420, 600, 340, 460, 240, 540, 390, 470]
 
@@ -104,6 +104,17 @@ const handleFollowing: HttpResponseResolver = ({ request, params }) => {
   return HttpResponse.json(mockFollowings)
 }
 
+const mockSearchUsers: UserSearchResult[] = [
+  { user_id: 'other-user-1', nickname: 'traveler_kim', profile_img: 'https://picsum.photos/seed/otherprofile1/200/200' },
+  { user_id: 'other-user-2', nickname: 'yh_explorer', profile_img: null },
+  { user_id: 'follower-3', nickname: 'jeju_lover', profile_img: 'https://picsum.photos/seed/follower3/200/200' },
+  { user_id: 'follower-4', nickname: 'road_tripper', profile_img: 'https://picsum.photos/seed/follower4/200/200' },
+  { user_id: 'following-1', nickname: 'alps_hiker', profile_img: 'https://picsum.photos/seed/following1/200/200' },
+  { user_id: 'following-2', nickname: 'seoul_wanderer', profile_img: 'https://picsum.photos/seed/following2/200/200' },
+  { user_id: 'search-user-3', nickname: 'busan_foodie', profile_img: 'https://picsum.photos/seed/searchuser3/200/200' },
+  { user_id: 'search-user-4', nickname: 'jeju_traveler', profile_img: 'https://picsum.photos/seed/searchuser4/200/200' },
+]
+
 // 내정보수정 관련 API가 개발 완료되어 실제 API로 전환. 아래 핸들러는 비활성화.
 export const usersHandlers = [
   // http.get('*/users/me', ({ request }) => {
@@ -150,6 +161,15 @@ export const usersHandlers = [
   // }),
 
   // http.put('*/mock-s3-upload', () => new HttpResponse(null, { status: 200 })),
+
+  http.get('*/users', ({ request }) => {
+    const authError = requireAuth(request)
+    if (authError) return authError
+    const search = new URL(request.url).searchParams.get('search')?.toLowerCase().trim() ?? ''
+    if (!search) return HttpResponse.json([])
+    const results = mockSearchUsers.filter((u) => u.nickname.toLowerCase().includes(search))
+    return HttpResponse.json({ results })
+  }),
 
   http.get('*/users/:userId/profile', ({ request, params }) => {
     const authError = requireAuth(request)
