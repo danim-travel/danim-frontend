@@ -9,7 +9,7 @@ export const queryKeys = {
     main: ['posts', 'main'] as const,
     mainFeed: ['posts', 'main', 'feed'] as const,
     exploreBase: ['posts', 'explore'] as const,
-    explore: (search?: string) => ['posts', 'explore', search] as const,
+    explore: (search?: string, category?: string) => ['posts', 'explore', search, category] as const,
   },
   users: {
     me: ['users', 'me'] as const,

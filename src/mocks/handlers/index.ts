@@ -6,6 +6,7 @@ import { postsHandlers } from './posts'
 import { mainFeedHandlers } from './mainFeed'
 import { interactionsHandlers } from './interactions'
 import { usersHandlers, followHandlers } from './users'
+import { exploreHandlers } from './explore'
 import type { RequestHandler } from 'msw'
 
 export const handlers: RequestHandler[] = [
@@ -17,4 +18,5 @@ export const handlers: RequestHandler[] = [
   // ...interactionsHandlers,
   // ...usersHandlers,
   // ...followHandlers,
+  ...exploreHandlers,
 ]

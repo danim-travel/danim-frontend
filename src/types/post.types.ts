@@ -129,3 +129,15 @@ export type MainFeedResponse = {
   next: string | null
   results: MainFeedItem[]
 }
+
+export type ExplorePost = {
+  post_id: string
+  thumbnail: string
+  like_count: number
+  comment_count: number
+}
+
+export type ExploreResponse = {
+  next: string | null
+  results: ExplorePost[]
+}
