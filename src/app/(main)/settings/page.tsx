@@ -46,6 +46,9 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
   const [isCheckingNickname, setIsCheckingNickname] = useState(false)
   const [isPending, setIsPending] = useState(false)
   const nicknameCheckGen = useRef(0)
+  // blur로 시작된 닉네임 검사와 저장 버튼 클릭을 조율하기 위한 refs
+  const nicknameCheckPending = useRef<Promise<void> | null>(null)
+  const nicknameErrorRef = useRef<string | undefined>(undefined)
 
   const isDirty =
     nickname !== me.nickname ||
@@ -53,34 +56,53 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
     profileKey !== undefined
 
   function handleCancel() {
+    nicknameCheckGen.current++
     setNickname(me.nickname)
     setIntro(me.intro)
     setProfileImg(me.profile_img)
     setProfileKey(undefined)
     setNicknameError(undefined)
+    nicknameErrorRef.current = undefined
+    setIsCheckingNickname(false)
+    nicknameCheckPending.current = null
     toast.success("변경사항이 취소되었습니다.")
   }
 
   async function handleNicknameBlur() {
     if (!nickname.trim() || nickname === me.nickname) {
       setNicknameError(undefined)
+      nicknameErrorRef.current = undefined
       return
     }
     const gen = ++nicknameCheckGen.current
     setIsCheckingNickname(true)
-    try {
-      await checkNickname(nickname)
-      if (gen === nicknameCheckGen.current) setNicknameError(undefined)
-    } catch (err) {
-      if (gen === nicknameCheckGen.current)
-        setNicknameError(getApiErrorMessage(err, { client: "이미 사용 중인 닉네임입니다." }))
-    } finally {
-      if (gen === nicknameCheckGen.current) setIsCheckingNickname(false)
-    }
+    nicknameCheckPending.current = (async () => {
+      try {
+        await checkNickname(nickname)
+        if (gen === nicknameCheckGen.current) {
+          setNicknameError(undefined)
+          nicknameErrorRef.current = undefined
+        }
+      } catch (err) {
+        if (gen === nicknameCheckGen.current) {
+          const msg = getApiErrorMessage(err, { client: "이미 사용 중인 닉네임입니다." })
+          setNicknameError(msg)
+          nicknameErrorRef.current = msg
+        }
+      } finally {
+        if (gen === nicknameCheckGen.current) {
+          setIsCheckingNickname(false)
+          nicknameCheckPending.current = null
+        }
+      }
+    })()
   }
 
   async function handleSave() {
-    if (!isDirty || isPending || isCheckingNickname || nicknameError) return
+    if (!isDirty || isPending) return
+    // 블러로 시작된 닉네임 검사가 진행 중이면 결과를 기다린 후 저장 여부를 판단한다
+    if (nicknameCheckPending.current) await nicknameCheckPending.current
+    if (nicknameErrorRef.current) return
     setIsPending(true)
     try {
       const updated = await updateUser({
@@ -126,6 +148,7 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
           onNicknameChange={(v) => {
             setNickname(v)
             setNicknameError(undefined)
+            nicknameErrorRef.current = undefined
           }}
           onNicknameBlur={() => { void handleNicknameBlur() }}
         />

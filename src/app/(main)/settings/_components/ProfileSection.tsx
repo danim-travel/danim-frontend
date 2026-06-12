@@ -43,7 +43,7 @@ export function ProfileSection({
     try {
       const { presigned_url, img_url, key } = await getProfileImagePresignedUrl(file.name)
       // S3 presigned URL은 외부 도메인이므로 Authorization 헤더를 붙이는 apiClient를 경유할 수 없음
-      const res = await fetch(presigned_url, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } })
+      const res = await fetch(presigned_url, { method: 'PUT', body: file })
       if (!res.ok) throw new Error(`이미지 업로드 실패 (${res.status})`)
       onProfileImgChange(img_url)
       onProfileKeyChange(key)
