@@ -13,6 +13,8 @@ export function Tabs({ items, value, onChange }: TabsProps) {
         return (
           <button
             key={it.key}
+            role="tab"
+            aria-selected={on}
             data-state={on ? "selected" : "default"}
             onClick={() => onChange(it.key)}
             className={cn(
