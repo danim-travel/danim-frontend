@@ -23,24 +23,48 @@ export default function WritePage() {
   const [titleError, setTitleError] = useState<string | undefined>()
   const [descriptionError, setDescriptionError] = useState<string | undefined>()
   const [spotContentError, setSpotContentError] = useState<string | undefined>()
+  const [spotLocationError, setSpotLocationError] = useState<string | undefined>()
+  const [spotPhotoError, setSpotPhotoError] = useState<string | undefined>()
 
   const handleSubmit = useCallback(async () => {
-    // 빈 필드 에러 노출 (canSubmit/API 로직은 그대로)
-    const nextTitleError = title.trim().length === 0 ? "제목을 입력해주세요" : undefined
-    const nextDescriptionError = description.trim().length === 0 ? "한 줄 소개를 입력해주세요" : undefined
-    const nextSpotContentError = spot.active.content.trim().length === 0 ? "본문을 입력해주세요" : undefined
+    setTitleError(title.trim().length === 0 ? "제목을 입력해주세요" : undefined)
+    setDescriptionError(description.trim().length === 0 ? "한 줄 소개를 입력해주세요" : undefined)
 
-    setTitleError(nextTitleError)
-    setDescriptionError(nextDescriptionError)
-    setSpotContentError(nextSpotContentError)
+    // 유효하지 않은 첫 번째 스팟으로 전환 후 해당 스팟 기준으로 에러 표시
+    const invalidSpot = spot.spots.find(
+      (s) => s.content.trim().length === 0 || s.location === null || s.images.length === 0
+    )
+    if (invalidSpot) spot.selectSpot(invalidSpot.id)
+
+    const target = invalidSpot ?? spot.active
+    setSpotContentError(target.content.trim().length === 0 ? "본문을 입력해주세요" : undefined)
+    setSpotLocationError(target.location === null ? "위치를 입력해주세요" : undefined)
+    setSpotPhotoError(target.images.length === 0 ? "사진을 최소 1장 추가해주세요" : undefined)
 
     if (!canSubmit) return
 
     const ok = await submitPost()
     if (ok) router.push('/')
-  }, [submitPost, canSubmit, router, title, description, spot.active.content])
+  }, [submitPost, canSubmit, router, title, description, spot])
 
   const handleCancel = useCallback(() => router.back(), [router])
+
+  const clearSpotErrors = useCallback(() => {
+    setSpotContentError(undefined)
+    setSpotLocationError(undefined)
+    setSpotPhotoError(undefined)
+  }, [])
+
+  // 사용자가 직접 마커를 전환할 때 스팟 에러 초기화
+  const handleSelectSpot = useCallback((id: string) => {
+    spot.selectSpot(id)
+    clearSpotErrors()
+  }, [spot, clearSpotErrors])
+
+  const handleRemoveSpot = useCallback((id: string) => {
+    spot.removeSpot(id)
+    clearSpotErrors()
+  }, [spot, clearSpotErrors])
 
   return (
     <div className="h-full flex flex-col bg-white">
@@ -52,6 +76,7 @@ export default function WritePage() {
         {/* Left: Photo */}
         <PhotoPanel
           active={spot.active}
+          photoError={spotPhotoError}
           photosState={{
             selectedPhotoIdx: photo.selectedPhotoIdx,
             isUploadingPhoto: photo.isUploadingPhoto,
@@ -73,6 +98,7 @@ export default function WritePage() {
               activeIdx={spot.activeIdx}
               updateSpot={spot.updateSpot}
               contentError={spotContentError}
+              locationError={spotLocationError}
             />
 
             {/* 코스 순서 */}
@@ -81,7 +107,8 @@ export default function WritePage() {
               <SpotOrderList
                 spots={spot.spots}
                 activeId={spot.activeId}
-                onSelect={spot.selectSpot}
+                onSelect={handleSelectSpot}
+                onRemove={handleRemoveSpot}
                 onReorderSpots={spot.reorderSpots}
               />
             </div>
@@ -105,8 +132,9 @@ export default function WritePage() {
           spots={spot.spots}
           activeId={spot.activeId}
           maxSpots={MAX_SPOTS}
-          onSelect={spot.selectSpot}
+          onSelect={handleSelectSpot}
           onAdd={spot.addSpot}
+          onRemove={handleRemoveSpot}
         />
 
         <Button

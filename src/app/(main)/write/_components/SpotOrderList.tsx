@@ -1,6 +1,6 @@
 'use client'
 
-import { GripVertical } from 'lucide-react'
+import { GripVertical, X } from 'lucide-react'
 import type { SpotFormData } from '../_hooks/useWriteForm'
 import { useDragReorder } from '../_hooks/useDragReorder'
 
@@ -8,6 +8,7 @@ interface SpotOrderListProps {
   spots: SpotFormData[]
   activeId: string
   onSelect: (id: string) => void
+  onRemove: (id: string) => void
   onReorderSpots: (srcIdx: number, targetIdx: number) => void
 }
 
@@ -15,6 +16,7 @@ export default function SpotOrderList({
   spots,
   activeId,
   onSelect,
+  onRemove,
   onReorderSpots,
 }: SpotOrderListProps) {
   const {
@@ -68,6 +70,15 @@ export default function SpotOrderList({
                 </p>
               )}
             </div>
+            {spots.length > 1 && i > 0 && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onRemove(spot.id) }}
+                className="text-text-placeholder hover:text-error transition-colors shrink-0"
+                aria-label="마커 삭제"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
             {/* stopPropagation: grip 클릭이 상위 div의 onSelect까지 전파되지 않도록 차단 */}
             <div
               className="text-text-placeholder hover:text-text-muted cursor-grab active:cursor-grabbing shrink-0"
