@@ -12,7 +12,7 @@ interface ProfileSectionProps {
   profileImg: string | null
   onIntroChange: (v: string) => void
   onProfileImgChange: (url: string | null) => void
-  onProfileKeyChange: (key: string | null) => void
+  onProfileKeyChange: (key: string | null | undefined) => void
 }
 
 export function ProfileSection({
@@ -50,6 +50,7 @@ export function ProfileSection({
     } catch (err) {
       toast.error(getApiErrorMessage(err, { client: '이미지 업로드에 실패했습니다.' }))
       if (fileInputRef.current) fileInputRef.current.value = ""
+      onProfileKeyChange(undefined)
     } finally {
       setPreviewUrl(null)
       setIsUploading(false)

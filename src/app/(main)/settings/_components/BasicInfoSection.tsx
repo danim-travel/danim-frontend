@@ -10,7 +10,8 @@ interface BasicInfoSectionProps {
   onNicknameBlur?: () => void
 }
 
-function formatBirthDate(date: string) {
+function formatBirthDate(date: string | null) {
+  if (!date) return "-"
   const [y, m, d] = date.split("-")
   return `${y}년  ${m}월  ${d}일`
 }
@@ -32,7 +33,7 @@ export function BasicInfoSection({ me, nickname, nicknameError, onNicknameChange
           </div>
           <div className="flex flex-col gap-2 min-w-0">
             <span className="text-caption font-bold text-text-muted">생년월일</span>
-            <span className="text-body-sm text-text">{formatBirthDate(me.birth_date)}</span>
+            <span className="text-body-sm text-text">{formatBirthDate(me.birth_day)}</span>
           </div>
         </div>
 

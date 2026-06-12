@@ -3,7 +3,7 @@ import type { MeDetailResponse, UpdateUserRequest, ChangePasswordRequest, Detail
 
 /** 내 상세 정보(닉네임·이메일·소개 등)를 조회한다. */
 export async function getMe(): Promise<MeDetailResponse> {
-  return apiClient.get('users/me/detail').json<MeDetailResponse>()
+  return apiClient.get('users/me').json<MeDetailResponse>()
 }
 
 /** 내 프로필(닉네임·소개·프로필 이미지)을 수정한다. */

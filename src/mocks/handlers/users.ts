@@ -29,7 +29,7 @@ const mockMe: MeDetailResponse = {
   user_id: 'mock-user-id',
   name: '홍길동',
   email: 'test@danim.app',
-  birth_date: '1995-08-14',
+  birth_day: '1995-08-14',
   nickname: 'test_nickname',
   profile_img: 'https://picsum.photos/seed/userprofile/200/200',
   intro: '여행을 좋아하는 사람입니다.',
@@ -117,7 +117,7 @@ const handleFollowing: HttpResponseResolver = ({ request, params }) => {
 
 // 내정보수정 관련 API가 개발 완료되어 실제 API로 전환. 아래 핸들러는 비활성화.
 export const usersHandlers = [
-  // http.get('*/users/me/detail', ({ request }) => {
+  // http.get('*/users/me', ({ request }) => {
   //   const authError = requireAuth(request)
   //   if (authError) return authError
   //   return HttpResponse.json(mockMe)

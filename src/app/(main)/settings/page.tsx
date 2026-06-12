@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { getMe, updateUser } from "@/lib/api/users"
 import { checkNickname } from "@/lib/api/auth"
@@ -43,7 +43,9 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
   // undefined = 변경 없음 / null = 이미지 삭제 / string = 새 S3 key
   const [profileKey, setProfileKey] = useState<string | null | undefined>(undefined)
   const [nicknameError, setNicknameError] = useState<string | undefined>(undefined)
+  const [isCheckingNickname, setIsCheckingNickname] = useState(false)
   const [isPending, setIsPending] = useState(false)
+  const nicknameCheckGen = useRef(0)
 
   const isDirty =
     nickname !== me.nickname ||
@@ -60,20 +62,25 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
   }
 
   async function handleNicknameBlur() {
-    if (nickname === me.nickname) {
+    if (!nickname.trim() || nickname === me.nickname) {
       setNicknameError(undefined)
       return
     }
+    const gen = ++nicknameCheckGen.current
+    setIsCheckingNickname(true)
     try {
       await checkNickname(nickname)
-      setNicknameError(undefined)
+      if (gen === nicknameCheckGen.current) setNicknameError(undefined)
     } catch (err) {
-      setNicknameError(getApiErrorMessage(err, { client: "이미 사용 중인 닉네임입니다." }))
+      if (gen === nicknameCheckGen.current)
+        setNicknameError(getApiErrorMessage(err, { client: "이미 사용 중인 닉네임입니다." }))
+    } finally {
+      if (gen === nicknameCheckGen.current) setIsCheckingNickname(false)
     }
   }
 
   async function handleSave() {
-    if (!isDirty || isPending || nicknameError) return
+    if (!isDirty || isPending || isCheckingNickname || nicknameError) return
     setIsPending(true)
     try {
       const updated = await updateUser({
@@ -139,7 +146,7 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
             type="button"
             variant="primary"
             loading={isPending}
-            disabled={!isDirty || !!nicknameError}
+            disabled={!isDirty || !!nicknameError || isPending || isCheckingNickname}
             onClick={handleSave}
           >
             변경사항 저장
