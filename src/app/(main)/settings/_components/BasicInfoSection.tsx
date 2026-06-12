@@ -5,15 +5,18 @@ import type { MeDetailResponse } from "@/types"
 interface BasicInfoSectionProps {
   me: MeDetailResponse
   nickname: string
+  nicknameError?: string
   onNicknameChange: (v: string) => void
+  onNicknameBlur?: () => void
 }
 
-function formatBirthDate(date: string) {
+function formatBirthDate(date: string | null) {
+  if (!date) return "-"
   const [y, m, d] = date.split("-")
   return `${y}년  ${m}월  ${d}일`
 }
 
-export function BasicInfoSection({ me, nickname, onNicknameChange }: BasicInfoSectionProps) {
+export function BasicInfoSection({ me, nickname, nicknameError, onNicknameChange, onNicknameBlur }: BasicInfoSectionProps) {
   return (
     <section>
       <h2 className="text-body-lg font-bold text-text mb-4">기본 정보</h2>
@@ -30,7 +33,7 @@ export function BasicInfoSection({ me, nickname, onNicknameChange }: BasicInfoSe
           </div>
           <div className="flex flex-col gap-2 min-w-0">
             <span className="text-caption font-bold text-text-muted">생년월일</span>
-            <span className="text-body-sm text-text">{formatBirthDate(me.birth_date)}</span>
+            <span className="text-body-sm text-text">{formatBirthDate(me.birth_day)}</span>
           </div>
         </div>
 
@@ -40,8 +43,10 @@ export function BasicInfoSection({ me, nickname, onNicknameChange }: BasicInfoSe
           required
           value={nickname}
           onChange={e => onNicknameChange(e.target.value)}
+          onBlur={onNicknameBlur}
+          error={nicknameError}
           maxLength={20}
-          helperText="다른 사용자에게 보이는 이름이에요."
+          helperText={nicknameError ? undefined : "다른 사용자에게 보이는 이름이에요."}
         />
 
         {/* 휴대폰 인증 — 준비 중 */}

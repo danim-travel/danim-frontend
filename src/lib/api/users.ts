@@ -3,7 +3,7 @@ import type { MeDetailResponse, UpdateUserRequest, ChangePasswordRequest, Detail
 
 /** 내 상세 정보(닉네임·이메일·소개 등)를 조회한다. */
 export async function getMe(): Promise<MeDetailResponse> {
-  return apiClient.get('users/me/detail').json<MeDetailResponse>()
+  return apiClient.get('users/me').json<MeDetailResponse>()
 }
 
 /** 내 프로필(닉네임·소개·프로필 이미지)을 수정한다. */
@@ -11,9 +11,9 @@ export async function updateUser(data: UpdateUserRequest): Promise<MeDetailRespo
   return apiClient.patch('users/me', { json: data }).json<MeDetailResponse>()
 }
 
-/** 회원 탈퇴 처리한다. */
-export async function deleteUser(): Promise<DetailResponse> {
-  return apiClient.delete('users/me').json<DetailResponse>()
+/** 회원 탈퇴 처리한다. 성공 시 204 No Content 반환. */
+export async function deleteUser(): Promise<void> {
+  await apiClient.delete('users/me')
 }
 
 /** 비밀번호를 변경한다. */

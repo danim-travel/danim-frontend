@@ -12,6 +12,7 @@ interface ProfileSectionProps {
   profileImg: string | null
   onIntroChange: (v: string) => void
   onProfileImgChange: (url: string | null) => void
+  onProfileKeyChange: (key: string | null | undefined) => void
 }
 
 export function ProfileSection({
@@ -20,6 +21,7 @@ export function ProfileSection({
   profileImg,
   onIntroChange,
   onProfileImgChange,
+  onProfileKeyChange,
 }: ProfileSectionProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -39,14 +41,16 @@ export function ProfileSection({
     setIsUploading(true)
 
     try {
-      const { presigned_url, img_url } = await getProfileImagePresignedUrl(file.name)
+      const { presigned_url, img_url, key } = await getProfileImagePresignedUrl(file.name)
       // S3 presigned URL은 외부 도메인이므로 Authorization 헤더를 붙이는 apiClient를 경유할 수 없음
-      const res = await fetch(presigned_url, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } })
+      const res = await fetch(presigned_url, { method: 'PUT', body: file })
       if (!res.ok) throw new Error(`이미지 업로드 실패 (${res.status})`)
       onProfileImgChange(img_url)
+      onProfileKeyChange(key)
     } catch (err) {
       toast.error(getApiErrorMessage(err, { client: '이미지 업로드에 실패했습니다.' }))
       if (fileInputRef.current) fileInputRef.current.value = ""
+      onProfileKeyChange(undefined)
     } finally {
       setPreviewUrl(null)
       setIsUploading(false)
@@ -56,6 +60,7 @@ export function ProfileSection({
   function handleDelete() {
     setPreviewUrl(null)
     onProfileImgChange(null)
+    onProfileKeyChange(null)
     if (fileInputRef.current) fileInputRef.current.value = ""
   }
 

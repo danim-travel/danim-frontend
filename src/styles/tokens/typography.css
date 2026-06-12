@@ -1,11 +1,11 @@
 @theme inline {
   /* Next Font 런타임 변수 */
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-pretendard);
 }
 
 @theme {
   /* ── Font family ─────────────────────────────── */
-  --font-family-base: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+  --font-family-base: var(--font-pretendard), -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
 
   /* ── Font weight ─────────────────────────────── */
   --font-weight-regular:  400;

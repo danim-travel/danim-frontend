@@ -1,7 +1,8 @@
 "use client"
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { getMe, updateUser } from "@/lib/api/users"
+import { checkNickname } from "@/lib/api/auth"
 import { getApiErrorMessage } from "@/lib/apiError"
 import { queryKeys } from "@/lib/queryKeys"
 import { useAuthStore } from "@/store/authStore"
@@ -39,29 +40,79 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
   const [nickname, setNickname] = useState(me.nickname)
   const [intro, setIntro] = useState(me.intro)
   const [profileImg, setProfileImg] = useState<string | null>(me.profile_img)
+  // undefined = 변경 없음 / null = 이미지 삭제 / string = 새 S3 key
+  const [profileKey, setProfileKey] = useState<string | null | undefined>(undefined)
+  const [nicknameError, setNicknameError] = useState<string | undefined>(undefined)
+  const [isCheckingNickname, setIsCheckingNickname] = useState(false)
   const [isPending, setIsPending] = useState(false)
+  const nicknameCheckGen = useRef(0)
+  // blur로 시작된 닉네임 검사와 저장 버튼 클릭을 조율하기 위한 refs
+  const nicknameCheckPending = useRef<Promise<void> | null>(null)
+  const nicknameErrorRef = useRef<string | undefined>(undefined)
 
   const isDirty =
     nickname !== me.nickname ||
     intro !== me.intro ||
-    profileImg !== me.profile_img
+    profileKey !== undefined
 
   function handleCancel() {
+    nicknameCheckGen.current++
     setNickname(me.nickname)
     setIntro(me.intro)
     setProfileImg(me.profile_img)
+    setProfileKey(undefined)
+    setNicknameError(undefined)
+    nicknameErrorRef.current = undefined
+    setIsCheckingNickname(false)
+    nicknameCheckPending.current = null
+    toast.success("변경사항이 취소되었습니다.")
+  }
+
+  async function handleNicknameBlur() {
+    if (!nickname.trim() || nickname === me.nickname) {
+      setNicknameError(undefined)
+      nicknameErrorRef.current = undefined
+      return
+    }
+    const gen = ++nicknameCheckGen.current
+    setIsCheckingNickname(true)
+    nicknameCheckPending.current = (async () => {
+      try {
+        await checkNickname(nickname)
+        if (gen === nicknameCheckGen.current) {
+          setNicknameError(undefined)
+          nicknameErrorRef.current = undefined
+        }
+      } catch (err) {
+        if (gen === nicknameCheckGen.current) {
+          const msg = getApiErrorMessage(err, { client: "이미 사용 중인 닉네임입니다." })
+          setNicknameError(msg)
+          nicknameErrorRef.current = msg
+        }
+      } finally {
+        if (gen === nicknameCheckGen.current) {
+          setIsCheckingNickname(false)
+          nicknameCheckPending.current = null
+        }
+      }
+    })()
   }
 
   async function handleSave() {
     if (!isDirty || isPending) return
+    // 블러로 시작된 닉네임 검사가 진행 중이면 결과를 기다린 후 저장 여부를 판단한다
+    if (nicknameCheckPending.current) await nicknameCheckPending.current
+    if (nicknameErrorRef.current) return
     setIsPending(true)
     try {
       const updated = await updateUser({
         nickname: nickname !== me.nickname ? nickname : undefined,
         intro: intro !== me.intro ? intro : undefined,
-        profile_img: profileImg !== me.profile_img ? profileImg : undefined,
+        key: profileKey !== undefined ? profileKey : undefined,
       })
       queryClient.setQueryData(queryKeys.users.me, updated)
+      setProfileImg(updated.profile_img)
+      setProfileKey(undefined)
       if (accessToken && (updated.nickname !== me.nickname || updated.profile_img !== me.profile_img)) {
         setAuth(
           { userId: updated.user_id, nickname: updated.nickname, profileImg: updated.profile_img },
@@ -87,12 +138,19 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
           profileImg={profileImg}
           onIntroChange={setIntro}
           onProfileImgChange={setProfileImg}
+          onProfileKeyChange={setProfileKey}
         />
 
         <BasicInfoSection
           me={me}
           nickname={nickname}
-          onNicknameChange={setNickname}
+          nicknameError={nicknameError}
+          onNicknameChange={(v) => {
+            setNickname(v)
+            setNicknameError(undefined)
+            nicknameErrorRef.current = undefined
+          }}
+          onNicknameBlur={() => { void handleNicknameBlur() }}
         />
 
         <AccountSection />
@@ -111,7 +169,7 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
             type="button"
             variant="primary"
             loading={isPending}
-            disabled={!isDirty}
+            disabled={!isDirty || !!nicknameError || isPending || isCheckingNickname}
             onClick={handleSave}
           >
             변경사항 저장
