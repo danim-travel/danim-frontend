@@ -4,9 +4,10 @@ import type { UserProfilePost } from "@/types";
 
 export interface PostGridProps {
   posts: UserProfilePost[];
+  onPostClick?: (postId: string) => void;
 }
 
-export function PostGrid({ posts }: PostGridProps) {
+export function PostGrid({ posts, onPostClick }: PostGridProps) {
   if (posts.length === 0) {
     return (
       <EmptyState
@@ -19,7 +20,7 @@ export function PostGrid({ posts }: PostGridProps) {
   return (
     <div className="columns-4 gap-3">
       {posts.map((post) => (
-        <div key={post.post_id} className="mb-3 break-inside-avoid cursor-pointer">
+        <div key={post.post_id} className="mb-3 break-inside-avoid cursor-pointer" onClick={() => onPostClick?.(post.post_id)}>
           {/* 외부 이미지 URL 가변 도메인이라 next/image 대신 native img 사용 */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img

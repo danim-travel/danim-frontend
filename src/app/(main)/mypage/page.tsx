@@ -4,6 +4,7 @@ import { LayoutGrid, Bookmark } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { Tabs, EmptyState, PageContainer } from "@/components/common";
 import { Spinner } from "@/components/ui/spinner";
+import PostModal from "@/components/PostModal";
 import { useMyProfile } from "./_hooks/useMyProfile";
 import ProfileHeader from "./_components/ProfileHeader";
 import PostGrid from "./_components/PostGrid";
@@ -13,6 +14,7 @@ type MyPageTab = "posts" | "bookmarks";
 function MyPageContent({ userId }: { userId: string }) {
   const { data: profile, isLoading } = useMyProfile(userId);
   const [tab, setTab] = useState<MyPageTab>("posts");
+  const [modalPostId, setModalPostId] = useState<string | null>(null);
 
   if (isLoading) {
     return (
@@ -45,7 +47,7 @@ function MyPageContent({ userId }: { userId: string }) {
       </div>
       <div className="mt-6">
         {tab === "posts" ? (
-          <PostGrid posts={profile.posts} />
+          <PostGrid posts={profile.posts} onPostClick={setModalPostId} />
         ) : (
           <EmptyState
             title="준비 중입니다"
@@ -53,6 +55,9 @@ function MyPageContent({ userId }: { userId: string }) {
           />
         )}
       </div>
+      {modalPostId && (
+        <PostModal postId={modalPostId} onClose={() => setModalPostId(null)} />
+      )}
     </>
   );
 }
