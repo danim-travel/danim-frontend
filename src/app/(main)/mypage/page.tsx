@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { LayoutGrid, Bookmark } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { Tabs, EmptyState, PageContainer } from "@/components/common";
@@ -12,9 +13,21 @@ import PostGrid from "./_components/PostGrid";
 type MyPageTab = "posts" | "bookmarks";
 
 function MyPageContent({ userId }: { userId: string }) {
+  const router = useRouter();
   const { data: profile, isLoading } = useMyProfile(userId);
   const [tab, setTab] = useState<MyPageTab>("posts");
   const [modalPostId, setModalPostId] = useState<string | null>(null);
+
+  // solo 모드에서 돌아왔을 때 해당 게시글로 스크롤 복원
+  useEffect(() => {
+    if (!profile) return;
+    const targetId = sessionStorage.getItem("scrollToPostId");
+    if (!targetId) return;
+    sessionStorage.removeItem("scrollToPostId");
+    requestAnimationFrame(() => {
+      document.querySelector(`[data-post-id="${targetId}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  }, [profile]);
 
   if (isLoading) {
     return (
@@ -56,7 +69,15 @@ function MyPageContent({ userId }: { userId: string }) {
         )}
       </div>
       {modalPostId && (
-        <PostModal postId={modalPostId} onClose={() => setModalPostId(null)} />
+        <PostModal
+          postId={modalPostId}
+          onClose={() => setModalPostId(null)}
+          showGoToMain
+          onGoToMain={() => {
+            sessionStorage.setItem("scrollToPostId", modalPostId);
+            router.push(`/?solo=${modalPostId}`);
+          }}
+        />
       )}
     </>
   );
