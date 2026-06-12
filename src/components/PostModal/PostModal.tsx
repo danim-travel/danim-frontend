@@ -85,11 +85,12 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
     () =>
       buildPostContextMenu({
         isOwner: data?.is_owner ?? false,
+        postId,
         // TODO: 수정/삭제 라우팅·확인 모달 — 후속 PR
         onEdit: () => {},
         onDelete: () => {},
       }),
-    [data?.is_owner]
+    [data?.is_owner, postId]
   );
 
   // activeSpotIdx 변경 시 Context consumers가 불필요하게 리렌더되지 않도록 메모이즈.

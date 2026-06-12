@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { ChevronLeft } from "lucide-react";
 import { EmptyState } from "@/components/common";
 import type { MainFeedItem } from "@/types";
 import FeedCard from "./FeedCard";
@@ -14,6 +15,8 @@ interface FeedPanelProps {
   isLoading?: boolean;
   hasNextPage?: boolean;
   isFetchingNextPage?: boolean;
+  title?: string;
+  onBack?: () => void;
 }
 
 export function FeedPanel({
@@ -25,6 +28,8 @@ export function FeedPanel({
   isLoading,
   hasNextPage,
   isFetchingNextPage,
+  title,
+  onBack,
 }: FeedPanelProps) {
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -48,8 +53,19 @@ export function FeedPanel({
   return (
     <aside className="w-[500px] p-7 shrink-0 h-full flex flex-col bg-bg-subtle rounded-2xl overflow-hidden shadow-sm">
       {/* 헤더 */}
-      <header className=" mb-5">
-        <h2 className="text-section-title font-bold">팔로잉 피드</h2>
+      <header className="mb-5 relative">
+        {/* h2를 먼저 두어 키보드·스크린리더 포커스 순서가 시각 순서와 일치하도록 한다 */}
+        <h2 className="text-section-title font-bold">{title ?? "팔로잉 피드"}</h2>
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            className="absolute right-0 top-0 flex items-center gap-1 text-caption text-text-muted hover:text-text transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            돌아가기
+          </button>
+        )}
       </header>
 
       {/* 카드 리스트 */}

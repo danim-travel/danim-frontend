@@ -34,15 +34,21 @@ function AuthBootstrap({ children }: { children: React.ReactNode }) {
   const isHydrated = useAuthStore((s) => s.isHydrated)
 
   useEffect(() => {
+    let cancelled = false
     const { setToken, setHydrated } = useAuthStore.getState()
     // MSW가 준비된 뒤에 refresh를 호출해야 mock 핸들러가 요청을 가로챌 수 있다.
     mswReady.catch(() => {}).then(async () => {
+      // React StrictMode에서 effect가 두 번 실행될 때 먼저 정리된 호출을 무시한다.
+      // 같은 refresh token 쿠키로 동시 요청이 가면 rotation 정책에 따라 토큰 패밀리 전체가 무효화될 수 있다.
+      if (cancelled) return
       try {
         const { access_token } = await refreshToken()
+        if (cancelled) return
         // refreshToken 성공 시 즉시 저장 — getCurrentUser 실패해도 /login으로 튕기지 않음
         setToken(access_token)
         try {
           const me = await getCurrentUser()
+          if (cancelled) return
           const { setAuth } = useAuthStore.getState()
           setAuth({ userId: me.user_id, nickname: me.nickname, profileImg: me.profile_img }, access_token)
         } catch {
@@ -51,9 +57,10 @@ function AuthBootstrap({ children }: { children: React.ReactNode }) {
       } catch {
         // refreshToken 실패 = 비로그인 상태 유지 (accessToken 이미 null)
       } finally {
-        setHydrated()
+        if (!cancelled) setHydrated()
       }
     })
+    return () => { cancelled = true }
   }, [])
 
   if (!isHydrated) {

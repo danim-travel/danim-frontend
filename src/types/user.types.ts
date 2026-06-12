@@ -63,10 +63,11 @@ export interface MeDetailResponse {
   user_id: string
   name: string
   email: string
-  birth_day: string | null
+  birth_day: string
   nickname: string
   profile_img: string | null
   intro: string
+  phone_number: string | null
 }
 
 export interface UpdateUserRequest {

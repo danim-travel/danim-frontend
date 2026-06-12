@@ -2,25 +2,25 @@ import { Link, Pencil, Share2, Trash2 } from "lucide-react";
 
 interface BuildPostMenuArgs {
   isOwner: boolean;
+  postId: string;
   onEdit: () => void;
   onDelete: () => void;
 }
 
-/**
- * 게시글 케밥 메뉴 항목 구성. is_owner 인 경우 수정/삭제가 추가된다.
- * UI 변경 시 이 함수만 손보면 PostModal 본체는 그대로.
- */
-export function buildPostContextMenu({ isOwner, onEdit, onDelete }: BuildPostMenuArgs) {
+export function buildPostContextMenu({ isOwner, postId, onEdit, onDelete }: BuildPostMenuArgs) {
+  // postId를 URL 인코딩해 특수문자가 포함된 경우에도 올바른 URL이 생성되도록 한다
+  const shareUrl = `${window.location.origin}/?post=${encodeURIComponent(postId)}`;
+
   const commonMenuItems = [
     {
       label: "링크 복사",
       icon: <Link className="w-[15px] h-[15px]" />,
-      onClick: () => navigator.clipboard?.writeText(window.location.href),
+      onClick: () => navigator.clipboard?.writeText(shareUrl),
     },
     {
       label: "공유하기",
       icon: <Share2 className="w-[15px] h-[15px]" />,
-      onClick: () => navigator.share?.({ url: window.location.href }),
+      onClick: () => navigator.share?.({ url: shareUrl }),
     },
   ];
   const ownerMenuItems = [
