@@ -66,7 +66,7 @@ export interface MeDetailResponse {
   birth_day: string
   nickname: string
   profile_img: string | null
-  intro: string
+  intro: string | null
   phone_number: string | null
 }
 
