@@ -15,6 +15,8 @@ export function PasswordChangeModal({ open, onClose }: PasswordChangeModalProps)
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [currentPasswordError, setCurrentPasswordError] = useState<string | undefined>()
+  const [newPasswordError, setNewPasswordError] = useState<string | undefined>()
+  const [confirmPasswordError, setConfirmPasswordError] = useState<string | undefined>()
   const [isPending, setIsPending] = useState(false)
 
   function handleClose() {
@@ -23,11 +25,31 @@ export function PasswordChangeModal({ open, onClose }: PasswordChangeModalProps)
     setNewPassword("")
     setConfirmPassword("")
     setCurrentPasswordError(undefined)
+    setNewPasswordError(undefined)
+    setConfirmPasswordError(undefined)
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    if (newPassword !== confirmPassword) return
+
+    const nextNewPasswordError =
+      newPassword.trim().length === 0
+        ? "새 비밀번호를 입력해주세요"
+        : currentPassword === newPassword
+          ? "현재 비밀번호와 다른 비밀번호를 입력해주세요"
+          : undefined
+    const nextConfirmPasswordError =
+      confirmPassword.trim().length === 0
+        ? "비밀번호 확인을 입력해주세요"
+        : newPassword !== confirmPassword
+          ? "비밀번호가 일치하지 않습니다."
+          : undefined
+
+    setNewPasswordError(nextNewPasswordError)
+    setConfirmPasswordError(nextConfirmPasswordError)
+
+    if (nextNewPasswordError || nextConfirmPasswordError) return
+
     setIsPending(true)
     setCurrentPasswordError(undefined)
     try {
@@ -72,19 +94,20 @@ export function PasswordChangeModal({ open, onClose }: PasswordChangeModalProps)
           label="새 비밀번호"
           placeholder="새 비밀번호를 입력해 주세요"
           value={newPassword}
-          onChange={e => setNewPassword(e.target.value)}
+          onChange={e => { setNewPassword(e.target.value); setNewPasswordError(undefined) }}
           required
           autoComplete="new-password"
           helperText="영문, 숫자, 특수문자 포함 8자 이상"
+          error={newPasswordError}
         />
         <PasswordField
           label="새 비밀번호 확인"
           placeholder="새 비밀번호를 한 번 더 입력해 주세요"
           value={confirmPassword}
-          onChange={e => setConfirmPassword(e.target.value)}
+          onChange={e => { setConfirmPassword(e.target.value); setConfirmPasswordError(undefined) }}
           required
           autoComplete="new-password"
-          error={confirmPassword && newPassword !== confirmPassword ? "비밀번호가 일치하지 않습니다." : undefined}
+          error={confirmPasswordError}
         />
       </form>
     </Modal>

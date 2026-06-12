@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button, FieldLabel } from '@/components/common'
 import { useWriteForm } from './_hooks/useWriteForm'
@@ -19,10 +19,26 @@ export default function WritePage() {
   const { title, setTitle, description, setDescription, spot, photo, submit } = useWriteForm()
 
   const { submitPost, canSubmit, isSubmitting } = submit
+
+  const [titleError, setTitleError] = useState<string | undefined>()
+  const [descriptionError, setDescriptionError] = useState<string | undefined>()
+  const [spotContentError, setSpotContentError] = useState<string | undefined>()
+
   const handleSubmit = useCallback(async () => {
+    // 빈 필드 에러 노출 (canSubmit/API 로직은 그대로)
+    const nextTitleError = title.trim().length === 0 ? "제목을 입력해주세요" : undefined
+    const nextDescriptionError = description.trim().length === 0 ? "한 줄 소개를 입력해주세요" : undefined
+    const nextSpotContentError = spot.active.content.trim().length === 0 ? "본문을 입력해주세요" : undefined
+
+    setTitleError(nextTitleError)
+    setDescriptionError(nextDescriptionError)
+    setSpotContentError(nextSpotContentError)
+
+    if (!canSubmit) return
+
     const ok = await submitPost()
     if (ok) router.push('/')
-  }, [submitPost, router])
+  }, [submitPost, canSubmit, router, title, description, spot.active.content])
 
   const handleCancel = useCallback(() => router.back(), [router])
 
@@ -49,13 +65,14 @@ export default function WritePage() {
         {/* Right: Form */}
         <div className="flex-1 overflow-y-auto">
           <div className="px-7 py-4 flex flex-col gap-4">
-            <TitleSection title={title} setTitle={setTitle} />
-            <DescriptionSection description={description} setDescription={setDescription} />
+            <TitleSection title={title} setTitle={setTitle} error={titleError} />
+            <DescriptionSection description={description} setDescription={setDescription} error={descriptionError} />
 
             <SpotContentSection
               active={spot.active}
               activeIdx={spot.activeIdx}
               updateSpot={spot.updateSpot}
+              contentError={spotContentError}
             />
 
             {/* 코스 순서 */}
@@ -96,7 +113,7 @@ export default function WritePage() {
           variant="primary"
           size="md"
           onClick={handleSubmit}
-          disabled={!canSubmit}
+          disabled={isSubmitting}
           loading={isSubmitting}
         >
           게시하기
