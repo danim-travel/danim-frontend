@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react"
 import { useQueryState } from "nuqs"
 import { PageContainer, SearchBar } from "@/components/common"
 import { toast } from "@/store/toastStore"
+import { getApiErrorMessage } from "@/lib/apiError"
 import PostModal from "@/components/PostModal"
 import { useExplorePosts } from "./_hooks/useExplorePosts"
 import { ExploreGrid } from "./_components/ExploreGrid"
@@ -24,18 +25,13 @@ export default function ExplorePage() {
   }, [inputValue, setSearch])
 
   const { data, isLoading, isError, error, hasNextPage, isFetchingNextPage, fetchNextPage } =
-    useExplorePosts(search)
+    useExplorePosts(search, category)
 
   const posts = data?.pages.flatMap((p) => p.results) ?? []
 
   useEffect(() => {
     if (isError) {
-      const status = (error as { response?: { status?: number } })?.response?.status
-      if (status === 401) {
-        toast.error("로그인이 필요합니다.")
-      } else {
-        toast.error("게시글을 불러오지 못했습니다.")
-      }
+      toast.error(getApiErrorMessage(error, { client: "게시글을 불러오지 못했습니다." }))
     }
   }, [isError, error])
 
@@ -58,6 +54,7 @@ export default function ExplorePage() {
           <button
             key={cat}
             type="button"
+            data-testid={`category-btn-${cat}`}
             onClick={() => setCategory(cat)}
             className={[
               "px-5 py-2.5 rounded-(--chip-radius) text-body-sm font-semibold transition-colors border",

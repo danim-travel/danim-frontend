@@ -20,6 +20,16 @@ const MOCK_TITLES = [
 
 const MOCK_HEIGHTS = [320, 480, 260, 560, 400, 300, 520, 380, 440, 280, 500, 360, 420, 600, 340, 460, 240, 540, 390, 470, 310, 490, 350, 610, 430]
 
+const CATEGORY_KEYWORDS: Record<string, string[]> = {
+  서울: ['서울', '북촌', '한강'],
+  경기: ['수원', '인천', '남이섬'],
+  강원: ['강릉', '속초', '춘천', '정동진'],
+  충청: ['충청', '천안', '공주'],
+  전라: ['전주', '여수', '목포'],
+  경상: ['부산', '경주', '통영', '안동', '거제', '포항', '울릉도'],
+  제주: ['제주'],
+}
+
 // ALL_FEED_ITEMS → ExplorePost 변환 (타이틀 포함한 검색용 내부 타입)
 const EXPLORE_ITEMS = ALL_FEED_ITEMS.map((item, i) => ({
   post_id: item.post.post_id,
@@ -41,14 +51,17 @@ export const exploreHandlers = [
 
     const url = new URL(request.url)
     const search = url.searchParams.get('search')?.toLowerCase().trim() ?? ''
+    const category = url.searchParams.get('category') ?? ''
     const cursorParam = url.searchParams.get('cursor')
     const pageSize = Number(url.searchParams.get('page_size') ?? '12')
 
-    const filtered = search
-      ? EXPLORE_ITEMS.filter(
-          (item) => item._title.toLowerCase().includes(search) || item._description.toLowerCase().includes(search),
-        )
-      : EXPLORE_ITEMS
+    const keywords = category ? CATEGORY_KEYWORDS[category] ?? [] : []
+    const filtered = EXPLORE_ITEMS.filter((item) => {
+      const titleLower = item._title.toLowerCase()
+      const matchesSearch = !search || titleLower.includes(search) || item._description.toLowerCase().includes(search)
+      const matchesCategory = keywords.length === 0 || keywords.some((kw) => titleLower.includes(kw.toLowerCase()))
+      return matchesSearch && matchesCategory
+    })
 
     const cursorIndex = cursorParam
       ? filtered.findIndex((item) => item.post_id === cursorParam)

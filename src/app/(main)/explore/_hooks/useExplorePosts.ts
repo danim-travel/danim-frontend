@@ -14,7 +14,8 @@ function extractCursor(nextUrl: string | null): string | null {
   }
 }
 
-export function useExplorePosts(search: string) {
+export function useExplorePosts(search: string, category: string) {
+  const cat = category !== '전체' ? category : undefined
   return useInfiniteQuery<
     ExploreResponse,
     Error,
@@ -22,10 +23,11 @@ export function useExplorePosts(search: string) {
     ReturnType<typeof queryKeys.posts.explore>,
     string | null
   >({
-    queryKey: queryKeys.posts.explore(search || undefined),
+    queryKey: queryKeys.posts.explore(search || undefined, cat),
     queryFn: ({ pageParam }) =>
       getExplorePosts({
         search: search || undefined,
+        category: cat,
         cursor: pageParam ?? undefined,
         page_size: PAGE_SIZE,
       }),
