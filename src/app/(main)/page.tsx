@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { parseAsString, useQueryState } from "nuqs";
 import PostModal from "@/components/PostModal";
-import { useUIStore } from "@/store/uiStore";
 import type { MainFeedItem } from "@/types";
 import FeedPanel from "./_components/FeedPanel";
 import MapPanel from "./_components/MapPanel";
@@ -12,11 +12,10 @@ import { usePrefetchPostDetail } from "./_hooks/usePrefetchPostDetail";
 export default function HomePage() {
   const [focusedPost, setFocusedPost] = useState<MainFeedItem | null>(null);
   const [focusedPostIndex, setFocusedPostIndex] = useState(0);
-  const postModalId = useUIStore((s) => s.postModalId);
-  const openPostModal = useUIStore((s) => s.openPostModal);
-  const closePostModal = useUIStore((s) => s.closePostModal);
+  const [spotIdx, setSpotIdx] = useState<number | undefined>(undefined);
 
-  const postModalSpotIdx = useUIStore((s) => s.postModalSpotIdx);
+  const [postId, setPostId] = useQueryState("post", parseAsString);
+
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useMainFeed();
   const posts = data?.pages.flatMap((p) => p.results) ?? [];
   const prefetchPostDetail = usePrefetchPostDetail();
@@ -27,17 +26,22 @@ export default function HomePage() {
     prefetchPostDetail(post.post.post_id);
   }, [prefetchPostDetail]);
 
-  // 댓글 아이콘 클릭: 해당 게시글 포커스 + 모달 오픈
   const handleOpenModal = useCallback((post: MainFeedItem, index: number) => {
     setFocusedPost(post);
     setFocusedPostIndex(index);
-    openPostModal(post.post.post_id);
-  }, [openPostModal]);
+    setSpotIdx(undefined);
+    setPostId(post.post.post_id);
+  }, [setPostId]);
 
-  // 지도 핀 클릭: 이미 포커스된 게시글의 특정 스팟(pinIndex)에서 모달 오픈
-  const handlePinClick = useCallback((postId: string, spotIdx: number) => {
-    openPostModal(postId, spotIdx);
-  }, [openPostModal]);
+  const handlePinClick = useCallback((id: string, idx: number) => {
+    setSpotIdx(idx);
+    setPostId(id);
+  }, [setPostId]);
+
+  const handleCloseModal = useCallback(() => {
+    setPostId(null);
+    setSpotIdx(undefined);
+  }, [setPostId]);
 
   const handleLoadMore = useCallback(() => {
     fetchNextPage();
@@ -62,11 +66,11 @@ export default function HomePage() {
         onResetFocus={() => setFocusedPost(null)}
       />
 
-      {postModalId && (
+      {postId && (
         <PostModal
-          postId={postModalId}
-          initialSpotIdx={postModalSpotIdx}
-          onClose={closePostModal}
+          postId={postId}
+          initialSpotIdx={spotIdx}
+          onClose={handleCloseModal}
         />
       )}
     </div>
