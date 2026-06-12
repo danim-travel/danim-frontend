@@ -73,7 +73,7 @@ export const exploreHandlers = [
     const hasNext = offset + pageSize < filtered.length
 
     const nextUrl = hasNext && lastItem
-      ? `${url.origin}/posts/explore?cursor=${lastItem.post_id}${search ? `&search=${encodeURIComponent(search)}` : ''}`
+      ? `${url.origin}/posts/explore?cursor=${lastItem.post_id}${search ? `&search=${encodeURIComponent(search)}` : ''}${category ? `&category=${encodeURIComponent(category)}` : ''}`
       : null
 
     const results: ExplorePost[] = sliced.map(({ post_id, thumbnail, like_count, comment_count }) => ({
