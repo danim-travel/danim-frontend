@@ -38,10 +38,16 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
   const accessToken = useAuthStore(s => s.accessToken)
 
   const [nickname, setNickname] = useState(me.nickname)
-  const [intro, setIntro] = useState(me.intro)
-  const [profileImg, setProfileImg] = useState<string | null>(me.profile_img)
+  const [intro, setIntro] = useState(me.intro ?? "")
+  // 이미지 업로드 중 미리보기용 로컬 상태. profileKey === undefined 이면 me.profile_img를 그대로 사용한다.
+  const [profileImg, setProfileImg] = useState<string | null>(null)
   // undefined = 변경 없음 / null = 이미지 삭제 / string = 새 S3 key
   const [profileKey, setProfileKey] = useState<string | null | undefined>(undefined)
+  // 저장/취소 시 ProfileSection을 remount해 blob previewUrl을 초기화한다
+  const [profileSectionKey, setProfileSectionKey] = useState(0)
+
+  // profileKey가 없으면 서버에서 받은 원본 이미지를, 있으면 업로드 중인 로컬 미리보기를 표시한다
+  const displayedProfileImg = profileKey === undefined ? me.profile_img : profileImg
   const [nicknameError, setNicknameError] = useState<string | undefined>(undefined)
   const [isCheckingNickname, setIsCheckingNickname] = useState(false)
   const [isPending, setIsPending] = useState(false)
@@ -52,15 +58,16 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
 
   const isDirty =
     nickname !== me.nickname ||
-    intro !== me.intro ||
+    intro !== (me.intro ?? "") ||
     profileKey !== undefined
 
   function handleCancel() {
     nicknameCheckGen.current++
     setNickname(me.nickname)
-    setIntro(me.intro)
-    setProfileImg(me.profile_img)
+    setIntro(me.intro ?? "")
+    setProfileImg(null)
     setProfileKey(undefined)
+    setProfileSectionKey(k => k + 1)
     setNicknameError(undefined)
     nicknameErrorRef.current = undefined
     setIsCheckingNickname(false)
@@ -110,9 +117,10 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
         intro: intro !== me.intro ? intro : undefined,
         key: profileKey !== undefined ? profileKey : undefined,
       })
-      queryClient.setQueryData(queryKeys.users.me, updated)
-      setProfileImg(updated.profile_img)
       setProfileKey(undefined)
+      setProfileSectionKey(k => k + 1)
+      // PATCH 응답의 profile_img는 raw S3 URL일 수 있으므로, getMe()를 재호출해 presigned URL을 받는다
+      await queryClient.invalidateQueries({ queryKey: queryKeys.users.me })
       if (accessToken && (updated.nickname !== me.nickname || updated.profile_img !== me.profile_img)) {
         setAuth(
           { userId: updated.user_id, nickname: updated.nickname, profileImg: updated.profile_img },
@@ -133,9 +141,10 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
         <h1 className="text-section-title font-bold text-text">내 정보 수정</h1>
 
         <ProfileSection
+          key={profileSectionKey}
           me={me}
           intro={intro}
-          profileImg={profileImg}
+          profileImg={displayedProfileImg}
           onIntroChange={setIntro}
           onProfileImgChange={setProfileImg}
           onProfileKeyChange={setProfileKey}

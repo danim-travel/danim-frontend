@@ -1,5 +1,7 @@
 import { useMutation, useQueryClient, type QueryKey } from '@tanstack/react-query'
 import { apiClient } from '@/lib/apiClient'
+import { getApiErrorMessage } from '@/lib/apiError'
+import { toast } from '@/store/toastStore'
 import type { LikeResponse } from '@/types'
 
 interface UseLikeMutationOptions<TCacheData, TVariables extends { wasLiked: boolean }> {
@@ -71,10 +73,11 @@ export function useLikeMutation<TCacheData, TVariables extends { wasLiked: boole
       queryClient.setQueryData<TCacheData>(queryKey, (old) => optimisticUpdater(old, variables))
       return { previous }
     },
-    onError: (_err, _variables, context) => {
+    onError: (err, _variables, context) => {
       if (context?.previous !== undefined) {
         queryClient.setQueryData(queryKey, context.previous)
       }
+      toast.error(getApiErrorMessage(err, { client: '잠시 후 다시 시도해주세요.' }))
     },
     onSuccess: (res, variables) => {
       queryClient.setQueryData<TCacheData>(queryKey, (old) => successUpdater(old, res, variables))

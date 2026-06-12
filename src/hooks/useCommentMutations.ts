@@ -1,7 +1,9 @@
 import { useCallback, useRef } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/lib/apiClient'
+import { getApiErrorMessage } from '@/lib/apiError'
 import { queryKeys } from '@/lib/queryKeys'
+import { toast } from '@/store/toastStore'
 import { useLikeMutation } from '@/hooks/useLikeMutation'
 import type {
   CommentsListResponse,
@@ -35,8 +37,9 @@ export function useCommentMutations(postId: string) {
       })
       return { previousDetail }
     },
-    onError: (_err, _vars, context) => {
+    onError: (err, _vars, context) => {
       if (context?.previousDetail) queryClient.setQueryData(postDetailKey, context.previousDetail)
+      toast.error(getApiErrorMessage(err, { client: '댓글 작성에 실패했습니다.' }))
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: commentsKey })
@@ -129,6 +132,9 @@ export function useCommentMutations(postId: string) {
       apiClient
         .post('comments/presigned-url', { json: payload })
         .json<CommentPresignedUrlResponse>(),
+    onError: (err) => {
+      toast.error(getApiErrorMessage(err, { client: '이미지 업로드에 실패했습니다.' }))
+    },
   })
 
   const { mutate: likeMutate } = likeMutation

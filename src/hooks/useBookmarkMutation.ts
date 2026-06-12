@@ -1,5 +1,7 @@
 import { useMutation, useQueryClient, type QueryKey } from '@tanstack/react-query'
 import { apiClient } from '@/lib/apiClient'
+import { getApiErrorMessage } from '@/lib/apiError'
+import { toast } from '@/store/toastStore'
 import type { BookmarkResponse } from '@/types'
 
 interface UseBookmarkMutationOptions<TCacheData> {
@@ -51,10 +53,11 @@ export function useBookmarkMutation<TCacheData>({
       queryClient.setQueryData<TCacheData>(queryKey, (old) => optimisticUpdater(old, wasBookmarked))
       return { previous }
     },
-    onError: (_err, _wasBookmarked, context) => {
+    onError: (err, _wasBookmarked, context) => {
       if (context?.previous !== undefined) {
         queryClient.setQueryData(queryKey, context.previous)
       }
+      toast.error(getApiErrorMessage(err, { client: '잠시 후 다시 시도해주세요.' }))
     },
     onSuccess: (res) => {
       queryClient.setQueryData<TCacheData>(queryKey, (old) => successUpdater(old, res))

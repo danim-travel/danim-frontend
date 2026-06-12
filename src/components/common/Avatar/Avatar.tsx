@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 export type AvatarSize = "sm" | "md" | "lg" | "xl";
@@ -26,13 +25,13 @@ export function Avatar({ src, initial, size = "md", ring, colorClass = "bg-prima
     <div
       className={cn(
         "relative overflow-hidden grid place-items-center rounded-avatar font-bold ring-2 ring-bg-card text-text-inverse shrink-0",
-        !src?.startsWith('http') && colorClass,
+        !src && colorClass,
         box,
         text
       )}
     >
-      {src?.startsWith('http')
-        ? <Image src={src} alt="" fill sizes="112px" className="object-cover" />
+      {src
+        ? <img src={src} alt="" className="absolute inset-0 w-full h-full object-cover" />
         : initial
       }
     </div>
