@@ -576,7 +576,8 @@ test.describe('유저 검색 드로어 — 로딩 상태', () => {
     const input = page.getByPlaceholder('닉네임으로 검색...')
     await input.pressSequentially('kim', { delay: 50 })
 
-    // 입력 직후 — 아직 300ms가 지나지 않아 API 미호출
+    // 입력 직후 — 아직 300ms가 지나지 않아 API 미호출 (브라우저 처리 여유 포함)
+    await page.waitForTimeout(100)
     expect(captured.length).toBe(0)
 
     // debounce 완료 후 API 호출됨
