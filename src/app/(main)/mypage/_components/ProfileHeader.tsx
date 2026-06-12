@@ -72,7 +72,6 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
 
       <div className="flex flex-col items-end gap-3 shrink-0">
         <div className="flex gap-6">
-          <StatItem label="게시글" value={profile.posts_count} />
           <StatItem label="팔로워" value={profile.follower} href="/followers?tab=followers" />
           <StatItem label="팔로잉" value={profile.following} href="/followers?tab=following" />
         </div>

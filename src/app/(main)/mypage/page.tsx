@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { LayoutGrid, Bookmark } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { Tabs, EmptyState, PageContainer } from "@/components/common";
 import { Spinner } from "@/components/ui/spinner";
@@ -35,8 +36,8 @@ function MyPageContent({ userId }: { userId: string }) {
       <div className="mt-6">
         <Tabs
           items={[
-            { key: "posts", label: "게시글", count: profile.posts_count },
-            { key: "bookmarks", label: "저장됨" },
+            { key: "posts", label: "게시글", count: profile.posts_count ?? 0, icon: <LayoutGrid size={16} /> },
+            { key: "bookmarks", label: "저장됨", count: 0, icon: <Bookmark size={16} /> },
           ]}
           value={tab}
           onChange={(key) => setTab(key as MyPageTab)}
