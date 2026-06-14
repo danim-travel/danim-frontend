@@ -23,6 +23,7 @@ export default function WritePage() {
   const [descriptionError, setDescriptionError] = useState<string | undefined>()
   const [spotPhotoError, setSpotPhotoError] = useState<string | undefined>()
   const [spotErrors, setSpotErrors] = useState<Record<string, SpotError>>({})
+  const [openSpotTextareaIds, setOpenSpotTextareaIds] = useState<Set<string>>(new Set())
   const [confirmRemoveSpotId, setConfirmRemoveSpotId] = useState<string | null>(null)
 
   const handleSubmit = useCallback(async () => {
@@ -30,13 +31,18 @@ export default function WritePage() {
     setDescriptionError(description.trim().length === 0 ? "한 줄 소개를 입력해주세요" : undefined)
 
     const newSpotErrors: Record<string, SpotError> = {}
+    const newOpenIds = new Set<string>()
     for (const s of spot.spots) {
       const err: SpotError = {}
       if (s.content.trim().length === 0) err.content = "본문을 입력해주세요"
       if (s.location === null) err.location = "위치를 입력해주세요"
-      if (Object.keys(err).length > 0) newSpotErrors[s.id] = err
+      if (Object.keys(err).length > 0) {
+        newSpotErrors[s.id] = err
+        if (err.content) newOpenIds.add(s.id)
+      }
     }
     setSpotErrors(newSpotErrors)
+    setOpenSpotTextareaIds(newOpenIds)
 
     const invalidSpot = spot.spots.find(
       (s) => s.content.trim().length === 0 || s.location === null || s.images.length === 0
@@ -59,6 +65,7 @@ export default function WritePage() {
   const clearErrors = useCallback(() => {
     setSpotErrors({})
     setSpotPhotoError(undefined)
+    setOpenSpotTextareaIds(new Set())
   }, [])
 
   const handleSelectSpot = useCallback((id: string) => {
@@ -80,10 +87,23 @@ export default function WritePage() {
 
   const handleRemoveSpot = handleRequestRemoveSpot
 
+  const handleClearForceTextarea = useCallback((id: string) => {
+    setOpenSpotTextareaIds(prev => {
+      if (!prev.has(id)) return prev
+      const next = new Set(prev)
+      next.delete(id)
+      return next
+    })
+  }, [])
+
   const handleUpdateSpot = useCallback((id: string, updates: Parameters<typeof spot.updateSpot>[1]) => {
     spot.updateSpot(id, updates)
-    clearErrors()
-  }, [spot, clearErrors])
+    setSpotErrors(prev => {
+      if (!prev[id]) return prev
+      const { [id]: _, ...rest } = prev
+      return rest
+    })
+  }, [spot])
 
   return (
     <div className="h-full flex flex-col bg-white">
@@ -132,6 +152,8 @@ export default function WritePage() {
                 onReorderSpots={spot.reorderSpots}
                 onUpdateSpot={handleUpdateSpot}
                 spotErrors={spotErrors}
+                openSpotTextareaIds={openSpotTextareaIds}
+                onClearForceTextarea={handleClearForceTextarea}
               />
             </div>
           </div>

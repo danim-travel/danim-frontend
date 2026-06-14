@@ -23,6 +23,8 @@ interface SpotOrderListProps {
   onReorderSpots: (srcIdx: number, targetIdx: number) => void
   onUpdateSpot: (id: string, updates: Partial<SpotFormData>) => void
   spotErrors?: Record<string, SpotError>
+  openSpotTextareaIds?: Set<string>
+  onClearForceTextarea?: (id: string) => void
 }
 
 interface SpotOrderItemProps {
@@ -36,6 +38,8 @@ interface SpotOrderItemProps {
   onRemove: () => void
   onUpdateSpot: (updates: Partial<SpotFormData>) => void
   error?: SpotError
+  forceTextareaOpen?: boolean
+  onClearForce?: () => void
   onDragStart: (e: React.DragEvent) => void
   onDragOver: (e: React.DragEvent) => void
   onDrop: (e: React.DragEvent) => void
@@ -53,14 +57,16 @@ function SpotOrderItem({
   onRemove,
   onUpdateSpot,
   error,
+  forceTextareaOpen = false,
+  onClearForce,
   onDragStart,
   onDragOver,
   onDrop,
   onDragEnd,
 }: SpotOrderItemProps) {
   const [textareaOpen, setTextareaOpen] = useState(false)
-  // 에러가 있으면 본문 영역을 강제로 열어 사용자가 에러를 확인할 수 있게 함
-  const isTextareaVisible = textareaOpen || !!error?.content
+  // forceTextareaOpen: 제출 후 에러가 있던 스팟은 에러 클리어 이후에도 textarea 유지
+  const isTextareaVisible = textareaOpen || forceTextareaOpen || !!error?.content
   const gripHeld = useRef(false)
 
   const borderClass = isActive
@@ -73,7 +79,9 @@ function SpotOrderItem({
     <div
       draggable
       onDragStart={(e) => {
-        if (!gripHeld.current) { e.preventDefault(); return }
+        const held = gripHeld.current
+        gripHeld.current = false
+        if (!held) { e.preventDefault(); return }
         onDragStart(e)
       }}
       onDragOver={onDragOver}
@@ -117,13 +125,21 @@ function SpotOrderItem({
           <button
             onClick={(e) => { e.stopPropagation(); onRemove() }}
             className="text-error hover:text-error/70 transition-colors shrink-0"
-            aria-label="위치 삭제"
+            aria-label="스팟 삭제"
           >
             <X className="w-4 h-4" />
           </button>
         )}
         <button
-          onClick={(e) => { e.stopPropagation(); setTextareaOpen(v => !v) }}
+          onClick={(e) => {
+            e.stopPropagation()
+            if (isTextareaVisible) {
+              setTextareaOpen(false)
+              onClearForce?.()
+            } else {
+              setTextareaOpen(true)
+            }
+          }}
           className="text-primary hover:text-primary/80 transition-colors shrink-0"
           aria-label={isTextareaVisible ? '본문 닫기' : '본문 입력'}
         >
@@ -194,6 +210,8 @@ export default function SpotOrderList({
   onReorderSpots,
   onUpdateSpot,
   spotErrors = {},
+  openSpotTextareaIds,
+  onClearForceTextarea,
 }: SpotOrderListProps) {
   const {
     state: { dragSrc, dragOver },
@@ -215,6 +233,8 @@ export default function SpotOrderList({
           onRemove={() => onRemove(spot.id)}
           onUpdateSpot={(updates) => onUpdateSpot(spot.id, updates)}
           error={spotErrors[spot.id]}
+          forceTextareaOpen={openSpotTextareaIds?.has(spot.id) ?? false}
+          onClearForce={() => onClearForceTextarea?.(spot.id)}
           onDragStart={(e) => handleDragStart(e, i)}
           onDragOver={(e) => handleDragOver(e, i)}
           onDrop={(e) => handleDrop(e, i)}
