@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
+import { AnimatePresence } from "motion/react"
 import { useQueryState } from "nuqs"
 import { PageContainer, SearchBar } from "@/components/common"
 import { toast } from "@/store/toastStore"
@@ -79,17 +80,19 @@ export default function ExplorePage() {
         onPostClick={setPostModalId}
       />
 
-      {postModalId && (
-        <PostModal
-          postId={postModalId}
-          onClose={() => setPostModalId(null)}
-          showGoToMain
-          onGoToMain={() => {
-            sessionStorage.setItem("scrollToPostId", postModalId)
-            router.push(`/?solo=${postModalId}`)
-          }}
-        />
-      )}
+      <AnimatePresence>
+        {postModalId && (
+          <PostModal
+            postId={postModalId}
+            onClose={() => setPostModalId(null)}
+            showGoToMain
+            onGoToMain={() => {
+              sessionStorage.setItem("scrollToPostId", postModalId)
+              router.push(`/?solo=${postModalId}`)
+            }}
+          />
+        )}
+      </AnimatePresence>
     </PageContainer>
   )
 }

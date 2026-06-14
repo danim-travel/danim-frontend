@@ -84,10 +84,6 @@ export default function LocationSearch({ value, onChange, singleMode = false }: 
     setIsOpen(false)
   }
 
-  const remove = (idx: number) => {
-    onChange(value.filter((_, i) => i !== idx))
-  }
-
   return (
     <div ref={containerRef} className="relative">
       <SearchBar
@@ -127,25 +123,6 @@ export default function LocationSearch({ value, onChange, singleMode = false }: 
         </div>
       )}
 
-      {value.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-2">
-          {value.map((place, i) => (
-            <span
-              key={place.place_name + place.x + place.y}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/15 text-primary text-base font-medium"
-            >
-              <span className="text-caption">📍</span>
-              {place.place_name}
-              <button
-                onClick={() => remove(i)}
-                className="text-primary hover:text-primary/80 font-bold leading-none ml-0.5"
-              >
-                ×
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
     </div>
   )
 }

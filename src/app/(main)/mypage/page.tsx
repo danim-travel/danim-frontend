@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AnimatePresence } from "motion/react";
 import { LayoutGrid, Bookmark } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { Tabs, EmptyState, PageContainer } from "@/components/common";
@@ -68,17 +69,19 @@ function MyPageContent({ userId }: { userId: string }) {
           />
         )}
       </div>
-      {modalPostId && (
-        <PostModal
-          postId={modalPostId}
-          onClose={() => setModalPostId(null)}
-          showGoToMain
-          onGoToMain={() => {
-            sessionStorage.setItem("scrollToPostId", modalPostId);
-            router.push(`/?solo=${modalPostId}`);
-          }}
-        />
-      )}
+      <AnimatePresence>
+        {modalPostId && (
+          <PostModal
+            postId={modalPostId}
+            onClose={() => setModalPostId(null)}
+            showGoToMain
+            onGoToMain={() => {
+              sessionStorage.setItem("scrollToPostId", modalPostId);
+              router.push(`/?solo=${modalPostId}`);
+            }}
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { motion } from "motion/react";
 import { useScrollLock } from "@/hooks/useScrollLock";
 import { X } from "lucide-react";
 import { IconButton, UserRowSkeleton } from "@/components/common";
@@ -119,15 +120,23 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
   );
 
   return (
-    <div
+    <motion.div
       data-testid="post-modal-backdrop"
       className={`fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[2px] ${className ?? ""}`}
       onClick={onClose}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
     >
-      <div
+      <motion.div
         data-testid="post-modal"
         className="bg-bg-card rounded-3xl overflow-hidden flex shadow-[0_32px_80px_-12px_rgba(0,0,0,0.35)] w-[1000px] max-w-[96vw] max-h-[92vh] relative"
         onClick={(e) => e.stopPropagation()}
+        initial={{ opacity: 0, scale: 0.95, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 8 }}
+        transition={{ duration: 0.2 }}
       >
         {!data && isLoading && (
           <div className="w-full h-[500px] flex items-center justify-center">
@@ -166,7 +175,7 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
             />
           </PostModalProvider>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

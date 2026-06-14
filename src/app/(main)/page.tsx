@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AnimatePresence } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import { parseAsString, useQueryState } from "nuqs";
 import PostModal from "@/components/PostModal";
@@ -101,13 +102,15 @@ export default function HomePage() {
         onResetFocus={() => setFocusedPost(null)}
       />
 
-      {postId && (
-        <PostModal
-          postId={postId}
-          initialSpotIdx={spotIdx}
-          onClose={handleCloseModal}
-        />
-      )}
+      <AnimatePresence>
+        {postId && (
+          <PostModal
+            postId={postId}
+            initialSpotIdx={spotIdx}
+            onClose={handleCloseModal}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

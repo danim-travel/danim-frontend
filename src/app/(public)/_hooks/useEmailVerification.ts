@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { requestEmailVerify, confirmEmailCode } from "@/lib/api/auth";
 import { getApiErrorMessage } from "@/lib/apiError";
 import { toast } from "@/store/toastStore";
@@ -18,6 +18,13 @@ export function useEmailVerification({ onVerified, purpose }: UseEmailVerificati
   const [requestLoading, setRequestLoading] = useState(false); // "인증 요청" 버튼 로딩
   const [confirmLoading, setConfirmLoading] = useState(false);  // "확인" 버튼 로딩
   const [confirmError, setConfirmError] = useState<string>();   // 코드 확인 API 실패 메시지
+  const [timeLeft, setTimeLeft] = useState(0);                  // 인증코드 만료까지 남은 초 (3분 = 180s)
+
+  useEffect(() => {
+    if (timeLeft <= 0) return
+    const id = setTimeout(() => setTimeLeft((t) => Math.max(0, t - 1)), 1000)
+    return () => clearTimeout(id)
+  }, [timeLeft])
 
   // "인증 요청" / "재요청" 버튼 클릭 → 이메일로 인증 코드 발송
   async function requestVerify(email: string) {
@@ -26,6 +33,7 @@ export function useEmailVerification({ onVerified, purpose }: UseEmailVerificati
       await requestEmailVerify(email, purpose);
       setCodeSent(true);
       setCode("");
+      setTimeLeft(180);
       toast.success("인증코드가 이메일로 발송되었습니다.");
     } catch (e) {
       toast.error(getApiErrorMessage(e, { client: "인증코드 발송에 실패했습니다. 입력값을 확인해주세요." }));
@@ -62,6 +70,7 @@ export function useEmailVerification({ onVerified, purpose }: UseEmailVerificati
     setCodeSent(false);
     setCode("");
     setConfirmError(undefined);
+    setTimeLeft(0);
   }
 
   return {
@@ -69,6 +78,7 @@ export function useEmailVerification({ onVerified, purpose }: UseEmailVerificati
     setCode,
     codeSent,
     verified,
+    timeLeft,
     requestLoading,
     confirmLoading,
     confirmError,

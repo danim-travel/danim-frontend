@@ -27,13 +27,23 @@ export function useWriteForm() {
     thumbnailKey: photo.thumbnailKey,
   })
 
-  // spot 전환 시 선택 사진 인덱스 초기화 — 두 훅에 걸친 관심사이므로 Facade에서 처리
-  const { selectSpot: baseSelectSpot } = spot
-  const { setSelectedPhotoIdx } = photo
+  // spot 전환/삭제 시 선택 사진 인덱스 초기화 — 두 훅에 걸친 관심사이므로 Facade에서 처리
+  const { selectSpot: baseSelectSpot, removeSpot: baseRemoveSpot } = spot
+  const { setSelectedPhotoIdx, setThumbnailKey, thumbnailKey } = photo
   const selectSpot = useCallback((id: string) => {
-    baseSelectSpot(id)  // 스팟전환
-    setSelectedPhotoIdx(0)  // 인덱스 첫번째로 초기화
+    baseSelectSpot(id)
+    setSelectedPhotoIdx(0)
   }, [baseSelectSpot, setSelectedPhotoIdx])
+  const removeSpot = useCallback((id: string) => {
+    const removedSpot = spot.spots.find(s => s.id === id)
+    baseRemoveSpot(id)
+    setSelectedPhotoIdx(0)
+    // 삭제한 스팟의 이미지가 썸네일이었으면 남은 이미지 중 첫 번째로 대체
+    if (removedSpot?.images.some(img => img.key === thumbnailKey)) {
+      const remaining = spot.spots.filter(s => s.id !== id).flatMap(s => s.images)
+      setThumbnailKey(remaining[0]?.key ?? null)
+    }
+  }, [baseRemoveSpot, setSelectedPhotoIdx, spot.spots, thumbnailKey, setThumbnailKey])
 
   return {
     title,
@@ -47,7 +57,7 @@ export function useWriteForm() {
       active: spot.active,
       selectSpot,
       addSpot: spot.addSpot,
-      removeSpot: spot.removeSpot,
+      removeSpot,
       updateSpot: spot.updateSpot,
       reorderSpots: spot.reorderSpots,
     },
