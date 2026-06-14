@@ -77,7 +77,7 @@ export default function CommentItem({ comment, isOwn, onLike, onEdit, onDelete }
 
   const handleEditKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.nativeEvent.isComposing) handleSaveEdit();
-    if (e.key === "Escape") setEditDraft(null);
+    if (e.key === "Escape") { e.stopPropagation(); setEditDraft(null); }
   };
 
   return (
@@ -121,7 +121,9 @@ export default function CommentItem({ comment, isOwn, onLike, onEdit, onDelete }
         )}
 
         {comment.comment_img.img_url && !editing && (
-          <div
+          <button
+            type="button"
+            aria-label="이미지 확대"
             className="mt-2 w-20 h-20 rounded-lg overflow-hidden shrink-0 cursor-zoom-in"
             onClick={() => setZoomedImg(comment.comment_img.img_url)}
           >
@@ -132,12 +134,12 @@ export default function CommentItem({ comment, isOwn, onLike, onEdit, onDelete }
               height={80}
               className="object-cover w-full h-full"
             />
-          </div>
+          </button>
         )}
 
         {zoomedImg && createPortal(
           <div
-            className="fixed inset-0 z-9999 flex items-center justify-center bg-black/70"
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70"
             onClick={closeZoom}
           >
             <div className="relative max-w-[90vw] max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
