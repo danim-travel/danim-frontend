@@ -20,7 +20,7 @@ export function AccountSection() {
   const { field: passwordConfirmField } = useController({ control, name: "passwordConfirm" });
 
   const {
-    code, setCode, codeSent, verified,
+    code, setCode, codeSent, verified, timeLeft,
     requestLoading, confirmLoading, confirmError,
     requestVerify, confirmCode, resetVerification,
   } = useEmailVerification({
@@ -29,10 +29,17 @@ export function AccountSection() {
     purpose: 'signup',
   });
 
-  // 인증 코드 필드 하단 메시지 색상: 완료=초록 / 에러=빨강 / 기본=회색
+  const timerText = codeSent && !verified
+    ? timeLeft > 0
+      ? `${String(Math.floor(timeLeft / 60)).padStart(2, "0")}:${String(timeLeft % 60).padStart(2, "0")}`
+      : "인증코드가 만료되었습니다. 재요청해주세요."
+    : undefined
+
+  // 인증 코드 필드 하단 메시지 색상: 완료=초록 / 에러=빨강 / 만료=빨강 / 기본=회색
   function getCodeFieldTone() {
     if (verified) return "primary" as const;
     if (confirmError || errors.emailToken?.message) return "error" as const;
+    if (codeSent && timeLeft === 0) return "error" as const;
     return "muted" as const;
   }
 
@@ -79,6 +86,11 @@ export function AccountSection() {
         helperTone={getCodeFieldTone()}
         disabled={verified}
       />
+      {timerText && (
+        <p className={`-mt-3 text-sm font-semibold ${timeLeft > 0 ? "text-primary" : "text-error"}`}>
+          {timerText}
+        </p>
+      )}
 
       <div>
         <PasswordField

@@ -45,7 +45,7 @@ export function ProfileSection() {
           error={errors.name?.message}
         />
         <div>
-          <FieldLabel htmlFor="birthdate-year">생년월일</FieldLabel>
+          <FieldLabel htmlFor="birthdate-year" required>생년월일</FieldLabel>
           <div className="flex gap-2">
             <div className="flex-[1.2]">
               <TextField
