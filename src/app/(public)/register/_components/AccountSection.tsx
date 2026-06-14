@@ -76,7 +76,7 @@ export function AccountSection() {
         onChange={(e) => setCode(sanitizeVerificationCode(e.target.value))}
         actionLabel={verified ? "완료" : "확인"}
         actionVariant="outline"
-        actionDisabled={confirmLoading || verified || !codeSent} // 코드 발송 전엔 비활성화
+        actionDisabled={confirmLoading || verified || !codeSent || (codeSent && timeLeft <= 0)} // 코드 발송 전·만료 후 비활성화
         onAction={() => confirmCode(emailField.value)}
         helperText={
           verified

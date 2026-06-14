@@ -22,8 +22,8 @@ export function useEmailVerification({ onVerified, purpose }: UseEmailVerificati
 
   useEffect(() => {
     if (timeLeft <= 0) return
-    const id = setInterval(() => setTimeLeft((t) => t - 1), 1000)
-    return () => clearInterval(id)
+    const id = setTimeout(() => setTimeLeft((t) => Math.max(0, t - 1)), 1000)
+    return () => clearTimeout(id)
   }, [timeLeft])
 
   // "인증 요청" / "재요청" 버튼 클릭 → 이메일로 인증 코드 발송
