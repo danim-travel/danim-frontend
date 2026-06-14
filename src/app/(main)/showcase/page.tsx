@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
+import { AnimatePresence } from "motion/react";
 import { Heart, Search, Bell, Settings, Trash2, Plus } from "lucide-react";
 
 import PostModal from "@/components/PostModal";
@@ -738,9 +739,11 @@ export default function ShowcasePage() {
 
       </div>
 
-      {postModalOpen && (
-        <PostModal postId="showcase-post" onClose={() => setPostModalOpen(false)} />
-      )}
+      <AnimatePresence>
+        {postModalOpen && (
+          <PostModal postId="showcase-post" onClose={() => setPostModalOpen(false)} />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

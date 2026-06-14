@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import { useScrollLock } from "@/hooks/useScrollLock";
 import { X } from "lucide-react";
 import { IconButton, UserRowSkeleton } from "@/components/common";
@@ -120,7 +120,6 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
   );
 
   return (
-    <AnimatePresence>
     <motion.div
       data-testid="post-modal-backdrop"
       className={`fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[2px] ${className ?? ""}`}
@@ -178,6 +177,5 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
         )}
       </motion.div>
     </motion.div>
-    </AnimatePresence>
   );
 }
