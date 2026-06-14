@@ -47,7 +47,7 @@ export function SearchDrawer() {
       open={isOpen}
       onClose={handleClose}
       title="검색"
-      className="left-(--sidebar-width) w-(--panel-width) z-(--z-drawer)"
+      className="left-(--sidebar-width) w-[calc(var(--panel-width)+20px)] z-(--z-drawer)"
     >
       {/* 검색 인풋 */}
       <div className="px-8 pb-4 shrink-0">
