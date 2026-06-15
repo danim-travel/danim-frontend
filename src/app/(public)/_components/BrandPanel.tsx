@@ -6,9 +6,7 @@ export function BrandPanel() {
     <div className="flex flex-col gap-7 max-w-[480px] shrink-0">
       {/* 로고 */}
       <div className="flex items-center gap-3">
-        <div className="w-14 h-14 rounded-md bg-primary flex items-center justify-center shadow-brand-strong shrink-0">
-          <span className="text-white text-2xl">✈️</span>
-        </div>
+        <img src="/favicon.svg" alt="Danim" className="w-14 h-14 rounded-md shadow-brand-strong shrink-0" />
         <div>
           <div className="text-section-title font-bold text-text tracking-tight">Danim</div>
           <div className="text-body-sm text-text-muted">여행자들의 이야기</div>
