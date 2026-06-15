@@ -99,6 +99,7 @@ function KakaoMap({ selectedPost, onBoundsChange, onPinClick, onCurrentLocation 
       );
     }
 
+    // 오버레이가 덮고 있는 동안 즉시 이동 — 줌 애니메이션 없음
     map.setBounds(bounds, 80, 80, 80, 80);
   };
 
