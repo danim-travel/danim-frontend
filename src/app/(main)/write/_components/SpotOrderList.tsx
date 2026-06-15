@@ -19,6 +19,7 @@ interface SpotOrderListProps {
   spots: SpotFormData[]
   activeId: string
   onSelect: (id: string) => void
+  onActivate?: (id: string) => void
   onRemove: (id: string) => void
   onReorderSpots: (srcIdx: number, targetIdx: number) => void
   onUpdateSpot: (id: string, updates: Partial<SpotFormData>) => void
@@ -35,6 +36,7 @@ interface SpotOrderItemProps {
   isDragSrc: boolean
   canRemove: boolean
   onSelect: () => void
+  onActivate?: () => void
   onRemove: () => void
   onUpdateSpot: (updates: Partial<SpotFormData>) => void
   error?: SpotError
@@ -54,6 +56,7 @@ function SpotOrderItem({
   isDragSrc,
   canRemove,
   onSelect,
+  onActivate,
   onRemove,
   onUpdateSpot,
   error,
@@ -65,8 +68,7 @@ function SpotOrderItem({
   onDragEnd,
 }: SpotOrderItemProps) {
   const [textareaOpen, setTextareaOpen] = useState(false)
-  // forceTextareaOpen: 제출 후 에러가 있던 스팟은 에러 클리어 이후에도 textarea 유지
-  const isTextareaVisible = textareaOpen || forceTextareaOpen || !!error?.content
+  const isTextareaVisible = textareaOpen || forceTextareaOpen
   const gripHeld = useRef(false)
 
   const borderClass = isActive
@@ -158,7 +160,7 @@ function SpotOrderItem({
         className="px-3 pb-2"
         onClick={(e) => e.stopPropagation()}
         onMouseDown={(e) => e.stopPropagation()}
-        onFocus={onSelect}
+        onFocus={onActivate}
       >
         <LocationSearch
           value={spot.location ? [spot.location] : []}
@@ -198,6 +200,13 @@ function SpotOrderItem({
           )}
         </div>
       )}
+
+      {/* 토글 닫힌 상태에서도 본문 에러 표시 */}
+      {!isTextareaVisible && error?.content && (
+        <div className="px-3 pb-3" onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
+          <span className="block text-caption text-(--input-text-error)">{error.content}</span>
+        </div>
+      )}
     </div>
   )
 }
@@ -206,6 +215,7 @@ export default function SpotOrderList({
   spots,
   activeId,
   onSelect,
+  onActivate,
   onRemove,
   onReorderSpots,
   onUpdateSpot,
@@ -230,6 +240,7 @@ export default function SpotOrderList({
           isDragSrc={dragSrc === i}
           canRemove={spots.length > 1 && i > 0}
           onSelect={() => onSelect(spot.id)}
+          onActivate={onActivate ? () => onActivate(spot.id) : undefined}
           onRemove={() => onRemove(spot.id)}
           onUpdateSpot={(updates) => onUpdateSpot(spot.id, updates)}
           error={spotErrors[spot.id]}

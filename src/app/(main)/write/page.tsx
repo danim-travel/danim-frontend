@@ -73,6 +73,10 @@ export default function WritePage() {
     clearErrors()
   }, [spot, clearErrors])
 
+  const handleActivateSpot = useCallback((id: string) => {
+    spot.selectSpot(id)
+  }, [spot])
+
   const handleRequestRemoveSpot = useCallback((id: string) => {
     setConfirmRemoveSpotId(id)
   }, [])
@@ -148,6 +152,7 @@ export default function WritePage() {
                 spots={spot.spots}
                 activeId={spot.activeId}
                 onSelect={handleSelectSpot}
+                onActivate={handleActivateSpot}
                 onRemove={handleRemoveSpot}
                 onReorderSpots={spot.reorderSpots}
                 onUpdateSpot={handleUpdateSpot}
