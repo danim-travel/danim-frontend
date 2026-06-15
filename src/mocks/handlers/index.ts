@@ -7,9 +7,10 @@ import { mainFeedHandlers } from './mainFeed'
 import { interactionsHandlers } from './interactions'
 import { usersHandlers, followHandlers } from './users'
 import { exploreHandlers } from './explore'
-import type { RequestHandler } from 'msw'
+import { notificationHandlers, notificationWsHandlers } from './notifications'
+import type { RequestHandler, WebSocketHandler } from 'msw'
 
-export const handlers: RequestHandler[] = [
+export const handlers: Array<RequestHandler | WebSocketHandler> = [
   // ...authHandlers,
   // ...commentsHandlers,
   // mainFeed가 동적 라우트 *./posts/:postId 보다 먼저 매칭되도록 앞에 둔다.
@@ -19,4 +20,6 @@ export const handlers: RequestHandler[] = [
   // ...usersHandlers,
   // ...followHandlers,
   ...exploreHandlers,
+  ...notificationHandlers,
+  ...notificationWsHandlers,
 ]
