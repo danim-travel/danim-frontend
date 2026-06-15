@@ -17,7 +17,14 @@ export function SideDrawer({ open, onClose, title, children, className }: SideDr
   return (
     <AnimatePresence>
       {open && (
-        <motion.aside
+        <>
+          {/* 드로어 외부 클릭으로 닫기 — z-[4]: --z-drawer(5) 바로 아래, --z-sidenav(10) 아래 */}
+          <div
+            className="fixed inset-0 z-[4]"
+            onClick={onClose}
+            aria-hidden="true"
+          />
+          <motion.aside
           key="side-drawer"
           initial={{ x: "-100%" }}
           animate={{ x: 0 }}
@@ -43,6 +50,7 @@ export function SideDrawer({ open, onClose, title, children, className }: SideDr
             {children}
           </div>
         </motion.aside>
+        </>
       )}
     </AnimatePresence>
   )
