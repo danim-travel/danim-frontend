@@ -4,11 +4,23 @@
  */
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import type { CurrentUserResponse } from '@/types'
 
-interface AuthUser {
+export interface AuthUser {
   userId: string
   nickname: string
   profileImg: string | null
+  role: 'admin' | 'user' | 'not_verified'
+}
+
+/** CurrentUserResponse → AuthUser 변환. role 기본값 정규화를 단일 진입점에서 처리한다. */
+export function toAuthUser(user: CurrentUserResponse): AuthUser {
+  return {
+    userId: user.user_id,
+    nickname: user.nickname,
+    profileImg: user.profile_img,
+    role: user.role ?? 'not_verified',
+  }
 }
 
 interface AuthState {
@@ -18,6 +30,7 @@ interface AuthState {
   // 로그인된 사용자가 비로그인으로 잘못 처리되어 /login으로 튕기는 문제가 생긴다.
   isHydrated: boolean
   setAuth: (user: AuthUser, accessToken: string) => void
+  updateAuthUser: (patch: Partial<AuthUser>) => void
   setToken: (accessToken: string) => void
   clearAuth: () => void
   setHydrated: () => void
@@ -30,6 +43,9 @@ export const useAuthStore = create<AuthState>()(
       accessToken: null,
       isHydrated: false,
       setAuth: (user, accessToken) => set({ user, accessToken }),
+      updateAuthUser: (patch) => set((state) => ({
+        user: state.user ? { ...state.user, ...patch } : null,
+      })),
       setToken: (accessToken) => set({ accessToken }),
       clearAuth: () => set({ user: null, accessToken: null }),
       setHydrated: () => set({ isHydrated: true }),

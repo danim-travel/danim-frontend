@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useId } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { useScrollLock } from "@/hooks/useScrollLock";
@@ -50,7 +51,9 @@ export function Modal({
     return () => window.removeEventListener("keydown", handler, { capture: true });
   }, [open, onClose]);
 
-  return (
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <AnimatePresence>
       {open && (
         <motion.div
@@ -58,7 +61,7 @@ export function Modal({
           aria-modal="true"
           aria-labelledby={title ? titleId : undefined}
           className={cn(
-            "fixed inset-0 z-modal bg-overlay flex justify-center",
+            "fixed inset-0 z-[9999] bg-overlay flex justify-center",
             bottom ? "items-end" : "items-center"
           )}
           onClick={onClose}
@@ -104,7 +107,8 @@ export function Modal({
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
 

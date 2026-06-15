@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getCurrentUser, refreshToken } from "@/lib/api/auth";
-import { useAuthStore } from "@/store/authStore";
+import { useAuthStore, toAuthUser } from "@/store/authStore";
 import { getApiErrorMessage } from "@/lib/apiError";
 import { toast } from "@/store/toastStore";
 
@@ -24,10 +24,7 @@ export function SocialCallbackHandler() {
         const { access_token } = await refreshToken();
         useAuthStore.getState().setToken(access_token);
         const me = await getCurrentUser();
-        useAuthStore.getState().setAuth(
-          { userId: me.user_id, nickname: me.nickname, profileImg: me.profile_img },
-          access_token
-        );
+        useAuthStore.getState().setAuth(toAuthUser(me), access_token);
         router.replace("/");
       } catch (e) {
         toast.error(getApiErrorMessage(e, { client: "소셜 로그인에 실패했습니다. 다시 시도해주세요." }));

@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button, TextField, PasswordField } from "@/components/common";
 import { login, getCurrentUser } from "@/lib/api/auth";
-import { useAuthStore } from "@/store/authStore";
+import { useAuthStore, toAuthUser } from "@/store/authStore";
 import { getApiErrorMessage } from "@/lib/apiError";
 import { toast } from "@/store/toastStore";
 import { config } from "@/lib/config";
@@ -23,6 +23,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export function LoginForm() {
   const router = useRouter();
+
   const {
     register,
     handleSubmit,
@@ -40,10 +41,7 @@ export function LoginForm() {
       useAuthStore.getState().setToken(access_token);
       // 2단계: 유저 정보 조회 → 전체 인증 상태 설정
       const me = await getCurrentUser();
-      useAuthStore.getState().setAuth(
-        { userId: me.user_id, nickname: me.nickname, profileImg: me.profile_img },
-        access_token
-      );
+      useAuthStore.getState().setAuth(toAuthUser(me), access_token);
 
       router.push("/");
     } catch (e) {
