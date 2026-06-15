@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import { useUIStore } from "@/store/uiStore";
 import { useRouter } from "next/navigation";
 import { AnimatePresence } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
@@ -33,6 +34,7 @@ export default function HomePage() {
   const [focusedPostIndex, setFocusedPostIndex] = useState(0);
   const [spotIdx, setSpotIdx] = useState<number | undefined>(undefined);
 
+  const { closePanel } = useUIStore();
   const [postId, setPostId] = useQueryState("post", parseAsString);
   const [soloPostId] = useQueryState("solo", parseAsString);
 
@@ -61,16 +63,18 @@ export default function HomePage() {
   }, [prefetchPostDetail]);
 
   const handleOpenModal = useCallback((post: MainFeedItem, index: number) => {
+    closePanel();
     setFocusedPost(post);
     setFocusedPostIndex(index);
     setSpotIdx(undefined);
     setPostId(post.post.post_id);
-  }, [setPostId]);
+  }, [closePanel, setPostId]);
 
   const handlePinClick = useCallback((id: string, idx: number) => {
+    closePanel();
     setSpotIdx(idx);
     setPostId(id);
-  }, [setPostId]);
+  }, [closePanel, setPostId]);
 
   const handleCloseModal = useCallback(() => {
     setPostId(null);

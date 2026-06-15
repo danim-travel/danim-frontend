@@ -122,7 +122,7 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
   return (
     <motion.div
       data-testid="post-modal-backdrop"
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[2px] ${className ?? ""}`}
+      className={`fixed inset-0 z-(--z-page-modal) flex items-center justify-center bg-black/50 backdrop-blur-[2px] ${className ?? ""}`}
       onClick={onClose}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
