@@ -43,9 +43,11 @@
 
   /* ── Z-index ─────────────────────────────────── */
   /* --z-sidenav > --z-drawer: 사이드바가 드로어 위에 위치해 드로어가 뒤에서 슬라이드됨 */
-  --z-drawer:  5;
-  --z-sidenav: 10;
-  --z-modal:   100;
+  /* page-modal과 drawer는 상호 배타(modal 열 때 drawer 닫음) → 동시 z-index 충돌 없음 */
+  --z-sidenav:    10;
+  --z-drawer:      5;
+  --z-page-modal: 40;
+  --z-modal:      100;
 
   /* ── Icon size ───────────────────────────────── */
   --icon-size-sm: 14px;

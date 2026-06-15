@@ -29,7 +29,7 @@ export function Tabs({ items, value, onChange }: TabsProps) {
                 {it.count}
               </span>
             )}
-            {on && <span className="absolute left-0 right-0 -bottom-px h-0.5 bg-border-focus z-10" />}
+            {on && <span className="absolute left-0 right-0 -bottom-px h-0.5 bg-border-focus" />}
           </button>
         );
       })}

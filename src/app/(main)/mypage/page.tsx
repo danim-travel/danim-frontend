@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence } from "motion/react";
 import { LayoutGrid, Bookmark } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
+import { useUIStore } from "@/store/uiStore";
 import { Tabs, EmptyState, PageContainer } from "@/components/common";
 import { Spinner } from "@/components/ui/spinner";
 import PostModal from "@/components/PostModal";
@@ -15,6 +16,7 @@ type MyPageTab = "posts" | "bookmarks";
 
 function MyPageContent({ userId }: { userId: string }) {
   const router = useRouter();
+  const { closePanel } = useUIStore();
   const { data: profile, isLoading } = useMyProfile(userId);
   const [tab, setTab] = useState<MyPageTab>("posts");
   const [modalPostId, setModalPostId] = useState<string | null>(null);
@@ -61,7 +63,7 @@ function MyPageContent({ userId }: { userId: string }) {
       </div>
       <div className="mt-6">
         {tab === "posts" ? (
-          <PostGrid posts={profile.posts} onPostClick={setModalPostId} />
+          <PostGrid posts={profile.posts} onPostClick={(id) => { closePanel(); setModalPostId(id); }} />
         ) : (
           <EmptyState
             title="준비 중입니다"
