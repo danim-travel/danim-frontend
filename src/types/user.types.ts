@@ -57,6 +57,8 @@ export interface CurrentUserResponse {
   user_id: string
   nickname: string
   profile_img: string | null
+  /** 기존 발급 토큰에 role 클레임이 없을 수 있어 optional. authStore의 toAuthUser에서 'not_verified'로 기본값 처리한다. */
+  role?: 'admin' | 'user' | 'not_verified'
 }
 
 export interface MeDetailResponse {
@@ -94,7 +96,10 @@ export type FollowUser = {
   is_following: boolean
 }
 
-export type FollowListResponse = FollowUser[]
+export type FollowListResponse = {
+  next: string | null
+  results: FollowUser[]
+}
 
 export type UserSearchResult = {
   user_id: string

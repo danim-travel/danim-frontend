@@ -8,7 +8,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { isApiError } from '@/lib/apiError'
 import { refreshToken, getCurrentUser } from '@/lib/api/auth'
-import { useAuthStore } from '@/store/authStore'
+import { useAuthStore, toAuthUser } from '@/store/authStore'
 import { ToastProvider } from './ToastProvider'
 
 async function initMsw() {
@@ -50,7 +50,7 @@ function AuthBootstrap({ children }: { children: React.ReactNode }) {
           const me = await getCurrentUser()
           if (cancelled) return
           const { setAuth } = useAuthStore.getState()
-          setAuth({ userId: me.user_id, nickname: me.nickname, profileImg: me.profile_img }, access_token)
+          setAuth(toAuthUser(me), access_token)
         } catch {
           // getCurrentUser 실패 — 토큰은 유효하므로 유지, user는 null 상태로 진입
         }

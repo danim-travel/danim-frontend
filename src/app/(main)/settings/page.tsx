@@ -34,8 +34,7 @@ export default function SettingsPage() {
 // me 가 준비된 뒤 마운트되므로 useState 초기값을 me 로부터 안전하게 설정할 수 있다
 function SettingsForm({ me }: { me: MeDetailResponse }) {
   const queryClient = useQueryClient()
-  const setAuth = useAuthStore(s => s.setAuth)
-  const accessToken = useAuthStore(s => s.accessToken)
+  const updateAuthUser = useAuthStore(s => s.updateAuthUser)
 
   const [nickname, setNickname] = useState(me.nickname)
   const [intro, setIntro] = useState(me.intro ?? "")
@@ -121,11 +120,8 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
       setProfileSectionKey(k => k + 1)
       // PATCH 응답의 profile_img는 raw S3 URL일 수 있으므로, getMe()를 재호출해 presigned URL을 받는다
       await queryClient.invalidateQueries({ queryKey: queryKeys.users.me })
-      if (accessToken && (updated.nickname !== me.nickname || updated.profile_img !== me.profile_img)) {
-        setAuth(
-          { userId: updated.user_id, nickname: updated.nickname, profileImg: updated.profile_img },
-          accessToken,
-        )
+      if (updated.nickname !== me.nickname || updated.profile_img !== me.profile_img) {
+        updateAuthUser({ userId: updated.user_id, nickname: updated.nickname, profileImg: updated.profile_img })
       }
       toast.success("변경사항이 저장되었습니다.")
     } catch (err) {
