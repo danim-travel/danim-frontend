@@ -12,7 +12,11 @@ export default function FollowersPage() {
     defaultValue: "followers",
     parse: (v) => (v === "following" ? "following" : "followers"),
   })
-  const userId = useAuthStore(s => s.user?.userId)
+  const [queryUserId] = useQueryState("userId")
+  const myUserId = useAuthStore(s => s.user?.userId)
+
+  const userId = queryUserId ?? myUserId
+  const isOtherUser = !!queryUserId && queryUserId !== myUserId
 
   const { data: followers = [], isLoading: isFollowersLoading } = useQuery({
     queryKey: queryKeys.users.followers(userId ?? ""),
@@ -29,12 +33,14 @@ export default function FollowersPage() {
 
   const tabItems = [
     { key: "followers", label: "팔로워", count: followers?.length },
-    { key: "following", label: "팔로잉", count: following.filter(u => u.is_following).length },
+    { key: "following", label: "팔로잉", count: following.length },
   ]
 
   return (
     <PageContainer>
-      <h1 className="text-section-title font-bold text-text mb-6">내 팔로워 / 팔로잉</h1>
+      <h1 className="text-section-title font-bold text-text mb-6">
+        {isOtherUser ? "팔로워 / 팔로잉" : "내 팔로워 / 팔로잉"}
+      </h1>
       <div className="bg-bg-card rounded-card border border-border overflow-hidden">
         <Tabs
           items={tabItems}

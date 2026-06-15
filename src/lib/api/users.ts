@@ -1,5 +1,5 @@
-import { apiClient } from '@/lib/apiClient'
-import type { MeDetailResponse, UpdateUserRequest, ChangePasswordRequest, DetailResponse, ProfileImagePresignedResponse, FollowListResponse, FollowResponse, UserSearchResponse } from '@/types'
+import { apiClient, publicClient } from '@/lib/apiClient'
+import type { MeDetailResponse, UpdateUserRequest, ChangePasswordRequest, DetailResponse, ProfileImagePresignedResponse, FollowListResponse, FollowUser, FollowResponse, UserSearchResponse } from '@/types'
 
 /** 내 상세 정보(닉네임·이메일·소개 등)를 조회한다. */
 export async function getMe(): Promise<MeDetailResponse> {
@@ -27,13 +27,15 @@ export async function getProfileImagePresignedUrl(fileName: string): Promise<Pro
 }
 
 /** 특정 유저의 팔로워 목록을 조회한다. */
-export async function getFollowers(userId: string): Promise<FollowListResponse> {
-  return apiClient.get(`users/${userId}/followers`).json<FollowListResponse>()
+export async function getFollowers(userId: string): Promise<FollowUser[]> {
+  const res = await apiClient.get(`users/${userId}/followers`).json<FollowListResponse>()
+  return res.results
 }
 
 /** 특정 유저의 팔로잉 목록을 조회한다. */
-export async function getFollowing(userId: string): Promise<FollowListResponse> {
-  return apiClient.get(`users/${userId}/following`).json<FollowListResponse>()
+export async function getFollowing(userId: string): Promise<FollowUser[]> {
+  const res = await apiClient.get(`users/${userId}/following`).json<FollowListResponse>()
+  return res.results
 }
 
 /** 특정 유저를 팔로우한다. */
@@ -46,8 +48,8 @@ export async function unfollowUser(userId: string): Promise<FollowResponse> {
   return apiClient.delete(`follow/${userId}`).json<FollowResponse>()
 }
 
-/** 닉네임으로 유저를 검색한다. */
+/** 닉네임으로 유저를 검색한다. 비인증 엔드포인트라 publicClient를 사용한다. */
 export async function searchUsers(nickname: string): Promise<UserSearchResponse> {
-  const res = await apiClient.get('users', { searchParams: { search: nickname } }).json<{ results: UserSearchResponse }>()
+  const res = await publicClient.get('users', { searchParams: { search: nickname } }).json<{ results: UserSearchResponse }>()
   return res.results
 }
