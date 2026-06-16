@@ -68,7 +68,7 @@ export default function UserPage() {
     <PageContainer>
       <h1 className="text-section-title font-bold text-text mb-6">{profile.nickname}님의 프로필</h1>
 
-      <UserProfileHeader profile={profile} userId={userId} />
+      <UserProfileHeader key={userId} profile={profile} userId={userId} />
 
       <div className="mt-6">
         <PostGrid posts={profile.posts} onPostClick={setModalPostId} />
