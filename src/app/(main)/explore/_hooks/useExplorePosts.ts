@@ -5,6 +5,9 @@ import type { ExploreResponse } from '@/types'
 
 const PAGE_SIZE = 12
 
+// seed: 탐색 피드가 랜덤 정렬일 때 페이지 간 동일한 순서를 유지하기 위해 첫 응답의 seed를 다음 요청에 그대로 전달
+type ExplorePageParam = { cursor: string | null; seed?: number }
+
 function extractCursor(nextUrl: string | null): string | null {
   if (!nextUrl) return null
   try {
@@ -21,18 +24,19 @@ export function useExplorePosts(search: string, category: string) {
     Error,
     InfiniteData<ExploreResponse>,
     ReturnType<typeof queryKeys.posts.explore>,
-    string | null
+    ExplorePageParam
   >({
     queryKey: queryKeys.posts.explore(search || undefined, cat),
     queryFn: ({ pageParam }) =>
       getExplorePosts({
         search: search || undefined,
         category: cat,
-        cursor: pageParam ?? undefined,
+        cursor: pageParam.cursor ?? undefined,
+        seed: pageParam.seed,
         page_size: PAGE_SIZE,
       }),
-    initialPageParam: null,
-    getNextPageParam: (lastPage) => extractCursor(lastPage.next),
+    initialPageParam: { cursor: null, seed: undefined },
+    getNextPageParam: (lastPage) => ({ cursor: extractCursor(lastPage.next), seed: lastPage.seed }),
     refetchOnWindowFocus: false,
   })
 }
