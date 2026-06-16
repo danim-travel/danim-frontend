@@ -1,4 +1,4 @@
-import { AuthSplitLayout, AuthCard, AuthCardHeader, AuthFooterLink } from "../_components";
+import { AuthCard, AuthCardHeader, AuthFooterLink, AuthSplitLayout } from "../_components";
 import { LoginForm } from "./_components/LoginForm";
 
 export default function LoginPage() {

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { AuthSplitLayout, AuthCard, AuthCardHeader } from "../_components";
+import { AuthCard, AuthCardHeader, AuthSplitLayout } from "../_components";
 import { ResetPasswordForm } from "./_components/ResetPasswordForm";
 
 export default function ResetPasswordPage() {
