@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from 'react'
 import type { CreatePostSpotLocation } from '@/types'
 import { SearchBar } from '@/components/common'
+import { useDebouncedValue } from '@/hooks/useDebouncedValue'
+import { useOnClickOutside } from '@/hooks/useOnClickOutside'
 import { useKakaoMapSDK } from '../_hooks/useKakaoMapSDK'
 import { LOCATION_SEARCH_DEBOUNCE_MS, MAX_LOCATION_SEARCH_RESULTS } from '../_constants'
 
@@ -17,10 +19,10 @@ export default function LocationSearch({ value, onChange, singleMode = false }: 
   const [results, setResults] = useState<kakao.maps.services.PlaceItem[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const placesRef = useRef<kakao.maps.services.Places | null>(null)
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
   const sdkReady = useKakaoMapSDK()
+  const debouncedInput = useDebouncedValue(input, LOCATION_SEARCH_DEBOUNCE_MS)
 
   useEffect(() => {
     if (sdkReady) {
@@ -29,19 +31,12 @@ export default function LocationSearch({ value, onChange, singleMode = false }: 
     }
   }, [sdkReady])
 
-  useEffect(() => {
-    // 드롭다운 외부 클릭 시 닫기
-    const handler = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setIsOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [])
+  // 드롭다운 외부 클릭 시 닫기
+  useOnClickOutside(containerRef, () => setIsOpen(false))
 
-  const search = (keyword: string) => {
-    if (!sdkReady || !placesRef.current || !keyword.trim()) {
+  useEffect(() => {
+    const keyword = debouncedInput.trim()
+    if (!sdkReady || !placesRef.current || !keyword) {
       setResults([])
       setIsOpen(false)
       return
@@ -55,13 +50,10 @@ export default function LocationSearch({ value, onChange, singleMode = false }: 
         setIsOpen(false)
       }
     })
-  }
+  }, [debouncedInput, sdkReady])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value
-    setInput(val)
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => search(val), LOCATION_SEARCH_DEBOUNCE_MS)
+    setInput(e.target.value)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

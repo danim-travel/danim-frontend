@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { ChevronLeft } from "lucide-react";
 import { EmptyState } from "@/components/common";
+import { Spinner } from "@/components/ui/spinner";
+import { useInfiniteScrollSentinel } from "@/hooks/useInfiniteScrollSentinel";
 import type { MainFeedItem } from "@/types";
 import FeedCard from "./FeedCard";
 
@@ -31,24 +32,13 @@ export function FeedPanel({
   title,
   onBack,
 }: FeedPanelProps) {
-  const sentinelRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const node = sentinelRef.current;
-    if (!node || !onLoadMore) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const [entry] = entries;
-        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
-          onLoadMore();
-        }
-      },
-      { root: null, rootMargin: "200px", threshold: 0 }
-    );
-    observer.observe(node);
-    return () => observer.disconnect();
   // observer를 매번 재등록해 최신 클로저를 참조하고 hasNextPage/isFetchingNextPage 변경 시 중복 fetch를 방지한다
-  }, [onLoadMore, hasNextPage, isFetchingNextPage]);
+  const sentinelRef = useInfiniteScrollSentinel({
+    hasNextPage: !!hasNextPage,
+    isFetchingNextPage: !!isFetchingNextPage,
+    onLoadMore: onLoadMore ?? (() => {}),
+    rootMargin: '200px',
+  });
 
   return (
     <aside className="w-(--panel-width) p-7 shrink-0 h-full flex flex-col bg-bg-subtle rounded-2xl overflow-hidden shadow-sm">
@@ -91,7 +81,7 @@ export function FeedPanel({
 
           {isFetchingNextPage && (
             <div data-testid="feed-loading-spinner" className="flex justify-center py-4">
-              <div className="w-6 h-6 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+              <Spinner size="sm" />
             </div>
           )}
 

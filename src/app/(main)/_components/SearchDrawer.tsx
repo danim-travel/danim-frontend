@@ -7,6 +7,7 @@ import { useUIStore } from "@/store/uiStore"
 import { useAuthStore } from "@/store/authStore"
 import { searchUsers } from "@/lib/api/users"
 import { queryKeys } from "@/lib/queryKeys"
+import { useDebouncedValue } from "@/hooks/useDebouncedValue"
 
 export function SearchDrawer() {
   const router = useRouter()
@@ -14,7 +15,7 @@ export function SearchDrawer() {
   const myUserId = useAuthStore((s) => s.user?.userId)
   const isOpen = activePanel === "search"
   const [query, setQuery] = useState("")
-  const [debouncedQuery, setDebouncedQuery] = useState("")
+  const debouncedQuery = useDebouncedValue(query.trim(), 300)
 
   const handleClose = () => {
     closePanel()
@@ -25,15 +26,9 @@ export function SearchDrawer() {
     if (isOpen) return
     const t = setTimeout(() => {
       setQuery("")
-      setDebouncedQuery("")
     }, 250)
     return () => clearTimeout(t)
   }, [isOpen])
-
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedQuery(query.trim()), 300)
-    return () => clearTimeout(t)
-  }, [query])
 
   const { data, isLoading, isError } = useQuery({
     queryKey: queryKeys.users.search(debouncedQuery),
