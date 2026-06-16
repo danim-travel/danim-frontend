@@ -55,7 +55,6 @@ const commentsList: Comment[] = [
 
 export const getCommentCount = (_postId?: string) => commentsList.length
 
-// mock 댓글 ID 생성 (3까지는 있어서 4부터 시작)
 let commentIdCounter = 4
 
 export const commentsHandlers = [
@@ -81,11 +80,15 @@ export const commentsHandlers = [
 
   // 댓글 생성 — POST comments
   http.post('*/comments', async ({ request }) => {
-    const body = await request.json() as { post_id: string; content?: string; comment_img?: { original_img: string; key: string } }
+    const body = await request.json() as {
+      post_id: string
+      content?: string
+      comment_img?: { original_img: string; key: string }
+    }
 
     if (!body.content && !body.comment_img) {
       return HttpResponse.json(
-        { error_detail: ["content와 comment_img 두 항목 중 하나는 입력해야합니다."] },
+        { error_detail: { non_field_errors: ['content와 comment_img 두 항목 중 하나는 입력해야합니다.'] } },
         { status: 400 }
       )
     }
@@ -122,7 +125,10 @@ export const commentsHandlers = [
   // 댓글 수정 — PATCH comments/{comment_id}
   http.patch('*/comments/:commentId', async ({ params, request }) => {
     const { commentId } = params
-    const body = await request.json() as { content?: string; comment_img?: { original_img: string; key: string } }
+    const body = await request.json() as {
+      content?: string
+      comment_img?: { original_img: string; key: string } | null
+    }
     const idx = commentsList.findIndex(c => c.comment_id === commentId)
 
     if (idx === -1) {
@@ -130,12 +136,21 @@ export const commentsHandlers = [
     }
 
     const now = new Date().toISOString()
+    let comment_img = commentsList[idx].comment_img
+    if (body.comment_img === null) {
+      comment_img = { img_url: null, original_img: null, key: null }
+    } else if (body.comment_img !== undefined) {
+      comment_img = {
+        img_url: `https://picsum.photos/seed/${body.comment_img.key}/200/200`,
+        original_img: body.comment_img.original_img,
+        key: body.comment_img.key,
+      }
+    }
+
     commentsList[idx] = {
       ...commentsList[idx],
       content: body.content ?? commentsList[idx].content,
-      comment_img: body.comment_img
-        ? { img_url: `https://picsum.photos/seed/${body.comment_img.key}/200/200`, original_img: body.comment_img.original_img, key: body.comment_img.key }
-        : commentsList[idx].comment_img,
+      comment_img,
       updated_at: now,
     }
 
