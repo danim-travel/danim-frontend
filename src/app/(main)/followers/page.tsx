@@ -35,8 +35,9 @@ export default function FollowersPage() {
 
   // 새로고침 직후 accessToken은 있지만 userId가 아직 null인 타이밍을 처리
   if (!userId) {
-    // accessToken도 없으면 AuthGuard가 처리 — 여기선 그냥 null 반환
-    if (!accessToken) return null
+    // accessToken도 없고 fallback 메시지도 없으면 AuthGuard가 처리
+    // fallback 메시지가 있으면 clearAuth() 이후에도 에러 UI를 표시해야 하므로 통과
+    if (!accessToken && !authFallbackMessage) return null
 
     // userId 복원 중: useAuthHydrationFallback이 getCurrentUser()를 호출해 Zustand를 채움
     return (
