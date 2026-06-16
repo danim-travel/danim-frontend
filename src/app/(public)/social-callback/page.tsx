@@ -1,14 +1,11 @@
 import { Suspense } from "react";
+import { Spinner } from "@/components/ui/spinner";
 import { SocialCallbackHandler } from "./_components/SocialCallbackHandler";
 
 export default function SocialCallbackPage() {
   return (
     <div className="flex h-screen items-center justify-center">
-      <Suspense
-        fallback={
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-        }
-      >
+      <Suspense fallback={<Spinner size="lg" />}>
         <SocialCallbackHandler />
       </Suspense>
     </div>

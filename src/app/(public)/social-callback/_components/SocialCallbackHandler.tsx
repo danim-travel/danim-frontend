@@ -5,6 +5,7 @@ import { getCurrentUser, refreshToken } from "@/lib/api/auth";
 import { useAuthStore, toAuthUser } from "@/store/authStore";
 import { getApiErrorMessage } from "@/lib/apiError";
 import { toast } from "@/store/toastStore";
+import { Spinner } from "@/components/ui/spinner";
 
 export function SocialCallbackHandler() {
   const router = useRouter();
@@ -36,7 +37,5 @@ export function SocialCallbackHandler() {
   // router, searchParams는 Next.js가 안정적인 참조를 보장하므로 deps에 포함해도 무한 루프 없음
   }, [router, searchParams]);
 
-  return (
-    <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-  );
+  return <Spinner size="lg" />;
 }

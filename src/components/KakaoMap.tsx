@@ -4,6 +4,7 @@ import { useRef, useState, useEffect, memo } from "react";
 import Script from "next/script";
 import type { Post } from "@/types";
 import { config } from "@/lib/config";
+import { Spinner } from "@/components/ui/spinner";
 
 type Status = "loading" | "ready" | "error";
 
@@ -197,7 +198,7 @@ function KakaoMap({ selectedPost, onBoundsChange, onPinClick, onCurrentLocation 
 
       {status === "loading" && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-bg gap-3">
-          <div className="w-8 h-8 rounded-full border-4 border-warning border-t-transparent animate-spin" />
+          <Spinner size="lg" className="border-warning border-t-transparent" />
           <p className="text-base text-text-muted">지도를 불러오는 중...</p>
         </div>
       )}
@@ -217,7 +218,7 @@ function KakaoMap({ selectedPost, onBoundsChange, onPinClick, onCurrentLocation 
           onClick={goToCurrentLocation}
           className="absolute bottom-8 right-3 z-10 flex items-center gap-1.5 rounded-full bg-bg-card px-4 py-2 text-base font-medium shadow-md hover:bg-bg-subtle active:scale-95 transition-transform"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-primary" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
           </svg>
           현재위치
