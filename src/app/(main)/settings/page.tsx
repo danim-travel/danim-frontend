@@ -121,6 +121,7 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
       setProfileSectionKey(k => k + 1)
       // PATCH 응답의 profile_img는 raw S3 URL일 수 있으므로, getMe()를 재호출해 presigned URL을 받는다
       await queryClient.invalidateQueries({ queryKey: queryKeys.users.me })
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.profile(updated.user_id) })
       if (updated.nickname !== me.nickname || updated.profile_img !== me.profile_img) {
         updateAuthUser({ userId: updated.user_id, nickname: updated.nickname, profileImg: updated.profile_img })
       }

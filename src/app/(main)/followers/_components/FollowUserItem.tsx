@@ -97,6 +97,7 @@ export function FollowUserItem({ user, followersQueryKey, followingQueryKey, isM
   return (
     <UserRow
       onClick={() => router.push(user.user_id === myUserId ? "/mypage" : `/users/${user.user_id}`)}
+      className="px-7 py-4 transition-colors hover:bg-bg"
       avatar={
         <Avatar
           src={user.profile_img ?? undefined}
