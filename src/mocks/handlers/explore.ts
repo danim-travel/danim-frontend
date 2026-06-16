@@ -1,10 +1,32 @@
 /**
  * 탐색 피드 Mock 핸들러. cursor 기반 페이지네이션과 search 필터를 시뮬레이션한다.
- * GET v1/posts/explore?search=...&cursor=...&page_size=...
+ * GET v1/posts/explore?search=...&cursor=...&seed=...&page_size=...
  */
 import { http, HttpResponse } from 'msw'
 import type { ExplorePost, ExploreResponse } from '@/types'
 import { ALL_FEED_ITEMS } from './mainFeed'
+
+// seed로 매 페이지 동일한 랜덤 순서를 재현하기 위한 결정론적 PRNG
+function mulberry32(seed: number) {
+  let a = seed
+  return () => {
+    a |= 0
+    a = (a + 0x6d2b79f5) | 0
+    let t = Math.imul(a ^ (a >>> 15), 1 | a)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+function seededShuffle<T>(items: T[], seed: number): T[] {
+  const random = mulberry32(seed)
+  const result = [...items]
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1))
+    ;[result[i], result[j]] = [result[j], result[i]]
+  }
+  return result
+}
 
 const MOCK_TITLES = [
   '제주도 동쪽 드라이브 코스', '부산 해운대 야경 투어', '경주 문화유산 탐방',
@@ -53,10 +75,12 @@ export const exploreHandlers = [
     const search = url.searchParams.get('search')?.toLowerCase().trim() ?? ''
     const category = url.searchParams.get('category') ?? ''
     const cursorParam = url.searchParams.get('cursor')
+    const seedParam = url.searchParams.get('seed')
     const pageSize = Number(url.searchParams.get('page_size') ?? '12')
+    const seed = seedParam ? Number(seedParam) : Math.floor(Math.random() * 2 ** 31)
 
     const keywords = category ? CATEGORY_KEYWORDS[category] ?? [] : []
-    const filtered = EXPLORE_ITEMS.filter((item) => {
+    const filtered = seededShuffle(EXPLORE_ITEMS, seed).filter((item) => {
       const titleLower = item._title.toLowerCase()
       const matchesSearch = !search || titleLower.includes(search) || item._description.toLowerCase().includes(search)
       const matchesCategory = keywords.length === 0 || keywords.some((kw) => titleLower.includes(kw.toLowerCase()))
@@ -73,14 +97,14 @@ export const exploreHandlers = [
     const hasNext = offset + pageSize < filtered.length
 
     const nextUrl = hasNext && lastItem
-      ? `${url.origin}/posts/explore?cursor=${lastItem.post_id}${search ? `&search=${encodeURIComponent(search)}` : ''}${category ? `&category=${encodeURIComponent(category)}` : ''}`
+      ? `${url.origin}/posts/explore?cursor=${lastItem.post_id}&seed=${seed}${search ? `&search=${encodeURIComponent(search)}` : ''}${category ? `&category=${encodeURIComponent(category)}` : ''}`
       : null
 
     const results: ExplorePost[] = sliced.map(({ post_id, thumbnail, like_count, comment_count }) => ({
       post_id, thumbnail, like_count, comment_count,
     }))
 
-    const response: ExploreResponse = { next: nextUrl, results }
+    const response: ExploreResponse = { next: nextUrl, seed, results }
     return HttpResponse.json(response)
   }),
 ]
