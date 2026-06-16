@@ -52,7 +52,7 @@ export default function PhotoPanel({ active, photosState, photoError }: PhotoPan
   const hasPhotoError = isEmpty && Boolean(photoError)
 
   return (
-    <div className="w-[44%] shrink-0 border-r border-border-subtle flex flex-col p-5 gap-3 bg-gray-50/50">
+    <div className="w-[44%] shrink-0 border-r border-border-subtle flex flex-col p-5 gap-3 bg-bg-subtle/50">
       <div
         className={`flex-1 rounded-2xl border-2 overflow-hidden relative transition-all ${getPhotoContainerClass(isEmpty, hasPhotoError)}`}
         onClick={() => isEmpty && fileInputRef.current?.click()}
@@ -146,7 +146,7 @@ export default function PhotoPanel({ active, photosState, photoError }: PhotoPan
                   e.stopPropagation()
                   onRemovePhoto(i)
                 }}
-                className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-gray-700 text-text-inverse rounded-full text-tiny hidden group-hover:flex items-center justify-center shadow-sm"
+                className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-text-secondary text-text-inverse rounded-full text-tiny hidden group-hover:flex items-center justify-center shadow-sm"
               >
                 ×
               </button>

@@ -39,7 +39,7 @@ export default function SpotIndicatorBar({
             {spots.length > 1 && i > 0 && (
               <button
                 onClick={(e) => { e.stopPropagation(); onRemove(spot.id) }}
-                className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-gray-500 text-white flex items-center justify-center hover:bg-error transition-colors"
+                className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-text-muted text-text-inverse flex items-center justify-center hover:bg-error transition-colors"
                 aria-label="마커 삭제"
               >
                 <span className="text-[10px] leading-none">×</span>

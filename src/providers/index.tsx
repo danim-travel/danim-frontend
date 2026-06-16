@@ -9,10 +9,12 @@ import { useEffect, useState } from 'react'
 import { isApiError } from '@/lib/apiError'
 import { refreshToken, getCurrentUser } from '@/lib/api/auth'
 import { useAuthStore, toAuthUser } from '@/store/authStore'
+import { config } from '@/lib/config'
+import { SpinnerOverlay } from '@/components/ui/spinner'
 import { ToastProvider } from './ToastProvider'
 
 async function initMsw() {
-  if (process.env.NODE_ENV !== 'development') return
+  if (!config.isDev) return
   if (typeof window === 'undefined') return
   const { worker } = await import('@/mocks/browser')
   await worker.start({
@@ -23,7 +25,11 @@ async function initMsw() {
 
 // 모듈 평가 시점에 즉시 실행 — Provider 컴포넌트 마운트보다 먼저 서비스 워커를 띄워서
 // AuthBootstrap의 첫 refresh 요청이 MSW에 의해 가로채질 수 있도록 보장한다.
-const mswReady = initMsw()
+// 3초 타임아웃: SW 등록이 hang해도 AuthBootstrap이 blocked되지 않도록 한다.
+const mswReady = Promise.race([
+  initMsw(),
+  new Promise<void>(resolve => setTimeout(resolve, 3000)),
+])
 
 /**
  * 앱 진입 시 silent refresh를 시도해 인증 상태를 복원한다.
@@ -52,7 +58,8 @@ function AuthBootstrap({ children }: { children: React.ReactNode }) {
           const { setAuth } = useAuthStore.getState()
           setAuth(toAuthUser(me), access_token)
         } catch {
-          // getCurrentUser 실패 — 토큰은 유효하므로 유지, user는 null 상태로 진입
+          // getCurrentUser 실패 — user가 여전히 null이면 인증 상태를 확정할 수 없으므로 초기화
+          if (!useAuthStore.getState().user) useAuthStore.getState().clearAuth()
         }
       } catch {
         // refreshToken 실패 = 비로그인 상태 유지 (accessToken 이미 null)
@@ -64,11 +71,7 @@ function AuthBootstrap({ children }: { children: React.ReactNode }) {
   }, [])
 
   if (!isHydrated) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-      </div>
-    )
+    return <SpinnerOverlay className="h-screen" />
   }
 
   return <>{children}</>

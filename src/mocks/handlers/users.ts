@@ -115,53 +115,7 @@ const mockSearchUsers: UserSearchResult[] = [
   { user_id: 'search-user-4', nickname: 'jeju_traveler', profile_img: 'https://picsum.photos/seed/searchuser4/200/200' },
 ]
 
-// 내정보수정 관련 API가 개발 완료되어 실제 API로 전환. 아래 핸들러는 비활성화.
 export const usersHandlers = [
-  // http.get('*/users/me', ({ request }) => {
-  //   const authError = requireAuth(request)
-  //   if (authError) return authError
-  //   return HttpResponse.json(mockMe)
-  // }),
-
-  // http.patch('*/users/me', async ({ request }) => {
-  //   const authError = requireAuth(request)
-  //   if (authError) return authError
-  //   const body = await request.json() as UpdateUserRequest
-  //   mockMe = {
-  //     ...mockMe,
-  //     ...(body.nickname !== undefined && { nickname: body.nickname }),
-  //     ...(body.intro !== undefined && { intro: body.intro }),
-  //     ...(body.key !== undefined && { profile_img: body.key ?? null }),
-  //   }
-  //   return HttpResponse.json(mockMe)
-  // }),
-
-  // http.delete('*/users/me', ({ request }) => {
-  //   const authError = requireAuth(request)
-  //   if (authError) return authError
-  //   return new HttpResponse(null, { status: 204 })
-  // }),
-
-  // http.post('*/users/change-password', async ({ request }) => {
-  //   const authError = requireAuth(request)
-  //   if (authError) return authError
-  //   return HttpResponse.json({ detail: '비밀번호 변경이 완료되었습니다.' })
-  // }),
-
-  // http.post('*/users/me/profile-image/presigned-url', async ({ request }) => {
-  //   const authError = requireAuth(request)
-  //   if (authError) return authError
-  //   const body = await request.json() as { original_img: string }
-  //   const mockImgUrl = `https://picsum.photos/seed/${encodeURIComponent(body.original_img)}/200/200`
-  //   return HttpResponse.json({
-  //     presigned_url: 'http://localhost:3000/mock-s3-upload',
-  //     img_url: mockImgUrl,
-  //     key: `profile-images/${body.original_img}`,
-  //   })
-  // }),
-
-  // http.put('*/mock-s3-upload', () => new HttpResponse(null, { status: 200 })),
-
   http.get('*/users', ({ request }) => {
     const authError = requireAuth(request)
     if (authError) return authError
@@ -169,19 +123,6 @@ export const usersHandlers = [
     if (!search) return HttpResponse.json({ results: [] })
     const results = mockSearchUsers.filter((u) => u.nickname.toLowerCase().includes(search))
     return HttpResponse.json({ results })
-  }),
-
-  http.get('*/users/:userId/profile', ({ request, params }) => {
-    const authError = requireAuth(request)
-    if (authError) return authError
-    const userId = params.userId as string
-    if (userId === 'not-found') {
-      return HttpResponse.json(
-        { error_detail: '존재하지 않는 유저입니다.' },
-        { status: 404 },
-      )
-    }
-    return HttpResponse.json(mockOtherProfiles[userId] ?? mockUserProfile)
   }),
 ]
 
