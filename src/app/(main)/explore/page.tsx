@@ -6,6 +6,7 @@ import { useQueryState } from "nuqs"
 import { PageContainer, SearchBar } from "@/components/common"
 import { toast } from "@/store/toastStore"
 import { getApiErrorMessage } from "@/lib/apiError"
+import { useDebouncedValue } from "@/hooks/useDebouncedValue"
 import PostModal from "@/components/PostModal"
 import { useExplorePosts } from "./_hooks/useExplorePosts"
 import { ExploreGrid } from "./_components/ExploreGrid"
@@ -20,17 +21,18 @@ export default function ExplorePage() {
   const [category, setCategory] = useState<Category>("전체")
   const [postModalId, setPostModalId] = useState<string | null>(null)
 
+  const debouncedInput = useDebouncedValue(inputValue.trim(), 300)
+
   useEffect(() => {
-    const t = setTimeout(() => {
-      setSearch(inputValue.trim() || null)
-    }, 300)
-    return () => clearTimeout(t)
-  }, [inputValue, setSearch])
+    setSearch(debouncedInput || null)
+  }, [debouncedInput, setSearch])
 
   const { data, isLoading, isError, error, hasNextPage, isFetchingNextPage, fetchNextPage } =
     useExplorePosts(search, category)
 
-  const posts = data?.pages.flatMap((p) => p.results) ?? []
+  const posts = Array.from(
+    new Map((data?.pages.flatMap((p) => p.results) ?? []).map((p) => [p.post_id, p])).values()
+  )
 
   useEffect(() => {
     if (isError) {
