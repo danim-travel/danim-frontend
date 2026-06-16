@@ -1,10 +1,12 @@
 "use client";
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Home, Compass, PenLine, Search, MessageCircle, Bell, Settings, type LucideIcon } from 'lucide-react'
 import { useUIStore } from '@/store/uiStore'
 import { useAuthStore } from '@/store/authStore'
+import { Avatar } from '@/components/common'
 
 const NAV_LINKS = [
   { href: '/', label: '홈', Icon: Home },
@@ -61,7 +63,7 @@ export default function SideNav() {
     <nav className="w-(--sidebar-width) bg-bg-card border-r border-border flex flex-col items-center shrink-0 h-full py-4">
       {/* 메인 로고, 클릭하면 홈으로 이동 */}
       <Link href="/" onClick={closePanel} className="mb-5">
-        <img src="/favicon.svg" alt="Danim" className="w-10 h-10 rounded-lg shadow-md hover:shadow-lg transition-shadow" />
+        <Image src="/favicon.svg" alt="Danim" width={40} height={40} className="rounded-lg shadow-md hover:shadow-lg transition-shadow" />
       </Link>
 
       {/* 메인 네비게이션 링크 */}
@@ -87,16 +89,12 @@ export default function SideNav() {
       <div className="flex flex-col items-center gap-3 px-2 w-full">
         <NavLink href="/settings" Icon={Settings} active={pathname === '/settings'} onClick={closePanel} />
 
-        <Link href="/mypage" onClick={closePanel}>
-          {user?.profileImg ? (
-            <img
-              src={user.profileImg}
-              alt="프로필"
-              className="w-9 h-9 rounded-full object-cover shadow-md hover:shadow-lg transition-shadow"
-            />
-          ) : (
-            <div className="w-9 h-9 rounded-full bg-border shadow-md hover:shadow-lg transition-shadow" />
-          )}
+        <Link href="/mypage" onClick={closePanel} className="shadow-md hover:shadow-lg transition-shadow rounded-full">
+          <Avatar
+            src={user?.profileImg ?? undefined}
+            initial={user?.nickname?.[0] ?? '?'}
+            size="sm"
+          />
         </Link>
       </div>
     </nav>
