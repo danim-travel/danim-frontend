@@ -1,7 +1,10 @@
 "use client"
-import { useEffect, useRef } from "react"
+import Image from "next/image"
 import { Heart, MessageCircle } from "lucide-react"
 import { EmptyState, Skeleton } from "@/components/common"
+import { Spinner } from "@/components/ui/spinner"
+import { useInfiniteScrollSentinel } from "@/hooks/useInfiniteScrollSentinel"
+import { usePrefetchPostDetail } from "@/app/(main)/_hooks/usePrefetchPostDetail"
 import type { ExplorePost } from "@/types"
 
 interface ExploreGridProps {
@@ -21,29 +24,18 @@ export function ExploreGrid({
   onLoadMore,
   onPostClick,
 }: ExploreGridProps) {
-  const sentinelRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const node = sentinelRef.current
-    if (!node) return
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) onLoadMore()
-      },
-      { rootMargin: "300px" },
-    )
-    observer.observe(node)
-    return () => observer.disconnect()
-  }, [onLoadMore, hasNextPage, isFetchingNextPage])
+  const prefetchPostDetail = usePrefetchPostDetail()
+  const sentinelRef = useInfiniteScrollSentinel({
+    hasNextPage,
+    isFetchingNextPage,
+    onLoadMore,
+    rootMargin: '300px',
+  })
 
   if (isLoading) {
     return (
-      <div data-testid="explore-skeleton" className="columns-4 gap-3">
-        {Array.from({ length: 12 }).map((_, i) => (
-          <div key={i} className="mb-3 break-inside-avoid">
-            <Skeleton height={[460, 360, 540, 580, 320, 380, 340, 420, 522, 400, 480, 362][i]} radius="card" />
-          </div>
-        ))}
+      <div className="flex items-center justify-center py-20">
+        <Spinner size="lg" />
       </div>
     )
   }
@@ -60,20 +52,23 @@ export function ExploreGrid({
   return (
     <>
       <div data-testid="explore-grid" className="columns-4 gap-3">
-        {posts.map((post) => (
+        {posts.map((post, index) => (
           <div
             key={post.post_id}
             data-testid="explore-post-card"
             className="mb-3 break-inside-avoid cursor-pointer group"
             onClick={() => onPostClick(post.post_id)}
+            onMouseEnter={() => prefetchPostDetail(post.post_id)}
           >
             <div className="relative rounded-xl overflow-hidden">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src={post.thumbnail}
                 alt=""
+                width={400}
+                height={300}
+                sizes="(max-width: 768px) 50vw, 25vw"
                 className="w-full h-auto block"
-                loading="lazy"
+                priority={index < 8}
               />
               <div className="absolute inset-0 bg-(--color-overlay) opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                 <span className="flex items-center gap-1 text-(color:--color-text-inverse) text-body-sm font-medium">
