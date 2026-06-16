@@ -1,12 +1,14 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { Check } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Avatar, Button } from "@/components/common";
 import { followUser, unfollowUser } from "@/lib/api/users";
 import { queryKeys } from "@/lib/queryKeys";
 import { getApiErrorMessage } from "@/lib/apiError";
 import { toast } from "@/store/toastStore";
+import { useDelayedPending } from "@/hooks/useDelayedPending";
 import type { UserProfileResponse } from "@/types";
 
 interface UserProfileHeaderProps {
@@ -34,11 +36,11 @@ export default function UserProfileHeader({ profile, userId }: UserProfileHeader
   const initial = profile.nickname.slice(0, 1).toUpperCase();
 
   const { mutate: toggleFollow, isPending } = useMutation({
-    mutationFn: () => isFollowing ? unfollowUser(userId) : followUser(userId),
-    onMutate: () => {
+    mutationFn: (shouldFollow: boolean) => shouldFollow ? followUser(userId) : unfollowUser(userId),
+    onMutate: (shouldFollow) => {
       const wasFollowing = isFollowing;
-      setIsFollowing(!wasFollowing);
-      setFollowerCount((prev) => wasFollowing ? prev - 1 : prev + 1);
+      setIsFollowing(shouldFollow);
+      setFollowerCount((prev) => shouldFollow ? prev + 1 : prev - 1);
       return { wasFollowing };
     },
     onSuccess: (res) => {
@@ -47,12 +49,14 @@ export default function UserProfileHeader({ profile, userId }: UserProfileHeader
       queryClient.invalidateQueries({ queryKey: queryKeys.users.profile(userId) });
     },
     onError: (err, _, context) => {
-      const wasFollowing = context?.wasFollowing;
-      setIsFollowing(wasFollowing ?? !isFollowing);
+      const wasFollowing = context?.wasFollowing ?? isFollowing;
+      setIsFollowing(wasFollowing);
       setFollowerCount((prev) => wasFollowing ? prev + 1 : prev - 1);
       toast.error(getApiErrorMessage(err, { client: "요청에 실패했습니다." }));
     },
   });
+
+  const showLoading = useDelayedPending(isPending);
 
   return (
     <section className="flex items-start gap-6 bg-bg-card rounded-2xl p-6">
@@ -62,10 +66,12 @@ export default function UserProfileHeader({ profile, userId }: UserProfileHeader
         <div className="flex items-center gap-3">
           <h2 className="text-lg font-bold text-text">{profile.nickname}</h2>
           <Button
-            variant={isFollowing ? "outline" : "primary"}
+            variant={isFollowing ? "primary" : "outline"}
             size="sm"
-            onClick={() => toggleFollow()}
-            loading={isPending}
+            className="w-24"
+            leftIcon={isFollowing ? <Check size={14} /> : undefined}
+            onClick={() => toggleFollow(!isFollowing)}
+            loading={showLoading}
             disabled={isPending}
           >
             {isFollowing ? "팔로잉" : "팔로우"}

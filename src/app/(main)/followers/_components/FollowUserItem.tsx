@@ -1,10 +1,13 @@
 "use client"
 import { Check } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Avatar, Button, UserRow } from "@/components/common"
 import { followUser, unfollowUser } from "@/lib/api/users"
 import { getApiErrorMessage } from "@/lib/apiError"
 import { toast } from "@/store/toastStore"
+import { useAuthStore } from "@/store/authStore"
+import { useDelayedPending } from "@/hooks/useDelayedPending"
 import type { FollowUser } from "@/types"
 
 const AVATAR_COLORS = [
@@ -42,6 +45,8 @@ function applyIsFollowing(cache: FollowCache, targetId: string, isFollowing: boo
 /** 팔로워/팔로잉 목록의 유저 행 컴포넌트. 팔로우·언팔로우 토글과 낙관적 업데이트를 담당한다. */
 export function FollowUserItem({ user, followersQueryKey, followingQueryKey, isMutualFollow }: FollowUserItemProps) {
   const queryClient = useQueryClient()
+  const router = useRouter()
+  const myUserId = useAuthStore((s) => s.user?.userId)
 
   /** 진행 중인 쿼리를 취소하고 이전 캐시를 스냅샷한 뒤 낙관적 업데이트를 적용한다. */
   async function prepareOptimistic(isFollowing: boolean) {
@@ -81,6 +86,7 @@ export function FollowUserItem({ user, followersQueryKey, followingQueryKey, isM
   })
 
   const isPending = toggleMutation.isPending
+  const showLoading = useDelayedPending(isPending)
 
   const mutualBadge = isMutualFollow ? (
     <span className="shrink-0 px-2 py-0.5 rounded-full text-[11px] font-medium text-primary bg-(--color-primary-soft)">
@@ -90,6 +96,7 @@ export function FollowUserItem({ user, followersQueryKey, followingQueryKey, isM
 
   return (
     <UserRow
+      onClick={() => router.push(user.user_id === myUserId ? "/mypage" : `/users/${user.user_id}`)}
       avatar={
         <Avatar
           src={user.profile_img ?? undefined}
@@ -105,10 +112,11 @@ export function FollowUserItem({ user, followersQueryKey, followingQueryKey, isM
           <Button
             variant="primary"
             size="sm"
+            className="w-24"
             leftIcon={<Check size={14} />}
-            loading={isPending}
+            loading={showLoading}
             disabled={isPending}
-            onClick={() => toggleMutation.mutate(false)}
+            onClick={(e) => { e.stopPropagation(); toggleMutation.mutate(false) }}
           >
             팔로잉
           </Button>
@@ -116,9 +124,10 @@ export function FollowUserItem({ user, followersQueryKey, followingQueryKey, isM
           <Button
             variant="outline"
             size="sm"
-            loading={isPending}
+            className="w-24"
+            loading={showLoading}
             disabled={isPending}
-            onClick={() => toggleMutation.mutate(true)}
+            onClick={(e) => { e.stopPropagation(); toggleMutation.mutate(true) }}
           >
             팔로우
           </Button>

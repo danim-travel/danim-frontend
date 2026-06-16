@@ -20,7 +20,7 @@ export function AccountSection() {
       <div className="bg-bg-card border border-border rounded-card shadow-surface p-6 flex flex-col gap-3">
         <SettingsRow
           title="비밀번호 변경"
-          description="마지막 변경일: 3개월 전"
+          description="비밀번호를 변경합니다."
           onClick={() => setPasswordModal(true)}
         />
         <SettingsRow

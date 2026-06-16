@@ -6,13 +6,15 @@ import { FieldLabel } from "../FieldLabel/FieldLabel";
 export interface TextFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   helperText?: string;
+  /** error가 없을 때 helperText 색상 — "primary"는 성공 메시지(초록) 표시용 */
+  helperTone?: "muted" | "primary";
   error?: string;
   required?: boolean;
   rightSlot?: React.ReactNode;
 }
 
 export const TextField = React.forwardRef<HTMLInputElement, TextFieldProps>(
-  function TextField({ label, helperText, error, required, rightSlot, disabled, className, ...rest }, ref) {
+  function TextField({ label, helperText, helperTone = "muted", error, required, rightSlot, disabled, className, ...rest }, ref) {
     const hasError = Boolean(error);
     const helperId = useId();
     return (
@@ -42,7 +44,13 @@ export const TextField = React.forwardRef<HTMLInputElement, TextFieldProps>(
           )}
         </span>
         {(helperText || error) && (
-          <span id={helperId} className={cn("block mt-2 text-caption", hasError ? "text-(--input-text-error)" : "text-text-muted")}>
+          <span
+            id={helperId}
+            className={cn(
+              "block mt-2 text-caption",
+              hasError ? "text-(--input-text-error)" : helperTone === "primary" ? "text-primary" : "text-text-muted"
+            )}
+          >
             {error || helperText}
           </span>
         )}
