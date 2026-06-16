@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { useScrollLock } from "@/hooks/useScrollLock";
 import { X } from "lucide-react";
-import { IconButton, UserRowSkeleton } from "@/components/common";
+import { IconButton } from "@/components/common";
 import { toast } from "@/store/toastStore";
 import { usePostDetail } from "@/hooks/usePostDetail";
 import { useCommentsQuery } from "@/hooks/useCommentsQuery";
@@ -13,6 +13,7 @@ import { useAuthStore } from "@/store/authStore";
 import { config } from "@/lib/config";
 import { buildPostContextMenu } from "./menuBuilder";
 import { PostModalProvider } from "./PostModalContext";
+import { PostModalSkeleton } from "./PostModalSkeleton";
 import { SHOWCASE_MOCK_USER_ID } from "./constants";
 import KebabMenu from "./KebabMenu";
 import ImagePane from "./ImagePane";
@@ -50,9 +51,8 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
   useEffect(() => {
     if (isError) {
       toast.error("게시글을 불러올 수 없습니다.");
-      onClose();
     }
-  }, [isError, onClose]);
+  }, [isError]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -138,27 +138,36 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
         exit={{ opacity: 0, scale: 0.95, y: 8 }}
         transition={{ duration: 0.2 }}
       >
-        {!data && isLoading && (
-          <div className="w-full h-[500px] flex items-center justify-center">
-            <UserRowSkeleton rows={3} />
+        {!data && isLoading && <PostModalSkeleton />}
+
+        {isError && !data && (
+          <div className="w-full h-[600px] flex flex-col items-center justify-center gap-3 text-text-muted">
+            <p className="text-body-sm">게시글을 불러올 수 없습니다.</p>
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-primary text-body-sm underline underline-offset-2"
+            >
+              닫기
+            </button>
           </div>
         )}
 
+        {/* 항상 표시되는 닫기 버튼 */}
+        <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+          {data && <KebabMenu items={menuItems} />}
+          <IconButton
+            icon={<X size={14} />}
+            variant="filled"
+            size="sm"
+            aria-label="닫기"
+            onClick={onClose}
+            className="bg-white/90 backdrop-blur-sm border border-border hover:bg-bg-card"
+          />
+        </div>
+
         {data && (
           <PostModalProvider value={contextValue}>
-            {/* Floating controls */}
-            <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
-              <KebabMenu items={menuItems} />
-              <IconButton
-                icon={<X size={14} />}
-                variant="filled"
-                size="sm"
-                aria-label="닫기"
-                onClick={onClose}
-                className="bg-white/90 backdrop-blur-sm border border-border hover:bg-bg-card"
-              />
-            </div>
-
             <ImagePane
               spots={spots}
               activeSpotIdx={activeSpotIdx}
@@ -175,6 +184,7 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
             />
           </PostModalProvider>
         )}
+
       </motion.div>
     </motion.div>
   );
