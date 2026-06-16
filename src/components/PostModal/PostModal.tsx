@@ -140,7 +140,7 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
       >
         {!data && isLoading && <PostModalSkeleton />}
 
-        {isError && (
+        {isError && !data && (
           <div className="w-full h-[600px] flex flex-col items-center justify-center gap-3 text-text-muted">
             <p className="text-body-sm">게시글을 불러올 수 없습니다.</p>
             <button
