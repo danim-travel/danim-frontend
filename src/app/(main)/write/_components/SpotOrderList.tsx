@@ -98,7 +98,7 @@ function SpotOrderItem({
       >
         <span className={cn(
           'w-6 h-6 rounded-full flex items-center justify-center text-text-inverse text-nav font-bold shrink-0',
-          isActive ? 'bg-primary' : 'bg-gray-300'
+          isActive ? 'bg-primary' : 'bg-border-strong'
         )}>
           {index + 1}
         </span>
