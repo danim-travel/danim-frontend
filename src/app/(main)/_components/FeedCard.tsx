@@ -10,6 +10,7 @@ import { queryKeys } from "@/lib/queryKeys";
 import { useLikeMutation } from "@/hooks/useLikeMutation";
 import { useBookmarkMutation } from "@/hooks/useBookmarkMutation";
 import { updateFeedItem, type FeedCache } from "@/lib/feedCache";
+import { usePrefetchPostDetail } from "../_hooks/usePrefetchPostDetail";
 import type { MainFeedItem, PostDetail } from "@/types";
 
 interface FeedCardProps {
@@ -17,13 +18,15 @@ interface FeedCardProps {
   isFocused: boolean;
   onClick: () => void;
   onCommentClick?: () => void;
+  priority?: boolean;
 }
 
-export function FeedCard({ feed, isFocused, onClick, onCommentClick }: FeedCardProps) {
+export function FeedCard({ feed, isFocused, onClick, onCommentClick, priority = false }: FeedCardProps) {
   const addressName = feed.spots[0]?.location.address_name ?? "";
   const region = addressName ? extractRegion(addressName) : "";
   const queryClient = useQueryClient();
   const feedQueryKey = queryKeys.posts.mainFeed;
+  const prefetchPostDetail = usePrefetchPostDetail();
 
   // 모달 상세 캐시 키 — onAfterSuccess에서 피드↔모달 상태를 양방향 동기화할 때 사용
   const detailKey = queryKeys.posts.detail(feed.post.post_id);
@@ -91,6 +94,7 @@ export function FeedCard({ feed, isFocused, onClick, onCommentClick }: FeedCardP
       variant="elevated"
       padding="none"
       onClick={onClick}
+      onMouseEnter={() => prefetchPostDetail(feed.post.post_id)}
       data-testid="feed-card"
       className={cn(
         "overflow-hidden border-2 transition-colors cursor-pointer",
@@ -104,8 +108,8 @@ export function FeedCard({ feed, isFocused, onClick, onCommentClick }: FeedCardP
             src={feed.post.thumbnail}
             alt={feed.post.description}
             fill
-            sizes="500px"
-            loading="eager"
+            sizes="(max-width: 1280px) 50vw, 480px"
+            priority={priority}
             className="object-cover"
           />
         )}
