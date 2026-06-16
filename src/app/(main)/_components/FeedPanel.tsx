@@ -73,7 +73,6 @@ export function FeedPanel({
               isFocused={focusedPostId === feed.post.post_id}
               onClick={() => onSelectPost(feed, index)}
               onCommentClick={() => onOpenModal?.(feed, index)}
-              priority={index < 2}
             />
           ))}
 
