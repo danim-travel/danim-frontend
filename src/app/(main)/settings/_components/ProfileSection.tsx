@@ -1,8 +1,8 @@
 "use client"
 import { useState, useRef, useEffect } from "react"
 import { Avatar, Button, TextField } from "@/components/common"
-import { getProfileImagePresignedUrl } from "@/lib/api/users"
 import { getApiErrorMessage } from "@/lib/apiError"
+import { uploadImage } from "@/lib/uploadImage"
 import { toast } from "@/store/toastStore"
 import type { MeDetailResponse } from "@/types"
 
@@ -41,10 +41,7 @@ export function ProfileSection({
     setIsUploading(true)
 
     try {
-      const { presigned_url, key } = await getProfileImagePresignedUrl(file.name)
-      // S3 presigned URL은 외부 도메인이므로 Authorization 헤더를 붙이는 apiClient를 경유할 수 없음
-      const res = await fetch(presigned_url, { method: 'PUT', body: file })
-      if (!res.ok) throw new Error(`이미지 업로드 실패 (${res.status})`)
+      const { presigned_url, key } = await uploadImage('users/me/profile-image/presigned-url', file)
       onProfileImgChange(presigned_url)
       onProfileKeyChange(key)
     } catch (err) {
