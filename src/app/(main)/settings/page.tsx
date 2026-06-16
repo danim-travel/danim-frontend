@@ -1,5 +1,5 @@
 "use client"
-import { useState, useRef } from "react"
+import { useState, useEffect } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { getMe, updateUser } from "@/lib/api/users"
 import { checkNickname } from "@/lib/api/auth"
@@ -47,68 +47,69 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
 
   // profileKey가 없으면 서버에서 받은 원본 이미지를, 있으면 업로드 중인 로컬 미리보기를 표시한다
   const displayedProfileImg = profileKey === undefined ? me.profile_img : profileImg
-  const [nicknameError, setNicknameError] = useState<string | undefined>(undefined)
-  const [isCheckingNickname, setIsCheckingNickname] = useState(false)
+  const [nicknameStatus, setNicknameStatus] = useState<"idle" | "checking" | "available" | "duplicate">("idle")
   const [isPending, setIsPending] = useState(false)
-  const nicknameCheckGen = useRef(0)
-  // blur로 시작된 닉네임 검사와 저장 버튼 클릭을 조율하기 위한 refs
-  const nicknameCheckPending = useRef<Promise<void> | null>(null)
-  const nicknameErrorRef = useRef<string | undefined>(undefined)
 
   const isDirty =
     nickname !== me.nickname ||
     intro !== (me.intro ?? "") ||
     profileKey !== undefined
 
+  // 닉네임 입력값이 바뀔 때마다 debounce 후 중복 검사를 실행한다. 기존 닉네임과 같으면 API 호출 없이 통과 처리한다.
+  useEffect(() => {
+    let cancelled = false
+    const isUnchanged = !nickname.trim() || nickname === me.nickname
+
+    const statusTimer = setTimeout(() => {
+      if (!cancelled) setNicknameStatus(isUnchanged ? "idle" : "checking")
+    }, 0)
+
+    if (isUnchanged) {
+      return () => {
+        cancelled = true
+        clearTimeout(statusTimer)
+      }
+    }
+
+    const checkTimer = setTimeout(async () => {
+      try {
+        await checkNickname(nickname)
+        if (!cancelled) setNicknameStatus("available")
+      } catch {
+        if (!cancelled) setNicknameStatus("duplicate")
+      }
+    }, 400)
+
+    return () => {
+      cancelled = true
+      clearTimeout(statusTimer)
+      clearTimeout(checkTimer)
+    }
+  }, [nickname, me.nickname])
+
+  const nicknameHelperText =
+    nicknameStatus === "duplicate" ? "중복되는 닉네임입니다."
+    : nicknameStatus === "available" ? "사용 가능한 닉네임입니다."
+    : nicknameStatus === "checking" ? "닉네임 확인 중..."
+    : "다른 사용자에게 보이는 이름이에요."
+
+  const nicknameHelperTone: "muted" | "primary" | "error" =
+    nicknameStatus === "duplicate" ? "error"
+    : nicknameStatus === "available" ? "primary"
+    : "muted"
+
   function handleCancel() {
-    nicknameCheckGen.current++
     setNickname(me.nickname)
     setIntro(me.intro ?? "")
     setProfileImg(null)
     setProfileKey(undefined)
     setProfileSectionKey(k => k + 1)
-    setNicknameError(undefined)
-    nicknameErrorRef.current = undefined
-    setIsCheckingNickname(false)
-    nicknameCheckPending.current = null
     toast.success("변경사항이 취소되었습니다.")
-  }
-
-  async function handleNicknameBlur() {
-    if (!nickname.trim() || nickname === me.nickname) {
-      setNicknameError(undefined)
-      nicknameErrorRef.current = undefined
-      return
-    }
-    const gen = ++nicknameCheckGen.current
-    setIsCheckingNickname(true)
-    nicknameCheckPending.current = (async () => {
-      try {
-        await checkNickname(nickname)
-        if (gen === nicknameCheckGen.current) {
-          setNicknameError(undefined)
-          nicknameErrorRef.current = undefined
-        }
-      } catch (err) {
-        if (gen === nicknameCheckGen.current) {
-          const msg = getApiErrorMessage(err, { client: "이미 사용 중인 닉네임입니다." })
-          setNicknameError(msg)
-          nicknameErrorRef.current = msg
-        }
-      } finally {
-        if (gen === nicknameCheckGen.current) {
-          setIsCheckingNickname(false)
-          nicknameCheckPending.current = null
-        }
-      }
-    })()
   }
 
   async function handleSave() {
     if (!isDirty || isPending) return
-    // 블러로 시작된 닉네임 검사가 진행 중이면 결과를 기다린 후 저장 여부를 판단한다
-    if (nicknameCheckPending.current) await nicknameCheckPending.current
-    if (nicknameErrorRef.current) return
+    if (nicknameStatus === "checking" || nicknameStatus === "duplicate") return
     setIsPending(true)
     try {
       const updated = await updateUser({
@@ -149,13 +150,9 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
         <BasicInfoSection
           me={me}
           nickname={nickname}
-          nicknameError={nicknameError}
-          onNicknameChange={(v) => {
-            setNickname(v)
-            setNicknameError(undefined)
-            nicknameErrorRef.current = undefined
-          }}
-          onNicknameBlur={() => { void handleNicknameBlur() }}
+          nicknameHelperText={nicknameHelperText}
+          nicknameHelperTone={nicknameHelperTone}
+          onNicknameChange={setNickname}
         />
 
         <AccountSection />
@@ -174,7 +171,7 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
             type="button"
             variant="primary"
             loading={isPending}
-            disabled={!isDirty || !!nicknameError || isPending || isCheckingNickname}
+            disabled={!isDirty || isPending || nicknameStatus === "checking" || nicknameStatus === "duplicate"}
             onClick={handleSave}
           >
             변경사항 저장
