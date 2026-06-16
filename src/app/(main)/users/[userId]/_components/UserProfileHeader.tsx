@@ -7,6 +7,7 @@ import { followUser, unfollowUser } from "@/lib/api/users";
 import { queryKeys } from "@/lib/queryKeys";
 import { getApiErrorMessage } from "@/lib/apiError";
 import { toast } from "@/store/toastStore";
+import { useDelayedPending } from "@/hooks/useDelayedPending";
 import type { UserProfileResponse } from "@/types";
 
 interface UserProfileHeaderProps {
@@ -54,6 +55,8 @@ export default function UserProfileHeader({ profile, userId }: UserProfileHeader
     },
   });
 
+  const showLoading = useDelayedPending(isPending);
+
   return (
     <section className="flex items-start gap-6 bg-bg-card rounded-2xl p-6">
       <Avatar size="xl" src={profile.profile_img || undefined} initial={initial} />
@@ -64,8 +67,9 @@ export default function UserProfileHeader({ profile, userId }: UserProfileHeader
           <Button
             variant={isFollowing ? "outline" : "primary"}
             size="sm"
+            className="w-24"
             onClick={() => toggleFollow()}
-            loading={isPending}
+            loading={showLoading}
             disabled={isPending}
           >
             {isFollowing ? "팔로잉" : "팔로우"}

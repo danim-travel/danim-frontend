@@ -5,6 +5,7 @@ import { Avatar, Button, UserRow } from "@/components/common"
 import { followUser, unfollowUser } from "@/lib/api/users"
 import { getApiErrorMessage } from "@/lib/apiError"
 import { toast } from "@/store/toastStore"
+import { useDelayedPending } from "@/hooks/useDelayedPending"
 import type { FollowUser } from "@/types"
 
 const AVATAR_COLORS = [
@@ -81,6 +82,7 @@ export function FollowUserItem({ user, followersQueryKey, followingQueryKey, isM
   })
 
   const isPending = toggleMutation.isPending
+  const showLoading = useDelayedPending(isPending)
 
   const mutualBadge = isMutualFollow ? (
     <span className="shrink-0 px-2 py-0.5 rounded-full text-[11px] font-medium text-primary bg-(--color-primary-soft)">
@@ -105,8 +107,9 @@ export function FollowUserItem({ user, followersQueryKey, followingQueryKey, isM
           <Button
             variant="primary"
             size="sm"
+            className="w-24"
             leftIcon={<Check size={14} />}
-            loading={isPending}
+            loading={showLoading}
             disabled={isPending}
             onClick={() => toggleMutation.mutate(false)}
           >
@@ -116,7 +119,8 @@ export function FollowUserItem({ user, followersQueryKey, followingQueryKey, isM
           <Button
             variant="outline"
             size="sm"
-            loading={isPending}
+            className="w-24"
+            loading={showLoading}
             disabled={isPending}
             onClick={() => toggleMutation.mutate(true)}
           >
