@@ -1,10 +1,12 @@
 "use client"
 import { Check } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Avatar, Button, UserRow } from "@/components/common"
 import { followUser, unfollowUser } from "@/lib/api/users"
 import { getApiErrorMessage } from "@/lib/apiError"
 import { toast } from "@/store/toastStore"
+import { useAuthStore } from "@/store/authStore"
 import { useDelayedPending } from "@/hooks/useDelayedPending"
 import type { FollowUser } from "@/types"
 
@@ -43,6 +45,8 @@ function applyIsFollowing(cache: FollowCache, targetId: string, isFollowing: boo
 /** 팔로워/팔로잉 목록의 유저 행 컴포넌트. 팔로우·언팔로우 토글과 낙관적 업데이트를 담당한다. */
 export function FollowUserItem({ user, followersQueryKey, followingQueryKey, isMutualFollow }: FollowUserItemProps) {
   const queryClient = useQueryClient()
+  const router = useRouter()
+  const myUserId = useAuthStore((s) => s.user?.userId)
 
   /** 진행 중인 쿼리를 취소하고 이전 캐시를 스냅샷한 뒤 낙관적 업데이트를 적용한다. */
   async function prepareOptimistic(isFollowing: boolean) {
@@ -92,6 +96,7 @@ export function FollowUserItem({ user, followersQueryKey, followingQueryKey, isM
 
   return (
     <UserRow
+      onClick={() => router.push(user.user_id === myUserId ? "/mypage" : `/users/${user.user_id}`)}
       avatar={
         <Avatar
           src={user.profile_img ?? undefined}
@@ -111,7 +116,7 @@ export function FollowUserItem({ user, followersQueryKey, followingQueryKey, isM
             leftIcon={<Check size={14} />}
             loading={showLoading}
             disabled={isPending}
-            onClick={() => toggleMutation.mutate(false)}
+            onClick={(e) => { e.stopPropagation(); toggleMutation.mutate(false) }}
           >
             팔로잉
           </Button>
@@ -122,7 +127,7 @@ export function FollowUserItem({ user, followersQueryKey, followingQueryKey, isM
             className="w-24"
             loading={showLoading}
             disabled={isPending}
-            onClick={() => toggleMutation.mutate(true)}
+            onClick={(e) => { e.stopPropagation(); toggleMutation.mutate(true) }}
           >
             팔로우
           </Button>
