@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Search, Bell } from "lucide-react";
 import { useUIStore } from "@/store/uiStore";
 
@@ -10,9 +11,7 @@ export function MobileHeader() {
   return (
     <header className="fixed top-0 inset-x-0 h-14 z-(--z-sidenav) bg-bg-card border-b border-border flex items-center justify-between px-4 md:hidden">
       <Link href="/" className="flex items-center">
-        <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center shadow-md">
-          <span className="text-text-inverse text-sm">✈️</span>
-        </div>
+        <Image src="/favicon.svg" alt="Danim" width={32} height={32} />
       </Link>
 
       <div className="flex items-center gap-1">

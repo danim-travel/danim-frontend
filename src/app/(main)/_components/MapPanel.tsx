@@ -91,7 +91,7 @@ export function MapPanel({ focusedPost, focusedPostIndex, onPinClick, onResetFoc
   }, [focusedPost, pinColor]);
 
   return (
-    <section ref={sectionRef} className="relative flex-1 min-w-0 h-full rounded-2xl overflow-hidden shadow-sm">
+    <section ref={sectionRef} className="relative isolate flex-1 min-w-0 h-full rounded-2xl overflow-hidden shadow-sm">
       <KakaoMap
         selectedPost={mapPost}
         onPinClick={(post, pinIndex) => onPinClick(post.post_id, pinIndex)}
