@@ -13,7 +13,14 @@ export function BrandPanel() {
     <div className="flex flex-col justify-center px-12 select-none">
       {/* 로고 */}
       <div className="mb-10">
-        <p className={`text-5xl leading-none bg-linear-to-br from-primary to-sky-500 bg-clip-text text-transparent ${pacifico.className}`}>
+        <p className={`text-5xl leading-none ${pacifico.className}`}
+          style={{
+            background: 'linear-gradient(135deg, #3ECBA0 0%, #0ea5e9 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+          }}
+        >
           Danim
         </p>
       </div>
