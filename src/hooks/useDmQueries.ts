@@ -40,7 +40,8 @@ export function useMessages(conversationId: string) {
     queryFn: ({ pageParam }) =>
       getMessages(conversationId, pageParam ?? undefined),
     initialPageParam: null,
-    getNextPageParam: (lastPage) => lastPage.next_cursor,
+    // C1: TanStack Query v5는 undefined만 '마지막 페이지' 신호로 인식; null은 유효한 pageParam으로 처리됨
+    getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,
     refetchOnWindowFocus: false,
   })
 }
@@ -80,6 +81,8 @@ export function useDeleteMessage(conversationId: string) {
     mutationFn: (messageId) => deleteMessage(conversationId, messageId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.dm.messages(conversationId) })
+      // C5: 삭제된 메시지가 last_message였을 경우 대화방 목록도 갱신
+      queryClient.invalidateQueries({ queryKey: queryKeys.dm.conversations })
     },
     onError: (err) => {
       toast.error(getApiErrorMessage(err, { client: '메시지를 삭제할 수 없습니다.' }))

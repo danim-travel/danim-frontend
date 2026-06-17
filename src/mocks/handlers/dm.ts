@@ -89,11 +89,11 @@ const messageStore = new Map<string, Message[]>([
   ],
 ])
 
-let msgSeq = 10
-
+// C10: 모듈 리로드(HMR) 시 카운터가 리셋되어 TQ 캐시의 기존 ID와 충돌하는 것을 방지
 const createMessageId = (): string => {
-  const seq = String(msgSeq++).padStart(6, '0')
-  return `01HDMMSG0000000000${seq}`
+  const ts = Date.now().toString(36).toUpperCase().padStart(10, '0')
+  const rand = Math.random().toString(36).slice(2, 6).toUpperCase()
+  return `01HDMMSG${ts}${rand}`
 }
 
 // ---------- 공통 헬퍼 ----------
@@ -253,6 +253,8 @@ export const dmHandlers: RequestHandler[] = [
 const dmWs = ws.link('*/ws/dm')
 
 const authedClients = new Set<WsClient>()
+// C3: 클라이언트가 메시지를 전송한 대화방 ID를 추적해 해당 대화방 참여자에게만 브로드캐스트
+const clientConversations = new Map<WsClient, Set<string>>()
 
 const AUTH_TIMEOUT_MS = 10_000
 
@@ -329,9 +331,14 @@ export const dmWsHandlers: WebSocketHandler[] = [
           conv.last_message = { content: newMessage.content, img_url: '', created_at: now } satisfies LastMessage
         }
 
+        // C3: 해당 대화방을 구독 중인 클라이언트에게만 브로드캐스트
+        const subs = clientConversations.get(client) ?? new Set<string>()
+        subs.add(convId)
+        clientConversations.set(client, subs)
+
         const payload = JSON.stringify({ type: 'receive_message', message: newMessage } satisfies DmWsServerMessage)
-        for (const c of authedClients) {
-          c.send(payload)
+        for (const [c, convIds] of clientConversations) {
+          if (convIds.has(convId)) c.send(payload)
         }
         return
       }
@@ -339,9 +346,11 @@ export const dmWsHandlers: WebSocketHandler[] = [
       client.send(JSON.stringify({ type: 'error', detail: '알 수 없는 메시지 타입입니다.' } satisfies DmWsServerMessage))
     })
 
+    // C8: 연결 종료 시 모든 추적 자료구조에서 제거해 stale 참조 누출 방지
     client.addEventListener('close', () => {
       clearTimeout(timeoutId)
       authedClients.delete(client)
+      clientConversations.delete(client)
     })
   }),
 ]
