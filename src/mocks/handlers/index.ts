@@ -8,6 +8,7 @@ import { interactionsHandlers } from './interactions'
 import { usersHandlers, followHandlers } from './users'
 import { exploreHandlers } from './explore'
 import { notificationHandlers, notificationWsHandlers } from './notifications'
+import { dmHandlers, dmWsHandlers } from './dm'
 import type { RequestHandler, WebSocketHandler } from 'msw'
 
 export const handlers: Array<RequestHandler | WebSocketHandler> = [
@@ -22,4 +23,6 @@ export const handlers: Array<RequestHandler | WebSocketHandler> = [
   ...exploreHandlers,
   ...notificationHandlers,
   ...notificationWsHandlers,
+  ...dmHandlers,
+  ...dmWsHandlers,
 ]
