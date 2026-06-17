@@ -22,4 +22,7 @@ export const queryKeys = {
   comments: {
     list: (postId: string) => ['comments', postId] as const,
   },
+  notifications: {
+    list: ['notifications', 'list'] as const,
+  },
 }
