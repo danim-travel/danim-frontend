@@ -67,6 +67,7 @@ export function useWriteForm() {
       selectedPhotoIdx: photo.selectedPhotoIdx,
       setSelectedPhotoIdx: photo.setSelectedPhotoIdx,
       isUploadingPhoto: photo.isUploadingPhoto,
+      uploadProgress: photo.uploadProgress,
       handlePhotoAdd: photo.handlePhotoAdd,
       removePhoto: photo.removePhoto,
       reorderPhotos: photo.reorderPhotos,

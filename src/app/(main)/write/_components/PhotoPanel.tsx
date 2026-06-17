@@ -9,6 +9,7 @@ import { MAX_PHOTOS } from '../_constants'
 interface PhotosState {
   selectedPhotoIdx: number
   isUploadingPhoto: boolean
+  uploadProgress: { current: number; total: number }
   onSelectPhoto: (idx: number) => void
   onPhotoAdd: (e: React.ChangeEvent<HTMLInputElement>) => void
   onRemovePhoto: (idx: number) => void
@@ -35,6 +36,7 @@ export default function PhotoPanel({ active, photosState, photoError }: PhotoPan
   const {
     selectedPhotoIdx,
     isUploadingPhoto,
+    uploadProgress,
     onSelectPhoto,
     onPhotoAdd,
     onRemovePhoto,
@@ -88,7 +90,11 @@ export default function PhotoPanel({ active, photosState, photoError }: PhotoPan
             </div>
             <div className="text-center px-6">
               <p className="text-body-sm font-semibold text-text-body">
-                {isUploadingPhoto ? '업로드 중...' : '사진 업로드'}
+                {isUploadingPhoto
+                  ? uploadProgress.total > 1
+                    ? `업로드 중... (${uploadProgress.current} / ${uploadProgress.total})`
+                    : '업로드 중...'
+                  : '사진 업로드'}
               </p>
               {!isUploadingPhoto && (
                 <p className="text-nav text-text-disabled mt-1.5 leading-relaxed">

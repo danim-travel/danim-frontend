@@ -122,6 +122,7 @@ export default function WritePage() {
           photosState={{
             selectedPhotoIdx: photo.selectedPhotoIdx,
             isUploadingPhoto: photo.isUploadingPhoto,
+            uploadProgress: photo.uploadProgress,
             onPhotoAdd: photo.handlePhotoAdd,
             onRemovePhoto: photo.removePhoto,
             onSelectPhoto: photo.setSelectedPhotoIdx,
