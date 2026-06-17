@@ -4,6 +4,9 @@ const envSchema = z.object({
   NEXT_PUBLIC_API_URL: z
     .string({ required_error: '값이 설정되지 않았습니다' })
     .url('올바른 URL 형식이 아닙니다'),
+  NEXT_PUBLIC_WS_URL: z
+    .string({ required_error: '값이 설정되지 않았습니다' })
+    .regex(/^wss?:\/\//, 'ws:// 또는 wss:// 로 시작해야 합니다'),
   NEXT_PUBLIC_KAKAO_MAP_KEY: z
     .string({ required_error: '값이 설정되지 않았습니다' })
     .min(1, '빈 값입니다'),
@@ -11,6 +14,7 @@ const envSchema = z.object({
 
 const result = envSchema.safeParse({
   NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+  NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL,
   NEXT_PUBLIC_KAKAO_MAP_KEY: process.env.NEXT_PUBLIC_KAKAO_MAP_KEY,
 })
 

@@ -6,8 +6,8 @@ import { usePathname } from 'next/navigation'
 import { Home, Compass, PenLine, Search, MessageCircle, Bell, Settings, type LucideIcon } from 'lucide-react'
 import { useUIStore } from '@/store/uiStore'
 import { useAuthStore } from '@/store/authStore'
+import { useNotificationBadgeStore } from '@/store/notificationBadgeStore'
 import { Avatar } from '@/components/common'
-import { useNotificationsQuery } from '@/app/(main)/_hooks/useNotifications'
 
 const NAV_LINKS = [
   { href: '/', label: '홈', Icon: Home },
@@ -71,11 +71,9 @@ export default function SideNav() {
   const pathname = usePathname()
   const { activePanel, setActivePanel, closePanel } = useUIStore()
   const user = useAuthStore((s) => s.user)
-  const isLoggedIn = useAuthStore((s) => !!s.accessToken)
 
-  // 알림 미읽음 개수 — 첫 페이지 기준 파생
-  const { data: notificationsData } = useNotificationsQuery(isLoggedIn)
-  const unreadCount = notificationsData?.pages[0]?.results.filter((n) => !n.is_read).length ?? 0
+  // 알림 미읽음 개수 — WS push 기반 실시간 카운트
+  const unreadCount = useNotificationBadgeStore((s) => s.unreadCount)
 
   return (
     <nav className="w-(--sidebar-width) bg-bg-card border-r border-border flex flex-col items-center shrink-0 h-full py-4">
