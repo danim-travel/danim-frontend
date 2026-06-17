@@ -1,0 +1,11 @@
+.brandLogoText {
+  background: linear-gradient(135deg, #3ecba0 0%, #0ea5e9 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.dotPattern {
+  background-image: radial-gradient(circle, rgb(62 203 160 / 0.25) 1px, transparent 1px);
+  background-size: 28px 28px;
+}

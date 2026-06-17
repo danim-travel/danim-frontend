@@ -61,7 +61,7 @@ export function Button({
       data-state={isDisabled ? "disabled" : "default"}
       disabled={isDisabled}
       className={cn(
-        "inline-flex items-center justify-center rounded-button font-semibold tracking-snug transition-[background,box-shadow] duration-fast",
+        "inline-flex items-center justify-center whitespace-nowrap rounded-button font-semibold tracking-snug transition-[background,box-shadow] duration-fast",
         sizeClasses[size],
         fullWidth && "w-full",
         isDisabled

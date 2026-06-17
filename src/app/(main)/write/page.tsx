@@ -113,9 +113,9 @@ export default function WritePage() {
     <div className="h-full flex flex-col bg-white">
       <WriteHeader onCancel={handleCancel} />
 
-      {/* min-h-0: flex child는 기본 min-height가 auto라 overflow-hidden이 동작하지 않음 — 명시적 0으로 해제 */}
-      <div className="flex flex-1 min-h-0 overflow-hidden">
-        {/* Left: Photo */}
+      {/* 단일 컬럼 스크롤 영역 */}
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        {/* 사진 업로드 */}
         <PhotoPanel
           active={spot.active}
           photoError={spotPhotoError}
@@ -129,38 +129,36 @@ export default function WritePage() {
           }}
         />
 
-        {/* Right: Form */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="px-7 py-4 flex flex-col gap-4">
-            <TitleSection title={title} setTitle={setTitle} error={titleError} />
-            <DescriptionSection description={description} setDescription={setDescription} error={descriptionError} />
+        {/* 폼 필드 */}
+        <div className="px-4 pb-6 flex flex-col gap-5">
+          <TitleSection title={title} setTitle={setTitle} error={titleError} />
+          <DescriptionSection description={description} setDescription={setDescription} error={descriptionError} />
 
-            {/* 썸네일 */}
-            <div>
-              <FieldLabel>썸네일</FieldLabel>
-              <ThumbnailPicker
-                spots={spot.spots}
-                thumbnailKey={photo.thumbnailKey}
-                onSelect={photo.setThumbnailKey}
-              />
-            </div>
+          {/* 썸네일 */}
+          <div>
+            <FieldLabel>썸네일</FieldLabel>
+            <ThumbnailPicker
+              spots={spot.spots}
+              thumbnailKey={photo.thumbnailKey}
+              onSelect={photo.setThumbnailKey}
+            />
+          </div>
 
-            {/* 코스 순서 */}
-            <div>
-              <FieldLabel>코스 순서</FieldLabel>
-              <SpotOrderList
-                spots={spot.spots}
-                activeId={spot.activeId}
-                onSelect={handleSelectSpot}
-                onActivate={handleActivateSpot}
-                onRemove={handleRemoveSpot}
-                onReorderSpots={spot.reorderSpots}
-                onUpdateSpot={handleUpdateSpot}
-                spotErrors={spotErrors}
-                openSpotTextareaIds={openSpotTextareaIds}
-                onClearForceTextarea={handleClearForceTextarea}
-              />
-            </div>
+          {/* 코스 순서 */}
+          <div>
+            <FieldLabel>코스 순서</FieldLabel>
+            <SpotOrderList
+              spots={spot.spots}
+              activeId={spot.activeId}
+              onSelect={handleSelectSpot}
+              onActivate={handleActivateSpot}
+              onRemove={handleRemoveSpot}
+              onReorderSpots={spot.reorderSpots}
+              onUpdateSpot={handleUpdateSpot}
+              spotErrors={spotErrors}
+              openSpotTextareaIds={openSpotTextareaIds}
+              onClearForceTextarea={handleClearForceTextarea}
+            />
           </div>
         </div>
       </div>

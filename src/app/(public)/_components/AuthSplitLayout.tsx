@@ -1,5 +1,6 @@
 import React from "react";
 import { BrandPanel } from "./BrandPanel";
+import styles from "./AuthVisuals.module.css";
 
 /**
  * 인증 화면 좌우 50/50 분할 셸.
@@ -14,7 +15,7 @@ export function AuthSplitLayout({ children }: { children: React.ReactNode }) {
       {/* 우하단 블러 오브 */}
       <div className="pointer-events-none absolute -z-10 -bottom-24 -right-24 w-[420px] h-[420px] rounded-full bg-primary/20 blur-[90px]" />
       {/* 배경 dot 패턴 */}
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-dot-pattern" />
+      <div className={`pointer-events-none absolute inset-0 -z-10 ${styles.dotPattern}`} />
 
       {/* 좌측 영역: 화면 절반, 캐러셀 */}
       <div className="hidden lg:flex w-1/2 h-screen sticky top-0 items-center justify-end pr-24 overflow-hidden">

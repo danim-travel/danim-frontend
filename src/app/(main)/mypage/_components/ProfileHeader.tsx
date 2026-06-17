@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { Settings } from "lucide-react";
 import { Avatar } from "@/components/common";
 import type { UserProfileResponse } from "@/types";
 
@@ -32,16 +33,18 @@ function StatItem({ label, value, href }: StatItemProps) {
     </>
   );
 
+  const cls = "flex flex-col items-center bg-bg rounded-xl px-3 py-2 flex-1 md:flex-none md:px-4 md:py-3 md:w-[160px]";
+
   if (href) {
     return (
-      <Link href={href} className="flex flex-col items-center bg-bg rounded-xl px-4 py-3 w-[160px] hover:bg-bg-subtle transition-colors">
+      <Link href={href} className={`${cls} hover:bg-bg-subtle transition-colors`}>
         {content}
       </Link>
     );
   }
 
   return (
-    <div className="flex flex-col items-center bg-bg rounded-xl px-4 py-3 w-[160px]">
+    <div className={cls}>
       {content}
     </div>
   );
@@ -51,31 +54,51 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
   const initial = profile.nickname?.slice(0, 1).toUpperCase() ?? "?";
 
   return (
-    <section className="flex items-start gap-6 bg-bg-card rounded-2xl p-6">
-      <Avatar
-        size="xl"
-        src={profile.profile_img || undefined}
-        initial={initial}
-      />
+    <section className="relative bg-bg-card rounded-2xl p-5 md:flex md:items-start md:gap-6 md:p-6">
+      {/* 모바일: 아바타 옆에 스탯을 배치 */}
+      <div className="flex items-center gap-4 md:contents">
+        {/* 아바타 + 우하단 설정 버튼 */}
+        <div className="relative shrink-0">
+          <Avatar size="xl" src={profile.profile_img || undefined} initial={initial} />
+          <Link
+            href="/settings"
+            className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-bg-card border border-border flex items-center justify-center shadow-sm hover:bg-bg-subtle transition-colors md:hidden"
+            aria-label="설정"
+          >
+            <Settings className="w-3.5 h-3.5 text-text-muted" strokeWidth={2} />
+          </Link>
+        </div>
 
-      <div className="flex-1 min-w-0">
-        <h2 className="text-lg font-bold text-text">{profile.nickname}</h2>
-        {profile.name && (
-          <p className="text-xs text-text-muted mt-0.5">{profile.name}</p>
-        )}
-        {profile.intro && (
-          <p className="text-sm text-text-muted mt-1 whitespace-pre-wrap">
-            {profile.intro}
-          </p>
-        )}
+        <div className="flex-1 min-w-0">
+          {/* 데스크톱: 수정 전 웹 레이아웃처럼 소개 영역과 스탯을 분리 */}
+          <div className="hidden md:block">
+            <h2 className="text-lg font-bold text-text">{profile.nickname}</h2>
+            {profile.name && <p className="text-xs text-text-muted mt-0.5">{profile.name}</p>}
+            {profile.intro && (
+              <p className="text-sm text-text-muted mt-1 whitespace-pre-wrap">{profile.intro}</p>
+            )}
+          </div>
+          <div className="flex gap-2 md:hidden">
+            <StatItem label="팔로워" value={profile.follower} href="/followers?tab=followers" />
+            <StatItem label="팔로잉" value={profile.following} href="/followers?tab=following" />
+          </div>
+        </div>
       </div>
 
-      <div className="flex flex-col items-end gap-3 shrink-0">
+      <div className="hidden md:flex md:flex-col md:items-end md:gap-3 md:shrink-0">
         <div className="flex gap-6">
           <StatItem label="팔로워" value={profile.follower} href="/followers?tab=followers" />
           <StatItem label="팔로잉" value={profile.following} href="/followers?tab=following" />
         </div>
+      </div>
 
+      {/* 모바일: 닉네임/소개 */}
+      <div className="mt-3 md:hidden">
+        <h2 className="text-lg font-bold text-text truncate">{profile.nickname}</h2>
+        {profile.name && <p className="text-xs text-text-muted mt-0.5 truncate">{profile.name}</p>}
+        {profile.intro && (
+          <p className="text-sm text-text-muted mt-1 whitespace-pre-wrap">{profile.intro}</p>
+        )}
       </div>
     </section>
   );

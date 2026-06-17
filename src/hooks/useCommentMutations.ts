@@ -9,7 +9,6 @@ import type {
   CommentsListResponse,
   CommentCreateRequest,
   CommentCreateResponse,
-  CommentImageInput,
   CommentUpdateRequest,
   CommentUpdateResponse,
   CommentPresignedUrlRequest,
@@ -51,26 +50,18 @@ export function useCommentMutations(postId: string) {
   const updateMutation = useMutation({
     mutationFn: ({ commentId, ...payload }: { commentId: string } & CommentUpdateRequest) =>
       apiClient.patch(`comments/${commentId}`, { json: payload }).json<CommentUpdateResponse>(),
-    onMutate: async ({ commentId, content, comment_img }) => {
+    onMutate: async ({ commentId, content }) => {
       await queryClient.cancelQueries({ queryKey: commentsKey })
       const previous = queryClient.getQueryData<CommentsListResponse>(commentsKey)
       queryClient.setQueryData<CommentsListResponse>(commentsKey, (old) => {
         if (!old) return old
         return {
           ...old,
-          results: old.results.map((c) => {
-            if (c.comment_id !== commentId) return c
-            return {
-              ...c,
-              content: content !== undefined ? content : c.content,
-              comment_img: comment_img === null
-                ? { img_url: null, original_img: '', key: '' }
-                : comment_img !== undefined
-                  ? { img_url: null, original_img: comment_img.original_img, key: comment_img.key }
-                  : c.comment_img,
-              updated_at: new Date().toISOString(),
-            }
-          }),
+          results: old.results.map((c) =>
+            c.comment_id === commentId
+              ? { ...c, content: content ?? c.content, updated_at: new Date().toISOString() }
+              : c
+          ),
         }
       })
       return { previous }
@@ -158,8 +149,7 @@ export function useCommentMutations(postId: string) {
 
   const { mutate: updateMutate } = updateMutation
   const onUpdateComment = useCallback(
-    (commentId: string, content: string | null, commentImg: CommentImageInput | null | undefined) =>
-      updateMutate({ commentId, content, comment_img: commentImg }),
+    (commentId: string, content: string | null) => updateMutate({ commentId, content }),
     [updateMutate]
   )
 

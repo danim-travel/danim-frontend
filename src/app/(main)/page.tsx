@@ -12,6 +12,7 @@ import { queryKeys } from "@/lib/queryKeys";
 import type { MainFeedItem, PostDetail } from "@/types";
 import FeedPanel from "./_components/FeedPanel";
 import MapPanel from "./_components/MapPanel";
+import MobileBottomSheet from "./_components/MobileBottomSheet";
 import { useMainFeed } from "./_hooks/useMainFeed";
 import { usePrefetchPostDetail } from "./_hooks/usePrefetchPostDetail";
 
@@ -33,6 +34,7 @@ export default function HomePage() {
   const [focusedPost, setFocusedPost] = useState<MainFeedItem | null>(null);
   const [focusedPostIndex, setFocusedPostIndex] = useState(0);
   const [spotIdx, setSpotIdx] = useState<number | undefined>(undefined);
+  const [sheetExpanded, setSheetExpanded] = useState(false);
 
   const { closePanel } = useUIStore();
   const [postId, setPostId] = useQueryState("post", parseAsString);
@@ -60,6 +62,7 @@ export default function HomePage() {
     setFocusedPost(post);
     setFocusedPostIndex(index);
     prefetchPostDetail(post.post.post_id);
+    setSheetExpanded(false); // 게시글 선택 시 반반으로 축소
   }, [prefetchPostDetail]);
 
   const handleOpenModal = useCallback((post: MainFeedItem, index: number) => {
@@ -85,26 +88,45 @@ export default function HomePage() {
     fetchNextPage();
   }, [fetchNextPage]);
 
+  const feedPanelProps = {
+    posts,
+    focusedPostId: activeFocusedPost?.post.post_id ?? null,
+    onSelectPost: handleSelectPost,
+    onOpenModal: handleOpenModal,
+    onLoadMore: handleLoadMore,
+    isLoading: isLoading && !soloPostId,
+    hasNextPage: soloPostId ? false : hasNextPage,
+    isFetchingNextPage,
+    title: soloPostId ? "피드" : undefined,
+    onBack: soloPostId ? () => router.back() : undefined,
+  } as const;
+
   return (
-    <div className="flex h-full gap-4 p-4 bg-bg">
-      <FeedPanel
-        posts={posts}
-        focusedPostId={activeFocusedPost?.post.post_id ?? null}
-        onSelectPost={handleSelectPost}
-        onOpenModal={handleOpenModal}
-        onLoadMore={handleLoadMore}
-        isLoading={isLoading && !soloPostId}
-        hasNextPage={soloPostId ? false : hasNextPage}
-        isFetchingNextPage={isFetchingNextPage}
-        title={soloPostId ? "피드" : undefined}
-        onBack={soloPostId ? () => router.back() : undefined}
-      />
-      <MapPanel
-        focusedPost={activeFocusedPost}
-        focusedPostIndex={activeFocusedPostIndex}
-        onPinClick={handlePinClick}
-        onResetFocus={() => setFocusedPost(null)}
-      />
+    <div className="h-full md:flex md:flex-row md:gap-4 md:p-4 md:bg-bg">
+      {/* 데스크탑: 좌측 피드 패널 */}
+      <div className="hidden md:block md:w-(--panel-width) md:shrink-0 md:h-full">
+        <FeedPanel {...feedPanelProps} variant="panel" />
+      </div>
+
+      {/* 지도: 모바일=전체화면, 데스크탑=우측 flex-1 */}
+      <div className="h-full md:flex-1 md:min-h-0">
+        <MapPanel
+          focusedPost={activeFocusedPost}
+          focusedPostIndex={activeFocusedPostIndex}
+          onPinClick={handlePinClick}
+          onResetFocus={() => { setFocusedPost(null); setSheetExpanded(false); }}
+        />
+      </div>
+
+      {/* 모바일: 피드 바텀시트 */}
+      <div className="md:hidden">
+        <MobileBottomSheet
+          expanded={sheetExpanded}
+          onExpandedChange={setSheetExpanded}
+        >
+          <FeedPanel {...feedPanelProps} variant="sheet" />
+        </MobileBottomSheet>
+      </div>
 
       <AnimatePresence>
         {postId && (

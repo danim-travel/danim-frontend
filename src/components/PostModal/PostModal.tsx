@@ -131,7 +131,7 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
     >
       <motion.div
         data-testid="post-modal"
-        className="bg-bg-card rounded-3xl overflow-hidden flex shadow-[0_32px_80px_-12px_rgba(0,0,0,0.35)] w-[1000px] max-w-[96vw] max-h-[92vh] relative"
+        className="bg-bg-card rounded-none md:rounded-3xl overflow-hidden flex flex-col md:flex-row shadow-[0_32px_80px_-12px_rgba(0,0,0,0.35)] w-full h-full md:w-[1000px] md:max-w-[96vw] md:h-auto md:max-h-[92vh] relative"
         onClick={(e) => e.stopPropagation()}
         initial={{ opacity: 0, scale: 0.95, y: 8 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}

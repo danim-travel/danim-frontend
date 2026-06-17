@@ -15,7 +15,7 @@ interface PostModalContextValue {
   postBookmarkMutation: PostDetailApi["bookmarkMutation"];
   createComment: CommentsApi["createMutation"];
   // updateComment·deleteComment는 CommentSection이 mutate 함수만 필요하므로 콜백으로 노출
-  onUpdateComment: (commentId: string, content: string | null, commentImg: import("@/types").CommentImageInput | null | undefined) => void;
+  onUpdateComment: (commentId: string, content: string | null) => void;
   onDeleteComment: (commentId: string) => void;
   toggleCommentLike: CommentsApi["toggleCommentLike"];
 }

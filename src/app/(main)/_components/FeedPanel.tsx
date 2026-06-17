@@ -18,6 +18,8 @@ interface FeedPanelProps {
   isFetchingNextPage?: boolean;
   title?: string;
   onBack?: () => void;
+  /** panel: 데스크탑 사이드 패널 (기본), sheet: 모바일 바텀시트 내부 */
+  variant?: "panel" | "sheet";
 }
 
 export function FeedPanel({
@@ -31,6 +33,7 @@ export function FeedPanel({
   isFetchingNextPage,
   title,
   onBack,
+  variant = "panel",
 }: FeedPanelProps) {
   // observer를 매번 재등록해 최신 클로저를 참조하고 hasNextPage/isFetchingNextPage 변경 시 중복 fetch를 방지한다
   const sentinelRef = useInfiniteScrollSentinel({
@@ -41,7 +44,11 @@ export function FeedPanel({
   });
 
   return (
-    <aside className="w-(--panel-width) p-7 shrink-0 h-full flex flex-col bg-bg-subtle rounded-2xl overflow-hidden shadow-sm">
+    <aside className={
+      variant === "sheet"
+        ? "w-full h-full flex flex-col overflow-hidden px-4 pb-4"
+        : "w-(--panel-width) p-7 shrink-0 h-full flex flex-col bg-bg-subtle rounded-2xl overflow-hidden shadow-sm"
+    }>
       {/* 헤더 */}
       <header className="mb-5 relative">
         {/* h2를 먼저 두어 키보드·스크린리더 포커스 순서가 시각 순서와 일치하도록 한다 */}
@@ -74,6 +81,7 @@ export function FeedPanel({
               onClick={() => onSelectPost(feed, index)}
               onCommentClick={() => onOpenModal?.(feed, index)}
               priority={index < 2}
+              variant={variant}
             />
           ))}
 

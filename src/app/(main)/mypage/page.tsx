@@ -11,7 +11,6 @@ import PostModal from "@/components/PostModal";
 import { useMyProfile } from "./_hooks/useMyProfile";
 import ProfileHeader from "./_components/ProfileHeader";
 import PostGrid from "./_components/PostGrid";
-import { useAuthHydrationFallback } from "@/hooks/useAuthHydrationFallback";
 
 type MyPageTab = "posts" | "bookmarks";
 
@@ -53,14 +52,27 @@ function MyPageContent({ userId }: { userId: string }) {
     <>
       <ProfileHeader profile={profile} />
       <div className="mt-6">
-        <Tabs
-          items={[
-            { key: "posts", label: "게시글", count: profile.posts_count ?? 0, icon: <LayoutGrid size={16} /> },
-            { key: "bookmarks", label: "저장됨", count: 0, icon: <Bookmark size={16} /> },
-          ]}
-          value={tab}
-          onChange={(key) => setTab(key as MyPageTab)}
-        />
+        <div className="md:hidden">
+          <Tabs
+            items={[
+              { key: "posts", label: "게시글", count: profile.posts_count ?? 0, icon: <LayoutGrid size={16} /> },
+              { key: "bookmarks", label: "저장됨", count: 0, icon: <Bookmark size={16} /> },
+            ]}
+            value={tab}
+            onChange={(key) => setTab(key as MyPageTab)}
+            fullWidth
+          />
+        </div>
+        <div className="hidden md:block">
+          <Tabs
+            items={[
+              { key: "posts", label: "게시글", count: profile.posts_count ?? 0, icon: <LayoutGrid size={16} /> },
+              { key: "bookmarks", label: "저장됨", count: 0, icon: <Bookmark size={16} /> },
+            ]}
+            value={tab}
+            onChange={(key) => setTab(key as MyPageTab)}
+          />
+        </div>
       </div>
       <div className="mt-6">
         {tab === "posts" ? (
@@ -89,36 +101,34 @@ function MyPageContent({ userId }: { userId: string }) {
   );
 }
 
-export default function MyPage() {
+function MyPageContainer() {
+  const isHydrated = useAuthStore((s) => s.isHydrated);
   const userId = useAuthStore((s) => s.user?.userId);
-  const accessToken = useAuthStore((s) => s.accessToken);
-  const { authFallbackMessage } = useAuthHydrationFallback();
 
-  // AuthBootstrap이 isHydrated=true가 될 때까지 전역 스피너로 렌더링을 차단함
-  // AuthGuard는 accessToken이 없으면 null 반환 후 /login으로 리다이렉트함
-  // 새로고침 직후 accessToken은 있지만 userId가 아직 null인 타이밍을 여기서 처리
-  if (!userId) {
-    // accessToken도 없고 fallback 메시지도 없으면 AuthGuard가 처리
-    // fallback 메시지가 있으면 clearAuth() 이후에도 에러 UI를 표시해야 하므로 통과
-    if (!accessToken && !authFallbackMessage) return null;
-
+  if (!isHydrated) {
     return (
-      <PageContainer>
-        <div className="flex items-center justify-center py-20">
-          {authFallbackMessage ? (
-            <p className="text-text-muted">{authFallbackMessage}</p>
-          ) : (
-            <Spinner size="lg" />
-          )}
-        </div>
-      </PageContainer>
+      <div className="flex items-center justify-center py-20">
+        <Spinner size="lg" />
+      </div>
     );
   }
 
+  if (!userId) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <p className="text-text-muted">로그인이 필요합니다.</p>
+      </div>
+    );
+  }
+
+  return <MyPageContent userId={userId} />;
+}
+
+export default function MyPage() {
   return (
     <PageContainer>
       <h1 className="text-section-title font-bold text-text mb-6">내 프로필</h1>
-      <MyPageContent userId={userId} />
+      <MyPageContainer />
     </PageContainer>
   );
 }

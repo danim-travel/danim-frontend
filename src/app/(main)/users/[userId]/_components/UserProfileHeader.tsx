@@ -27,7 +27,7 @@ function formatCount(n: number): string {
   return compact(n / 1_000_000_000, "B");
 }
 
-const statCardClass = "flex flex-col items-center bg-bg rounded-xl px-4 py-3 w-[160px] hover:bg-bg-subtle transition-colors";
+const statCls = "flex flex-col items-center bg-bg rounded-xl px-3 py-2 flex-1 md:flex-none md:px-4 md:py-3 md:w-[160px] hover:bg-bg-subtle transition-colors";
 
 export default function UserProfileHeader({ profile, userId }: UserProfileHeaderProps) {
   const queryClient = useQueryClient();
@@ -59,16 +59,54 @@ export default function UserProfileHeader({ profile, userId }: UserProfileHeader
   const showLoading = useDelayedPending(isPending);
 
   return (
-    <section className="flex items-start gap-6 bg-bg-card rounded-2xl p-6">
-      <Avatar size="xl" src={profile.profile_img || undefined} initial={initial} />
+    <section className="bg-bg-card rounded-2xl p-5 md:p-6">
+      {/* 아바타 + (모바일: 스탯 | 데스크톱: 텍스트+스탯+버튼) */}
+      <div className="flex items-center gap-4 md:items-start md:gap-6">
+        <Avatar size="xl" src={profile.profile_img || undefined} initial={initial} />
 
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-3">
-          <h2 className="text-lg font-bold text-text">{profile.nickname}</h2>
+        <div className="flex-1 min-w-0">
+          {/* 데스크톱: 닉네임 + 팔로우 버튼 + 소개 */}
+          <div className="hidden md:block">
+            <div className="flex items-center gap-3 min-w-0">
+              <h2 className="text-lg font-bold text-text truncate min-w-0">{profile.nickname}</h2>
+              <Button
+                variant={isFollowing ? "primary" : "outline"}
+                size="sm"
+                className="w-24 shrink-0"
+                leftIcon={isFollowing ? <Check size={14} /> : undefined}
+                onClick={() => toggleFollow(!isFollowing)}
+                loading={showLoading}
+                disabled={isPending}
+              >
+                {isFollowing ? "팔로잉" : "팔로우"}
+              </Button>
+            </div>
+            {profile.name && <p className="text-xs text-text-muted mt-0.5 truncate">{profile.name}</p>}
+            {profile.intro && <p className="text-sm text-text-muted mt-1 whitespace-pre-wrap">{profile.intro}</p>}
+          </div>
+
+          {/* 스탯: 모바일→아바타 옆, 데스크톱→텍스트 아래 */}
+          <div className="flex gap-2 md:gap-6 md:mt-4">
+            <Link href={`/followers?tab=followers&userId=${userId}`} className={statCls}>
+              <div className="text-xl font-bold text-text">{formatCount(followerCount)}</div>
+              <div className="text-xs text-text-muted mt-1">팔로워</div>
+            </Link>
+            <Link href={`/followers?tab=following&userId=${userId}`} className={statCls}>
+              <div className="text-xl font-bold text-text">{formatCount(profile.following)}</div>
+              <div className="text-xs text-text-muted mt-1">팔로잉</div>
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* 모바일: 닉네임 + 팔로우 버튼 + 소개 (아바타+스탯 아래) */}
+      <div className="mt-3 md:hidden">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-lg font-bold text-text truncate min-w-0">{profile.nickname}</h2>
           <Button
             variant={isFollowing ? "primary" : "outline"}
             size="sm"
-            className="w-24"
+            className="w-24 shrink-0"
             leftIcon={isFollowing ? <Check size={14} /> : undefined}
             onClick={() => toggleFollow(!isFollowing)}
             loading={showLoading}
@@ -77,25 +115,8 @@ export default function UserProfileHeader({ profile, userId }: UserProfileHeader
             {isFollowing ? "팔로잉" : "팔로우"}
           </Button>
         </div>
-        {profile.name && (
-          <p className="text-xs text-text-muted mt-0.5">{profile.name}</p>
-        )}
-        {profile.intro && (
-          <p className="text-sm text-text-muted mt-1 whitespace-pre-wrap">{profile.intro}</p>
-        )}
-      </div>
-
-      <div className="flex flex-col items-end gap-3 shrink-0">
-        <div className="flex gap-6">
-          <Link href={`/followers?tab=followers&userId=${userId}`} className={statCardClass}>
-            <div className="text-xl font-bold text-text">{formatCount(followerCount)}</div>
-            <div className="text-xs text-text-muted mt-1">팔로워</div>
-          </Link>
-          <Link href={`/followers?tab=following&userId=${userId}`} className={statCardClass}>
-            <div className="text-xl font-bold text-text">{formatCount(profile.following)}</div>
-            <div className="text-xs text-text-muted mt-1">팔로잉</div>
-          </Link>
-        </div>
+        {profile.name && <p className="text-xs text-text-muted mt-0.5 truncate">{profile.name}</p>}
+        {profile.intro && <p className="text-sm text-text-muted mt-1 whitespace-pre-wrap">{profile.intro}</p>}
       </div>
     </section>
   );

@@ -1,0 +1,69 @@
+/* =================================================================
+   Danim · Mobile Design Tokens
+   참조: Figma 다님 디자인 (390px 모바일 프레임)
+   ================================================================= */
+
+:root {
+  /* ── Typography ──────────────────────────────── */
+  --mobile-text-page-title:    20px;
+  --mobile-text-section-title: 18px;
+  --mobile-text-card-title:    14px;
+  --mobile-text-base:          13px;
+  --mobile-text-body-sm:       12px;
+  --mobile-text-caption:       11px;
+  --mobile-text-label:         12px;
+  --mobile-text-button:        15px;
+  --mobile-text-nav:           10px;
+
+  /* ── Spacing ─────────────────────────────────── */
+  --mobile-page-padding-x:  12px;
+  --mobile-page-padding-y:  20px;
+  --mobile-section-gap:     16px;
+  --mobile-grid-gap:         8px;
+  --mobile-card-padding:    16px;
+  --mobile-card-padding-sm: 12px;
+
+  /* ── Icon size ───────────────────────────────── */
+  --mobile-icon-size-sm: 16px;
+  --mobile-icon-size-md: 20px;
+  --mobile-icon-size-lg: 24px;
+
+  /* ── Button height ───────────────────────────── */
+  --mobile-button-sm-height: 36px;
+  --mobile-button-md-height: 44px;
+  --mobile-button-lg-height: 52px;
+}
+
+/* ── Mobile breakpoint overrides (≤ 767px) ────── */
+@media (max-width: 767px) {
+  :root {
+    /* Typography */
+    --text-page-title:    var(--mobile-text-page-title);
+    --text-section-title: var(--mobile-text-section-title);
+    --text-card-title:    var(--mobile-text-card-title);
+    --text-base:          var(--mobile-text-base);
+    --text-body-sm:       var(--mobile-text-body-sm);
+    --text-caption:       var(--mobile-text-caption);
+    --text-label:         var(--mobile-text-label);
+    --text-button:        var(--mobile-text-button);
+    --text-nav:           var(--mobile-text-nav);
+
+    /* Spacing */
+    --page-padding-x:  var(--mobile-page-padding-x);
+    --page-padding-y:  var(--mobile-page-padding-y);
+    --section-gap:     var(--mobile-section-gap);
+    --grid-gap:        var(--mobile-grid-gap);
+    --card-padding:    var(--mobile-card-padding);
+    --card-padding-sm: var(--mobile-card-padding-sm);
+
+    /* Icon size */
+    --icon-size-sm: var(--mobile-icon-size-sm);
+    --icon-size-md: var(--mobile-icon-size-md);
+    --icon-size-lg: var(--mobile-icon-size-lg);
+
+    /* Button height */
+    --button-sm-height: var(--mobile-button-sm-height);
+    --button-md-height: var(--mobile-button-md-height);
+    --button-lg-height: var(--mobile-button-lg-height);
+  }
+}
