@@ -54,15 +54,15 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
   const initial = profile.nickname?.slice(0, 1).toUpperCase() ?? "?";
 
   return (
-    <section className="relative bg-bg-card rounded-2xl p-5 md:p-6">
-      {/* 아바타 + (모바일: 스탯 | 데스크톱: 텍스트+스탯) */}
-      <div className="flex items-center gap-4 md:items-start md:gap-6">
+    <section className="relative bg-bg-card rounded-2xl p-5 md:flex md:items-start md:gap-6 md:p-6">
+      {/* 모바일: 아바타 옆에 스탯을 배치 */}
+      <div className="flex items-center gap-4 md:contents">
         {/* 아바타 + 우하단 설정 버튼 */}
         <div className="relative shrink-0">
           <Avatar size="xl" src={profile.profile_img || undefined} initial={initial} />
           <Link
             href="/settings"
-            className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-bg-card border border-border flex items-center justify-center shadow-sm hover:bg-bg-subtle transition-colors"
+            className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-bg-card border border-border flex items-center justify-center shadow-sm hover:bg-bg-subtle transition-colors md:hidden"
             aria-label="설정"
           >
             <Settings className="w-3.5 h-3.5 text-text-muted" strokeWidth={2} />
@@ -70,23 +70,29 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
         </div>
 
         <div className="flex-1 min-w-0">
-          {/* 데스크톱: 닉네임/소개 */}
+          {/* 데스크톱: 수정 전 웹 레이아웃처럼 소개 영역과 스탯을 분리 */}
           <div className="hidden md:block">
-            <h2 className="text-lg font-bold text-text truncate">{profile.nickname}</h2>
-            {profile.name && <p className="text-xs text-text-muted mt-0.5 truncate">{profile.name}</p>}
+            <h2 className="text-lg font-bold text-text">{profile.nickname}</h2>
+            {profile.name && <p className="text-xs text-text-muted mt-0.5">{profile.name}</p>}
             {profile.intro && (
               <p className="text-sm text-text-muted mt-1 whitespace-pre-wrap">{profile.intro}</p>
             )}
           </div>
-          {/* 스탯: 모바일→아바타 옆, 데스크톱→텍스트 아래 */}
-          <div className="flex gap-2 md:gap-3 md:mt-4">
+          <div className="flex gap-2 md:hidden">
             <StatItem label="팔로워" value={profile.follower} href="/followers?tab=followers" />
             <StatItem label="팔로잉" value={profile.following} href="/followers?tab=following" />
           </div>
         </div>
       </div>
 
-      {/* 모바일: 닉네임/소개 (아바타+스탯 아래) */}
+      <div className="hidden md:flex md:flex-col md:items-end md:gap-3 md:shrink-0">
+        <div className="flex gap-6">
+          <StatItem label="팔로워" value={profile.follower} href="/followers?tab=followers" />
+          <StatItem label="팔로잉" value={profile.following} href="/followers?tab=following" />
+        </div>
+      </div>
+
+      {/* 모바일: 닉네임/소개 */}
       <div className="mt-3 md:hidden">
         <h2 className="text-lg font-bold text-text truncate">{profile.nickname}</h2>
         {profile.name && <p className="text-xs text-text-muted mt-0.5 truncate">{profile.name}</p>}

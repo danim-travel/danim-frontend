@@ -47,7 +47,7 @@ export function FeedPanel({
     <aside className={
       variant === "sheet"
         ? "w-full h-full flex flex-col overflow-hidden px-4 pb-4"
-        : "w-full md:w-(--panel-width) p-4 md:p-7 shrink-0 h-full flex flex-col bg-bg-subtle rounded-2xl overflow-hidden shadow-sm"
+        : "w-(--panel-width) p-7 shrink-0 h-full flex flex-col bg-bg-subtle rounded-2xl overflow-hidden shadow-sm"
     }>
       {/* 헤더 */}
       <header className="mb-5 relative">
@@ -80,6 +80,8 @@ export function FeedPanel({
               isFocused={focusedPostId === feed.post.post_id}
               onClick={() => onSelectPost(feed, index)}
               onCommentClick={() => onOpenModal?.(feed, index)}
+              priority={index < 2}
+              variant={variant}
             />
           ))}
 

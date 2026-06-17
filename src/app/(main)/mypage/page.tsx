@@ -52,15 +52,27 @@ function MyPageContent({ userId }: { userId: string }) {
     <>
       <ProfileHeader profile={profile} />
       <div className="mt-6">
-        <Tabs
-          items={[
-            { key: "posts", label: "게시글", count: profile.posts_count ?? 0, icon: <LayoutGrid size={16} /> },
-            { key: "bookmarks", label: "저장됨", count: 0, icon: <Bookmark size={16} /> },
-          ]}
-          value={tab}
-          onChange={(key) => setTab(key as MyPageTab)}
-          fullWidth
-        />
+        <div className="md:hidden">
+          <Tabs
+            items={[
+              { key: "posts", label: "게시글", count: profile.posts_count ?? 0, icon: <LayoutGrid size={16} /> },
+              { key: "bookmarks", label: "저장됨", count: 0, icon: <Bookmark size={16} /> },
+            ]}
+            value={tab}
+            onChange={(key) => setTab(key as MyPageTab)}
+            fullWidth
+          />
+        </div>
+        <div className="hidden md:block">
+          <Tabs
+            items={[
+              { key: "posts", label: "게시글", count: profile.posts_count ?? 0, icon: <LayoutGrid size={16} /> },
+              { key: "bookmarks", label: "저장됨", count: 0, icon: <Bookmark size={16} /> },
+            ]}
+            value={tab}
+            onChange={(key) => setTab(key as MyPageTab)}
+          />
+        </div>
       </div>
       <div className="mt-6">
         {tab === "posts" ? (
