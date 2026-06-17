@@ -7,6 +7,7 @@ import { Home, Compass, PenLine, Search, MessageCircle, Bell, Settings, type Luc
 import { useUIStore } from '@/store/uiStore'
 import { useAuthStore } from '@/store/authStore'
 import { Avatar } from '@/components/common'
+import { useNotificationsQuery } from '@/app/(main)/_hooks/useNotifications'
 
 const NAV_LINKS = [
   { href: '/', label: '홈', Icon: Home },
@@ -19,16 +20,28 @@ type NavButtonProps = {
   label: string
   Icon: LucideIcon
   onClick: () => void
+  active?: boolean
+  badgeCount?: number
 }
 
-function NavButton({ label, Icon, onClick }: NavButtonProps) {
+function NavButton({ label, Icon, onClick, active, badgeCount }: NavButtonProps) {
   return (
     <button
       onClick={onClick}
-      className="flex flex-col items-center justify-center gap-1 w-full py-3 rounded-xl transition-all hover:bg-bg-subtle"
+      className={`relative flex flex-col items-center justify-center gap-1 w-full py-3 rounded-xl transition-all ${active ? 'bg-primary/10' : 'hover:bg-bg-subtle'}`}
     >
-      <Icon className="w-[22px] h-[22px] text-text-disabled" strokeWidth={2} />
-      <span className="text-[9px] font-semibold tracking-wide text-text-disabled">{label}</span>
+      <span className="relative">
+        <Icon className={`w-[22px] h-[22px] ${active ? 'text-primary' : 'text-text-disabled'}`} strokeWidth={active ? 2.5 : 2} />
+        {badgeCount !== undefined && badgeCount > 0 && (
+          <span
+            aria-label={`읽지 않은 알림 ${badgeCount}개`}
+            className="absolute -top-1 -right-2 min-w-[16px] h-[16px] px-1 flex items-center justify-center rounded-full bg-error text-text-inverse text-[9px] font-bold leading-none"
+          >
+            {badgeCount > 99 ? '99+' : badgeCount}
+          </span>
+        )}
+      </span>
+      <span className={`text-[9px] font-semibold tracking-wide ${active ? 'text-primary' : 'text-text-disabled'}`}>{label}</span>
     </button>
   )
 }
@@ -58,6 +71,11 @@ export default function SideNav() {
   const pathname = usePathname()
   const { activePanel, setActivePanel, closePanel } = useUIStore()
   const user = useAuthStore((s) => s.user)
+  const isLoggedIn = useAuthStore((s) => !!s.accessToken)
+
+  // 알림 미읽음 개수 — 첫 페이지 기준 파생
+  const { data: notificationsData } = useNotificationsQuery(isLoggedIn)
+  const unreadCount = notificationsData?.pages[0]?.results.filter((n) => !n.is_read).length ?? 0
 
   return (
     <nav className="w-(--sidebar-width) bg-bg-card border-r border-border flex flex-col items-center shrink-0 h-full py-4">
@@ -81,8 +99,8 @@ export default function SideNav() {
         ))}
 
         {/* 검색, 알림 버튼 */}
-        <NavButton label="검색" Icon={Search} onClick={() => activePanel === 'search' ? closePanel() : setActivePanel('search')} />
-        <NavButton label="알림" Icon={Bell} onClick={() => setActivePanel('notification')} />
+        <NavButton label="검색" Icon={Search} active={activePanel === 'search'} onClick={() => activePanel === 'search' ? closePanel() : setActivePanel('search')} />
+        <NavButton label="알림" Icon={Bell} active={activePanel === 'notification'} badgeCount={unreadCount} onClick={() => activePanel === 'notification' ? closePanel() : setActivePanel('notification')} />
       </div>
 
       {/* 하단 설정, 마이페이지 */}

@@ -5,6 +5,7 @@
 import SideNav from '@/components/SideNav'
 import { AuthGuard } from './_components/AuthGuard'
 import { SearchDrawer } from './_components/SearchDrawer'
+import { NotificationDrawer } from './_components/NotificationDrawer'
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -15,6 +16,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         </div>
         <main className="flex-1 min-w-0 h-full overflow-y-auto overscroll-contain">{children}</main>
         <SearchDrawer />
+        <NotificationDrawer />
       </div>
     </AuthGuard>
   )
