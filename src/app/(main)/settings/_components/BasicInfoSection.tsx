@@ -5,9 +5,9 @@ import type { MeDetailResponse } from "@/types"
 interface BasicInfoSectionProps {
   me: MeDetailResponse
   nickname: string
-  nicknameHelperText: string
-  nicknameHelperTone: "muted" | "primary" | "error"
+  nicknameError?: string
   onNicknameChange: (v: string) => void
+  onNicknameBlur?: () => void
 }
 
 function formatBirthDate(date: string | null) {
@@ -16,7 +16,7 @@ function formatBirthDate(date: string | null) {
   return `${y}년  ${m}월  ${d}일`
 }
 
-export function BasicInfoSection({ me, nickname, nicknameHelperText, nicknameHelperTone, onNicknameChange }: BasicInfoSectionProps) {
+export function BasicInfoSection({ me, nickname, nicknameError, onNicknameChange, onNicknameBlur }: BasicInfoSectionProps) {
   return (
     <section>
       <h2 className="text-body-lg font-bold text-text mb-4">기본 정보</h2>
@@ -43,10 +43,10 @@ export function BasicInfoSection({ me, nickname, nicknameHelperText, nicknameHel
           required
           value={nickname}
           onChange={e => onNicknameChange(e.target.value)}
+          onBlur={onNicknameBlur}
+          error={nicknameError}
           maxLength={20}
-          error={nicknameHelperTone === "error" ? nicknameHelperText : undefined}
-          helperText={nicknameHelperTone !== "error" ? nicknameHelperText : undefined}
-          helperTone={nicknameHelperTone === "primary" ? "primary" : "muted"}
+          helperText={nicknameError ? undefined : "다른 사용자에게 보이는 이름이에요."}
         />
 
         {/* 휴대폰 인증 — 준비 중 */}
