@@ -29,7 +29,8 @@ function isNotificationWsServerMessage(value: unknown): value is NotificationWsS
   if (typeof value !== 'object' || value === null) return false
   const v = value as { type?: unknown }
   if (v.type === 'unread_count') {
-    return typeof (value as { count?: unknown }).count === 'number'
+    const count = (value as { count?: unknown }).count
+    return typeof count === 'number' && Number.isInteger(count) && count >= 0
   }
   if (v.type === 'error') {
     return typeof (value as { detail?: unknown }).detail === 'string'

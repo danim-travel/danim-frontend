@@ -137,8 +137,8 @@ const getUnreadCount = (): number => notifications.filter((n) => !n.is_read).len
 
 const notificationsWs = ws.link('*/ws/notifications')
 
-/** 인증된 클라이언트 집합. 인증 전 클라이언트에는 브로드캐스트하지 않는다. */
-const authedClients = new WeakSet<WsClient>()
+/** 인증된 클라이언트 집합. 실서버 거동(인증된 사용자에게만 push)에 맞춘다. */
+const authedClients = new Set<WsClient>()
 
 interface UnreadCountMessage {
   type: 'unread_count'
@@ -156,9 +156,11 @@ const buildUnreadMessage = (): UnreadCountMessage => ({
 })
 
 const broadcastUnreadCount = (): void => {
-  // ws.link.broadcast는 연결된 모든 클라이언트에 전송한다.
-  // mock 환경에서는 인증 여부와 무관하게 push해도 클라이언트가 인증 전이면 무시할 수 있도록 한다.
-  notificationsWs.broadcast(JSON.stringify(buildUnreadMessage()))
+  // 실서버 거동에 맞춰 인증된 클라이언트에만 전송한다.
+  const payload = JSON.stringify(buildUnreadMessage())
+  for (const client of authedClients) {
+    client.send(payload)
+  }
 }
 
 // ---------- REST 핸들러 ----------
@@ -289,6 +291,7 @@ export const notificationWsHandlers: WebSocketHandler[] = [
 
     client.addEventListener('close', () => {
       clearTimeout(timeoutId)
+      authedClients.delete(client)
     })
   }),
 ]
