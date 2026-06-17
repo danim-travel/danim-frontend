@@ -12,6 +12,7 @@ import { queryKeys } from "@/lib/queryKeys";
 import type { MainFeedItem, PostDetail } from "@/types";
 import FeedPanel from "./_components/FeedPanel";
 import MapPanel from "./_components/MapPanel";
+import MobileBottomSheet from "./_components/MobileBottomSheet";
 import { useMainFeed } from "./_hooks/useMainFeed";
 import { usePrefetchPostDetail } from "./_hooks/usePrefetchPostDetail";
 
@@ -85,26 +86,42 @@ export default function HomePage() {
     fetchNextPage();
   }, [fetchNextPage]);
 
+  const feedPanelProps = {
+    posts,
+    focusedPostId: activeFocusedPost?.post.post_id ?? null,
+    onSelectPost: handleSelectPost,
+    onOpenModal: handleOpenModal,
+    onLoadMore: handleLoadMore,
+    isLoading: isLoading && !soloPostId,
+    hasNextPage: soloPostId ? false : hasNextPage,
+    isFetchingNextPage,
+    title: soloPostId ? "피드" : undefined,
+    onBack: soloPostId ? () => router.back() : undefined,
+  } as const;
+
   return (
-    <div className="flex h-full gap-4 p-4 bg-bg">
-      <FeedPanel
-        posts={posts}
-        focusedPostId={activeFocusedPost?.post.post_id ?? null}
-        onSelectPost={handleSelectPost}
-        onOpenModal={handleOpenModal}
-        onLoadMore={handleLoadMore}
-        isLoading={isLoading && !soloPostId}
-        hasNextPage={soloPostId ? false : hasNextPage}
-        isFetchingNextPage={isFetchingNextPage}
-        title={soloPostId ? "피드" : undefined}
-        onBack={soloPostId ? () => router.back() : undefined}
-      />
-      <MapPanel
-        focusedPost={activeFocusedPost}
-        focusedPostIndex={activeFocusedPostIndex}
-        onPinClick={handlePinClick}
-        onResetFocus={() => setFocusedPost(null)}
-      />
+    <div className="h-full md:flex md:flex-row md:gap-4 md:p-4 md:bg-bg">
+      {/* 데스크탑: 좌측 피드 패널 */}
+      <div className="hidden md:block md:w-(--panel-width) md:shrink-0 md:h-full">
+        <FeedPanel {...feedPanelProps} variant="panel" />
+      </div>
+
+      {/* 지도: 모바일=전체화면, 데스크탑=우측 flex-1 */}
+      <div className="h-full md:flex-1 md:min-h-0">
+        <MapPanel
+          focusedPost={activeFocusedPost}
+          focusedPostIndex={activeFocusedPostIndex}
+          onPinClick={handlePinClick}
+          onResetFocus={() => setFocusedPost(null)}
+        />
+      </div>
+
+      {/* 모바일: 피드 바텀시트 */}
+      <div className="md:hidden">
+        <MobileBottomSheet>
+          <FeedPanel {...feedPanelProps} variant="sheet" />
+        </MobileBottomSheet>
+      </div>
 
       <AnimatePresence>
         {postId && (
