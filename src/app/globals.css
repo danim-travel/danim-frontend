@@ -5,6 +5,7 @@
 @import "../styles/tokens/radius.css";
 @import "../styles/tokens/shadow.css";
 @import "../styles/tokens/component-state.css";
+@import "../styles/tokens/mobile.css";
 
 body {
   background: var(--color-bg);
@@ -36,10 +37,4 @@ body {
 }
 .scrollbar-none::-webkit-scrollbar {
   display: none;
-}
-
-/* 인증 레이아웃 배경 dot 패턴 */
-.bg-dot-pattern {
-  background-image: radial-gradient(circle, color-mix(in srgb, var(--color-primary) 25%, transparent) 1px, transparent 1px);
-  background-size: 28px 28px;
 }

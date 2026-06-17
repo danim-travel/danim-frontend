@@ -50,7 +50,6 @@ function AuthBootstrap({ children }: { children: React.ReactNode }) {
       try {
         const { access_token } = await refreshToken()
         if (cancelled) return
-        // refreshToken 성공 시 즉시 저장 — getCurrentUser 실패해도 /login으로 튕기지 않음
         setToken(access_token)
         try {
           const me = await getCurrentUser()
@@ -58,8 +57,8 @@ function AuthBootstrap({ children }: { children: React.ReactNode }) {
           const { setAuth } = useAuthStore.getState()
           setAuth(toAuthUser(me), access_token)
         } catch {
-          // getCurrentUser 실패 — user가 여전히 null이면 인증 상태를 확정할 수 없으므로 초기화
-          if (!useAuthStore.getState().user) useAuthStore.getState().clearAuth()
+          // getCurrentUser 실패 — 토큰과 유저를 함께 초기화해 인증 상태 불일치를 막는다.
+          useAuthStore.getState().clearAuth()
         }
       } catch {
         // refreshToken 실패 = 비로그인 상태 유지 (accessToken 이미 null)

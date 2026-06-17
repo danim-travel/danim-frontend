@@ -15,11 +15,20 @@ export function MobileBottomSheet({ children }: { children: React.ReactNode }) {
   const collapsedY     = useRef(0); // 접힌 상태의 y offset
 
   useEffect(() => {
-    // 시트 전체 높이 = 뷰포트 - 탭바 - 상단 여백
-    const sheetH = window.innerHeight - NAV_H - TOP_GAP;
-    collapsedY.current = sheetH - PEEK_H;
-    y.set(collapsedY.current); // 초기: 접힌 상태
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    const updateSheetPosition = () => {
+      // 시트 전체 높이 = 뷰포트 - 탭바 - 상단 여백
+      const sheetH = window.innerHeight - NAV_H - TOP_GAP;
+      collapsedY.current = sheetH - PEEK_H;
+      y.set(expanded ? 0 : collapsedY.current);
+    };
+
+    updateSheetPosition();
+    window.addEventListener("resize", updateSheetPosition);
+
+    return () => {
+      window.removeEventListener("resize", updateSheetPosition);
+    };
+  }, [expanded, y]);
 
   const snap = (toExpanded: boolean) => {
     animate(y, toExpanded ? 0 : collapsedY.current, {
@@ -38,12 +47,8 @@ export function MobileBottomSheet({ children }: { children: React.ReactNode }) {
 
   return (
     <motion.div
-      className="fixed left-0 right-0 z-(--z-drawer) flex flex-col bg-bg-card rounded-t-2xl shadow-modal"
-      style={{
-        bottom : NAV_H,
-        height : `calc(100dvh - ${NAV_H}px - ${TOP_GAP}px)`,
-        y,
-      }}
+      className="fixed left-0 right-0 bottom-16 h-[calc(100dvh-64px-60px)] z-(--z-drawer) flex flex-col bg-bg-card rounded-t-2xl shadow-modal"
+      style={{ y }}
       drag="y"
       dragControls={controls}
       dragListener={false}
