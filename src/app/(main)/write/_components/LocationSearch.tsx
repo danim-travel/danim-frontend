@@ -22,6 +22,12 @@ export default function LocationSearch({ value, onChange, singleMode = false }: 
 
   const sdkReady = useKakaoMapSDK()
 
+  const clearDebounce = () => {
+    if (!debounceRef.current) return
+    clearTimeout(debounceRef.current)
+    debounceRef.current = null
+  }
+
   useEffect(() => {
     if (sdkReady) {
       // SDK 준비 후 Places 인스턴스 생성 — ref에 저장해 리렌더마다 재생성 방지
@@ -39,6 +45,8 @@ export default function LocationSearch({ value, onChange, singleMode = false }: 
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [])
+
+  useEffect(() => clearDebounce, [])
 
   const search = (keyword: string) => {
     if (!sdkReady || !placesRef.current || !keyword.trim()) {
@@ -79,6 +87,7 @@ export default function LocationSearch({ value, onChange, singleMode = false }: 
       y: place.y,
     }
     onChange(singleMode ? [newPlace] : [...value, newPlace])
+    clearDebounce()
     setInput('')
     setResults([])
     setIsOpen(false)
@@ -94,6 +103,7 @@ export default function LocationSearch({ value, onChange, singleMode = false }: 
         placeholder="목적지 검색 (예: 광안리 해수욕장, 성산일출봉)"
         disabled={!sdkReady}
         onClear={() => {
+          clearDebounce()
           setInput('')
           setResults([])
           setIsOpen(false)

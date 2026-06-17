@@ -1,4 +1,5 @@
 import { Pacifico } from 'next/font/google'
+import styles from './AuthVisuals.module.css'
 
 const pacifico = Pacifico({ subsets: ['latin'], weight: '400' })
 
@@ -13,14 +14,7 @@ export function BrandPanel() {
     <div className="flex flex-col justify-center px-12 select-none">
       {/* 로고 */}
       <div className="mb-10">
-        <p className={`text-5xl leading-none ${pacifico.className}`}
-          style={{
-            background: 'linear-gradient(135deg, #3ECBA0 0%, #0ea5e9 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-          }}
-        >
+        <p className={`text-5xl leading-none ${pacifico.className} ${styles.brandLogoText}`}>
           Danim
         </p>
       </div>

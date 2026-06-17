@@ -32,7 +32,7 @@ export default function CommentSection({ comments, commentCount }: Props) {
               comment={c}
               isOwn={!!currentUserId && c.user.id === currentUserId}
               onLike={() => toggleCommentLike(c.comment_id, c.is_liked)}
-              onEdit={(content) => onUpdateComment(c.comment_id, content, null)}
+              onEdit={(content) => onUpdateComment(c.comment_id, content)}
               onDelete={() => onDeleteComment(c.comment_id)}
             />
           ))

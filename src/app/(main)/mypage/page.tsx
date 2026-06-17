@@ -101,25 +101,34 @@ function MyPageContent({ userId }: { userId: string }) {
   );
 }
 
-export default function MyPage() {
+function MyPageContainer() {
   const isHydrated = useAuthStore((s) => s.isHydrated);
   const userId = useAuthStore((s) => s.user?.userId);
 
+  if (!isHydrated) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
+
+  if (!userId) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <p className="text-text-muted">로그인이 필요합니다.</p>
+      </div>
+    );
+  }
+
+  return <MyPageContent userId={userId} />;
+}
+
+export default function MyPage() {
   return (
     <PageContainer>
       <h1 className="text-section-title font-bold text-text mb-6">내 프로필</h1>
-
-      {!isHydrated ? (
-        <div className="flex items-center justify-center py-20">
-          <Spinner size="lg" />
-        </div>
-      ) : !userId ? (
-        <div className="flex items-center justify-center py-20">
-          <p className="text-text-muted">로그인이 필요합니다.</p>
-        </div>
-      ) : (
-        <MyPageContent userId={userId} />
-      )}
+      <MyPageContainer />
     </PageContainer>
   );
 }

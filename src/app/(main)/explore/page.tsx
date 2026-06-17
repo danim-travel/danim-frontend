@@ -1,13 +1,11 @@
 "use client"
-import { useState, useEffect, useCallback } from "react"
+import { useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { AnimatePresence } from "motion/react"
 import { useQueryState } from "nuqs"
 import { PageContainer, SearchBar } from "@/components/common"
-import { toast } from "@/store/toastStore"
-import { getApiErrorMessage } from "@/lib/apiError"
 import PostModal from "@/components/PostModal"
-import { useExplorePosts } from "./_hooks/useExplorePosts"
+import { useExplorePageState } from "./_hooks/useExplorePageState"
 import { ExploreGrid } from "./_components/ExploreGrid"
 
 const CATEGORIES = ["전체", "경기", "강원", "충청", "전라", "경상", "제주", "서울"] as const
@@ -20,23 +18,8 @@ export default function ExplorePage() {
   const [category, setCategory] = useState<Category>("전체")
   const [postModalId, setPostModalId] = useState<string | null>(null)
 
-  useEffect(() => {
-    const t = setTimeout(() => {
-      setSearch(inputValue.trim() || null)
-    }, 300)
-    return () => clearTimeout(t)
-  }, [inputValue, setSearch])
-
-  const { data, isLoading, isError, error, hasNextPage, isFetchingNextPage, fetchNextPage } =
-    useExplorePosts(search, category)
-
-  const posts = data?.pages.flatMap((p) => p.results) ?? []
-
-  useEffect(() => {
-    if (isError) {
-      toast.error(getApiErrorMessage(error, { client: "게시글을 불러오지 못했습니다." }))
-    }
-  }, [isError, error])
+  const { posts, isLoading, hasNextPage, isFetchingNextPage, fetchNextPage } =
+    useExplorePageState(inputValue, category)
 
   const handleLoadMore = useCallback(() => { fetchNextPage() }, [fetchNextPage])
 
