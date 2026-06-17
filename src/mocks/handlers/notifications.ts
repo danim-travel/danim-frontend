@@ -13,6 +13,11 @@
 import { http, HttpResponse, ws } from 'msw'
 import type { RequestHandler, WebSocketHandler } from 'msw'
 
+/** MSW가 콜백으로 넘겨주는 WebSocket client connection 타입. */
+type WsClient = Parameters<
+  Parameters<ReturnType<typeof ws.link>['addEventListener']>[1]
+>[0]['client']
+
 // ---------- 타입 ----------
 
 export type TargetType = 'user' | 'post' | 'dm'
@@ -130,10 +135,30 @@ const getUnreadCount = (): number => notifications.filter((n) => !n.is_read).len
 
 // ---------- WebSocket 브로드캐스트 ----------
 
-const notificationsWs = ws.link('*/ws/notifications/:userId')
+const notificationsWs = ws.link('*/ws/notifications')
+
+/** 인증된 클라이언트 집합. 인증 전 클라이언트에는 브로드캐스트하지 않는다. */
+const authedClients = new WeakSet<WsClient>()
+
+interface UnreadCountMessage {
+  type: 'unread_count'
+  count: number
+}
+
+interface ErrorMessage {
+  type: 'error'
+  detail: string
+}
+
+const buildUnreadMessage = (): UnreadCountMessage => ({
+  type: 'unread_count',
+  count: getUnreadCount(),
+})
 
 const broadcastUnreadCount = (): void => {
-  notificationsWs.broadcast(JSON.stringify({ unread_count: getUnreadCount() }))
+  // ws.link.broadcast는 연결된 모든 클라이언트에 전송한다.
+  // mock 환경에서는 인증 여부와 무관하게 push해도 클라이언트가 인증 전이면 무시할 수 있도록 한다.
+  notificationsWs.broadcast(JSON.stringify(buildUnreadMessage()))
 }
 
 // ---------- REST 핸들러 ----------
@@ -215,9 +240,55 @@ export const notificationHandlers: RequestHandler[] = [
 
 // ---------- WebSocket 핸들러 ----------
 
+const AUTH_TIMEOUT_MS = 10_000
+
 export const notificationWsHandlers: WebSocketHandler[] = [
   notificationsWs.addEventListener('connection', ({ client }) => {
-    // 연결 즉시 현재 unread_count 전송
-    client.send(JSON.stringify({ unread_count: getUnreadCount() }))
+    // 10초 안에 첫 auth 메시지를 수신하지 못하면 연결을 종료한다.
+    const timeoutId = setTimeout(() => {
+      if (!authedClients.has(client)) {
+        client.send(JSON.stringify({ type: 'error', detail: '인증에 실패했습니다.' } satisfies ErrorMessage))
+        client.close()
+      }
+    }, AUTH_TIMEOUT_MS)
+
+    client.addEventListener('message', (event) => {
+      // 인증된 클라이언트는 이후 메시지를 무시 (mock 환경)
+      if (authedClients.has(client)) return
+
+      const raw = typeof event.data === 'string' ? event.data : ''
+      let parsed: unknown
+      try {
+        parsed = JSON.parse(raw)
+      } catch {
+        client.send(JSON.stringify({ type: 'error', detail: '인증에 실패했습니다.' } satisfies ErrorMessage))
+        client.close()
+        clearTimeout(timeoutId)
+        return
+      }
+
+      const isAuthMessage =
+        typeof parsed === 'object' &&
+        parsed !== null &&
+        (parsed as { type?: unknown }).type === 'auth' &&
+        typeof (parsed as { token?: unknown }).token === 'string' &&
+        ((parsed as { token: string }).token.length > 0)
+
+      if (!isAuthMessage) {
+        client.send(JSON.stringify({ type: 'error', detail: '인증에 실패했습니다.' } satisfies ErrorMessage))
+        client.close()
+        clearTimeout(timeoutId)
+        return
+      }
+
+      // 토큰이 존재하면 통과 (mock 환경)
+      authedClients.add(client)
+      clearTimeout(timeoutId)
+      client.send(JSON.stringify(buildUnreadMessage()))
+    })
+
+    client.addEventListener('close', () => {
+      clearTimeout(timeoutId)
+    })
   }),
 ]
