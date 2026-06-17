@@ -40,8 +40,8 @@ export function useMessages(conversationId: string) {
     queryFn: ({ pageParam }) =>
       getMessages(conversationId, pageParam ?? undefined),
     initialPageParam: null,
-    // C1: TanStack Query v5는 undefined만 '마지막 페이지' 신호로 인식; null은 유효한 pageParam으로 처리됨
-    getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,
+    getNextPageParam: (lastPage) => lastPage.next ?? undefined,
+    enabled: !!conversationId,
     refetchOnWindowFocus: false,
   })
 }
@@ -65,7 +65,8 @@ export function useLeaveConversation() {
 
   return useMutation<void, Error, string>({
     mutationFn: (conversationId) => leaveConversation(conversationId),
-    onSuccess: () => {
+    onSuccess: (_, conversationId) => {
+      queryClient.removeQueries({ queryKey: queryKeys.dm.messages(conversationId) })
       queryClient.invalidateQueries({ queryKey: queryKeys.dm.conversations })
     },
     onError: (err) => {

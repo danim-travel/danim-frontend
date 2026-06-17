@@ -10,11 +10,12 @@
  */
 import { http, HttpResponse, ws } from 'msw'
 import type { RequestHandler, WebSocketHandler } from 'msw'
-import { SHOWCASE_MOCK_USER_ID } from '../constants'
+import { SHOWCASE_MOCK_USER_ID, MOCK_USER } from '../constants'
 import type {
   Conversation,
   LastMessage,
   Message,
+  UserBrief,
   ConversationListResponse,
   MessageListResponse,
   CreateConversationResponse,
@@ -64,30 +65,32 @@ const conversations: Conversation[] = [
 // 대화방 ID 전용 카운터 — 삭제 후에도 재사용되지 않도록 단조 증가
 let convSeq = conversations.length + 1
 
+const ME: UserBrief = { user_id: SHOWCASE_MOCK_USER_ID, nickname: MOCK_USER.nickname, profile_img: MOCK_USER.profileImg }
+
 // conversation_id → Message[] (최신순)
 const messageStore = new Map<string, Message[]>([
   [
     '01HDMCONV000000000000001',
     [
-      { message_id: '01HDMMSG000000000000005', conversation_id: '01HDMCONV000000000000001', sender_id: OPPONENTS[0].user_id, content: '제주도 어땠어요?',          created_at: new Date(NOW - 1000 * 60 * 5).toISOString(),           is_read: false, is_deleted: false },
-      { message_id: '01HDMMSG000000000000004', conversation_id: '01HDMCONV000000000000001', sender_id: OPPONENTS[0].user_id, content: '사진 올려줘요!',            created_at: new Date(NOW - 1000 * 60 * 10).toISOString(),          is_read: false, is_deleted: false },
-      { message_id: '01HDMMSG000000000000003', conversation_id: '01HDMCONV000000000000001', sender_id: SHOWCASE_MOCK_USER_ID, content: '저도 가고 싶어요.',        created_at: new Date(NOW - 1000 * 60 * 30).toISOString(),          is_read: true,  is_deleted: false },
-      { message_id: '01HDMMSG000000000000002', conversation_id: '01HDMCONV000000000000001', sender_id: OPPONENTS[0].user_id, content: '저 지금 제주도예요.',        created_at: new Date(NOW - 1000 * 60 * 60).toISOString(),          is_read: true,  is_deleted: false },
-      { message_id: '01HDMMSG000000000000001', conversation_id: '01HDMCONV000000000000001', sender_id: SHOWCASE_MOCK_USER_ID, content: '안녕하세요, 다님이에요!', created_at: new Date(NOW - 1000 * 60 * 60 * 24 * 3).toISOString(), is_read: true,  is_deleted: false },
+      { message_id: '01HDMMSG000000000000005', sender: OPPONENTS[0], content: '제주도 어땠어요?',   img_url: null, original_img: null, is_deleted: false, created_at: new Date(NOW - 1000 * 60 * 5).toISOString() },
+      { message_id: '01HDMMSG000000000000004', sender: OPPONENTS[0], content: '사진 올려줘요!',     img_url: null, original_img: null, is_deleted: false, created_at: new Date(NOW - 1000 * 60 * 10).toISOString() },
+      { message_id: '01HDMMSG000000000000003', sender: ME,           content: '저도 가고 싶어요.',  img_url: null, original_img: null, is_deleted: false, created_at: new Date(NOW - 1000 * 60 * 30).toISOString() },
+      { message_id: '01HDMMSG000000000000002', sender: OPPONENTS[0], content: '저 지금 제주도예요.',img_url: null, original_img: null, is_deleted: false, created_at: new Date(NOW - 1000 * 60 * 60).toISOString() },
+      { message_id: '01HDMMSG000000000000001', sender: ME,           content: '안녕하세요!',        img_url: null, original_img: null, is_deleted: false, created_at: new Date(NOW - 1000 * 60 * 60 * 24 * 3).toISOString() },
     ],
   ],
   [
     '01HDMCONV000000000000002',
     [
-      { message_id: '01HDMMSG000000000000008', conversation_id: '01HDMCONV000000000000002', sender_id: OPPONENTS[1].user_id, content: '다음 여행지는 어디예요?', created_at: new Date(NOW - 1000 * 60 * 60 * 2).toISOString(),           is_read: true, is_deleted: false },
-      { message_id: '01HDMMSG000000000000007', conversation_id: '01HDMCONV000000000000002', sender_id: SHOWCASE_MOCK_USER_ID, content: '저는 부산 다녀왔어요.',   created_at: new Date(NOW - 1000 * 60 * 60 * 3).toISOString(),           is_read: true, is_deleted: false },
-      { message_id: '01HDMMSG000000000000006', conversation_id: '01HDMCONV000000000000002', sender_id: OPPONENTS[1].user_id, content: '반가워요!',                created_at: new Date(NOW - 1000 * 60 * 60 * 24 * 7).toISOString(),     is_read: true, is_deleted: false },
+      { message_id: '01HDMMSG000000000000008', sender: OPPONENTS[1], content: '다음 여행지는 어디예요?', img_url: null, original_img: null, is_deleted: false, created_at: new Date(NOW - 1000 * 60 * 60 * 2).toISOString() },
+      { message_id: '01HDMMSG000000000000007', sender: ME,           content: '저는 부산 다녀왔어요.',   img_url: null, original_img: null, is_deleted: false, created_at: new Date(NOW - 1000 * 60 * 60 * 3).toISOString() },
+      { message_id: '01HDMMSG000000000000006', sender: OPPONENTS[1], content: '반가워요!',               img_url: null, original_img: null, is_deleted: false, created_at: new Date(NOW - 1000 * 60 * 60 * 24 * 7).toISOString() },
     ],
   ],
   [
     '01HDMCONV000000000000003',
     [
-      { message_id: '01HDMMSG000000000000009', conversation_id: '01HDMCONV000000000000003', sender_id: OPPONENTS[2].user_id, content: '안녕하세요!', created_at: new Date(NOW - 1000 * 60 * 60 * 24).toISOString(), is_read: false, is_deleted: false },
+      { message_id: '01HDMMSG000000000000009', sender: OPPONENTS[2], content: '안녕하세요!', img_url: null, original_img: null, is_deleted: false, created_at: new Date(NOW - 1000 * 60 * 60 * 24).toISOString() },
     ],
   ],
 ])
@@ -255,7 +258,7 @@ export const dmHandlers: RequestHandler[] = [
     const last = sliced[sliced.length - 1]
 
     return HttpResponse.json({
-      next_cursor: hasNext && last ? last.message_id : null,
+      next: hasNext && last ? last.message_id : null,
       results: sliced,
     } satisfies MessageListResponse)
   }),
@@ -330,12 +333,12 @@ export const dmWsHandlers: WebSocketHandler[] = [
         const now = new Date().toISOString()
         const newMessage: Message = {
           message_id: createMessageId(),
-          conversation_id: convId,
-          sender_id: SHOWCASE_MOCK_USER_ID,
+          sender: ME,
           content: msg.content.trim(),
-          created_at: now,
-          is_read: false,
+          img_url: null,
+          original_img: null,
           is_deleted: false,
+          created_at: now,
         }
         messages.unshift(newMessage)
 

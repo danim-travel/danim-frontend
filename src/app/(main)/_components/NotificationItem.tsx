@@ -8,8 +8,8 @@ import { Avatar } from "@/components/common"
 import { cn } from "@/lib/utils"
 import { useUIStore } from "@/store/uiStore"
 import type { NotificationItem as NotificationItemType } from "@/types"
+import { useCreateConversation } from "@/hooks/useDmQueries"
 import {
-  useCreateOrGetConversation,
   useDeleteNotification,
   useMarkNotificationRead,
 } from "../_hooks/useNotifications"
@@ -23,7 +23,7 @@ export function NotificationItem({ item }: NotificationItemProps) {
   const closePanel = useUIStore((s) => s.closePanel)
   const markRead = useMarkNotificationRead()
   const deleteOne = useDeleteNotification()
-  const createOrGetConversation = useCreateOrGetConversation()
+  const createOrGetConversation = useCreateConversation()
 
   const relativeTime = (() => {
     try {

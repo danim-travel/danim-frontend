@@ -12,8 +12,8 @@ export interface DmParticipant {
 }
 
 export interface LastMessage {
-  content: string
-  img_url: string
+  content: string | null
+  img_url: string | null
   created_at: string
 }
 
@@ -25,14 +25,20 @@ export interface Conversation {
   created_at: string
 }
 
+export interface UserBrief {
+  user_id: string
+  nickname: string
+  profile_img: string | null
+}
+
 export interface Message {
   message_id: string
-  conversation_id: string
-  sender_id: string
-  content: string
-  created_at: string
-  is_read: boolean
+  sender: UserBrief
+  content: string | null
+  img_url: string | null
+  original_img: string | null
   is_deleted: boolean
+  created_at: string
 }
 
 export interface CreateConversationRequest {
@@ -50,7 +56,7 @@ export interface ConversationListResponse {
 }
 
 export interface MessageListResponse {
-  next_cursor: string | null
+  next: string | null
   results: Message[]
 }
 

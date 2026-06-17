@@ -6,7 +6,6 @@
  * - useMarkAllNotificationsRead : 전체 읽음 처리
  * - useDeleteNotification       : 개별 삭제
  * - useDeleteAllNotifications   : 전체 삭제
- * - useCreateOrGetConversation  : DM 알림 클릭 시 대화방 진입 (POST /v1/conversations)
  */
 import {
   useInfiniteQuery,
@@ -120,26 +119,3 @@ export function useDeleteAllNotifications() {
   })
 }
 
-interface ConversationResponse {
-  conversation_id: string
-}
-
-export function useCreateOrGetConversation() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (receiverId: string) =>
-      apiClient
-        .post('direct-messages/conversations', { json: { receiver_id: receiverId } })
-        .json<ConversationResponse>(),
-    // C4: 새 대화방 생성 시 conversations 목록 캐시 갱신
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.dm.conversations })
-    },
-    onError: (err) => {
-      toast.error(
-        getApiErrorMessage(err, { client: '대화방을 열 수 없습니다.' }),
-      )
-    },
-  })
-}
