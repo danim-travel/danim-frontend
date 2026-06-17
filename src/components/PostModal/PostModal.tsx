@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { useScrollLock } from "@/hooks/useScrollLock";
 import { X } from "lucide-react";
-import { IconButton } from "@/components/common";
+import { Button, IconButton, Modal } from "@/components/common";
 import { toast } from "@/store/toastStore";
+import { usePostDelete } from "./_lib/usePostDelete";
 import { usePostDetail } from "@/hooks/usePostDetail";
 import { useCommentsQuery } from "@/hooks/useCommentsQuery";
 import { useCommentMutations } from "@/hooks/useCommentMutations";
@@ -33,7 +35,11 @@ interface Props {
 const urlPathname = (url: string) => { try { return new URL(url).pathname } catch { return url } }
 
 export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, className, initialSpotIdx }: Props) {
+  const router = useRouter();
   const [userSelectedIdx, setUserSelectedIdx] = useState<number | null>(null);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+
+  const { deletePost, isDeleting } = usePostDelete(postId, { onClose });
 
   const { data, isLoading, isError, likeMutation, bookmarkMutation } = usePostDetail(postId);
   const { data: commentsData } = useCommentsQuery(postId);
@@ -87,11 +93,10 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
       buildPostContextMenu({
         isOwner: data?.is_owner ?? false,
         postId,
-        // TODO: 수정/삭제 라우팅·확인 모달 — 후속 PR
-        onEdit: () => {},
-        onDelete: () => {},
+        onEdit: () => router.push(`/write/${postId}/edit`),
+        onDelete: () => setConfirmDeleteOpen(true),
       }),
-    [data?.is_owner, postId]
+    [data?.is_owner, postId, router]
   );
 
   // activeSpotIdx 변경 시 Context consumers가 불필요하게 리렌더되지 않도록 메모이즈.
@@ -188,6 +193,39 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
         )}
 
       </motion.div>
+
+      <Modal
+        open={confirmDeleteOpen}
+        onClose={() => setConfirmDeleteOpen(false)}
+        title="게시글 삭제"
+        className="max-w-sm"
+        footer={
+          <>
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => setConfirmDeleteOpen(false)}
+              disabled={isDeleting}
+            >
+              취소
+            </Button>
+            <Button
+              variant="outline"
+              size="md"
+              className="text-error border-error hover:bg-error/5"
+              onClick={() => deletePost()}
+              loading={isDeleting}
+              disabled={isDeleting}
+            >
+              삭제
+            </Button>
+          </>
+        }
+      >
+        <p className="text-body-sm text-text-body">
+          이 게시글을 정말 삭제하시겠습니까? 삭제하면 복구할 수 없습니다.
+        </p>
+      </Modal>
     </motion.div>
   );
 }
