@@ -7,7 +7,7 @@ export interface BottomTabBarProps { items: BottomTabItem[]; active: string; onN
 
 export function BottomTabBar({ items, active, onNav }: BottomTabBarProps) {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 h-16 flex items-center justify-around bg-bg-card border-t border-border px-2 z-40">
+    <nav className="fixed bottom-0 left-0 right-0 h-16 flex items-center justify-around bg-bg-card border-t border-border px-2 z-(--z-bottom-nav)">
       {items.map((it) => {
         const on = it.key === active;
         if (it.primary) {
@@ -33,7 +33,7 @@ export function BottomTabBar({ items, active, onNav }: BottomTabBarProps) {
             )}
           >
             {it.icon}
-            <span className="text-nav font-semibold">{it.label}</span>
+            <span className="text-nav font-semibold whitespace-nowrap">{it.label}</span>
           </button>
         );
       })}
