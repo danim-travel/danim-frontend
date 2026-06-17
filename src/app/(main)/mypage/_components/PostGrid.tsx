@@ -59,7 +59,7 @@ export function PostGrid({ posts, onPostClick }: PostGridProps) {
                   height={300}
                   sizes="25vw"
                   className="w-full h-auto rounded-xl block"
-                  priority={rowIdx === 0}
+                  priority={rowIdx === 0 && colIdx < 2}
                 />
               </div>
             ))}
