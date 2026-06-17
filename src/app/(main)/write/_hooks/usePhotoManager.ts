@@ -13,11 +13,12 @@ type UsePhotoManagerArgs = {
   spots: SpotFormData[]
   active: SpotFormData
   updateSpot: (id: string, updates: Partial<SpotFormData>) => void
+  initialThumbnailKey?: string | null
 }
 
-export function usePhotoManager({ spots, active, updateSpot }: UsePhotoManagerArgs) {
+export function usePhotoManager({ spots, active, updateSpot, initialThumbnailKey }: UsePhotoManagerArgs) {
   // 현재 선택된 썸네일 이미지의 S3 key
-  const [thumbnailKey, setThumbnailKey] = useState<string | null>(null)
+  const [thumbnailKey, setThumbnailKey] = useState<string | null>(() => initialThumbnailKey ?? null)
   // 현재 선택된 사진의 인덱스
   const [selectedPhotoIdx, setSelectedPhotoIdx] = useState(0)
   // 사진 업로드 중 여부
