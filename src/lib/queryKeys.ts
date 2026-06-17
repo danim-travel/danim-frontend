@@ -25,4 +25,8 @@ export const queryKeys = {
   notifications: {
     list: ['notifications', 'list'] as const,
   },
+  dm: {
+    conversations: ['dm', 'conversations'] as const,
+    messages: (conversationId: string) => ['dm', 'conversations', conversationId, 'messages'] as const,
+  },
 }
