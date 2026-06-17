@@ -22,6 +22,8 @@ export function usePhotoManager({ spots, active, updateSpot }: UsePhotoManagerAr
   const [selectedPhotoIdx, setSelectedPhotoIdx] = useState(0)
   // 사진 업로드 중 여부
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false)
+  // 업로드 진행률 — 다중 사진 동시 업로드 시 "N / M" 표시용
+  const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number }>({ current: 0, total: 0 })
   // 언마운트 후 setState/updateSpot 호출 방지
   const aliveRef = useRef(true)
 
@@ -58,10 +60,12 @@ export function usePhotoManager({ spots, active, updateSpot }: UsePhotoManagerAr
     }))
 
     setIsUploadingPhoto(true)
+    setUploadProgress({ current: 0, total: pairs.length })
     try {
       const uploaded = await Promise.all(
         pairs.map(async ({ file, previewUrl }) => {
           const { img_url, key } = await uploadImage('posts/presigned-url', file)
+          setUploadProgress((prev) => ({ ...prev, current: prev.current + 1 }))
           const image: CreatePostSpotImage = { original_img: img_url, key }
           return { image, previewUrl }
         })
@@ -88,6 +92,7 @@ export function usePhotoManager({ spots, active, updateSpot }: UsePhotoManagerAr
     } finally {
       e.target.value = ''
       setIsUploadingPhoto(false)
+      setUploadProgress({ current: 0, total: 0 })
     }
   }
 
@@ -122,6 +127,7 @@ export function usePhotoManager({ spots, active, updateSpot }: UsePhotoManagerAr
     selectedPhotoIdx,
     setSelectedPhotoIdx,
     isUploadingPhoto,
+    uploadProgress,
     handlePhotoAdd,
     removePhoto,
     reorderPhotos,

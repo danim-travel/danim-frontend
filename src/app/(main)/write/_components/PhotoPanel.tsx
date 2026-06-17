@@ -9,6 +9,7 @@ import { MAX_PHOTOS } from '../_constants'
 interface PhotosState {
   selectedPhotoIdx: number
   isUploadingPhoto: boolean
+  uploadProgress: { current: number; total: number }
   onSelectPhoto: (idx: number) => void
   onPhotoAdd: (e: React.ChangeEvent<HTMLInputElement>) => void
   onRemovePhoto: (idx: number) => void
@@ -35,6 +36,7 @@ export default function PhotoPanel({ active, photosState, photoError }: PhotoPan
   const {
     selectedPhotoIdx,
     isUploadingPhoto,
+    uploadProgress,
     onSelectPhoto,
     onPhotoAdd,
     onRemovePhoto,
@@ -52,9 +54,9 @@ export default function PhotoPanel({ active, photosState, photoError }: PhotoPan
   const hasPhotoError = isEmpty && Boolean(photoError)
 
   return (
-    <div className="w-full flex flex-col px-4 pt-4 pb-3 gap-3">
+    <div className="w-full flex flex-col gap-3 px-4 pt-4 pb-3 md:w-[44%] md:shrink-0 md:border-r md:border-border-subtle md:p-5 md:bg-bg-subtle/50">
       <div
-        className={`w-full aspect-[4/3] rounded-2xl border-2 overflow-hidden relative transition-all ${getPhotoContainerClass(isEmpty, hasPhotoError)}`}
+        className={`w-full aspect-[4/3] rounded-2xl border-2 overflow-hidden relative transition-all md:w-auto md:flex-1 md:aspect-auto ${getPhotoContainerClass(isEmpty, hasPhotoError)}`}
         onClick={() => isEmpty && fileInputRef.current?.click()}
       >
         {!isEmpty ? (
@@ -88,13 +90,17 @@ export default function PhotoPanel({ active, photosState, photoError }: PhotoPan
             </div>
             <div className="text-center px-6">
               <p className="text-body-sm font-semibold text-text-body">
-                {isUploadingPhoto ? '업로드 중...' : '사진 업로드'}
+                {isUploadingPhoto
+                  ? uploadProgress.total > 1
+                    ? `업로드 중... (${uploadProgress.current} / ${uploadProgress.total})`
+                    : '업로드 중...'
+                  : '사진 업로드'}
               </p>
               {!isUploadingPhoto && (
                 <p className="text-nav text-text-disabled mt-1.5 leading-relaxed">
                   클릭하거나 파일을 드래그하세요
                   <br />
-                  JPG, PNG, WEBP · 최대 10MB · 5장
+                  이미지 파일 (SVG · GIF 제외) · 최대 5장
                 </p>
               )}
             </div>
@@ -146,7 +152,7 @@ export default function PhotoPanel({ active, photosState, photoError }: PhotoPan
                   e.stopPropagation()
                   onRemovePhoto(i)
                 }}
-                className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-gray-700 text-text-inverse rounded-full text-tiny hidden group-hover:flex items-center justify-center shadow-sm"
+                className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-text-secondary text-text-inverse rounded-full text-tiny hidden group-hover:flex items-center justify-center shadow-sm"
               >
                 ×
               </button>

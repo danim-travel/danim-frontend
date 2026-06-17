@@ -113,8 +113,8 @@ export default function WritePage() {
     <div className="h-full flex flex-col bg-white">
       <WriteHeader onCancel={handleCancel} />
 
-      {/* 단일 컬럼 스크롤 영역 */}
-      <div className="flex-1 min-h-0 overflow-y-auto">
+      {/* 모바일: 단일 컬럼 스크롤 / 데스크탑(md+): 사진 좌측 고정 + 폼 우측 스크롤 2단 */}
+      <div className="flex-1 min-h-0 overflow-y-auto md:flex md:overflow-hidden">
         {/* 사진 업로드 */}
         <PhotoPanel
           active={spot.active}
@@ -122,6 +122,7 @@ export default function WritePage() {
           photosState={{
             selectedPhotoIdx: photo.selectedPhotoIdx,
             isUploadingPhoto: photo.isUploadingPhoto,
+            uploadProgress: photo.uploadProgress,
             onPhotoAdd: photo.handlePhotoAdd,
             onRemovePhoto: photo.removePhoto,
             onSelectPhoto: photo.setSelectedPhotoIdx,
@@ -129,8 +130,8 @@ export default function WritePage() {
           }}
         />
 
-        {/* 폼 필드 */}
-        <div className="px-4 pb-6 flex flex-col gap-5">
+        {/* 폼 필드: 모바일은 부모 스크롤 내 / 데스크탑은 자체 스크롤 컬럼 */}
+        <div className="px-4 pb-6 flex flex-col gap-5 md:flex-1 md:overflow-y-auto md:px-7 md:py-4 md:pb-4 md:gap-4">
           <TitleSection title={title} setTitle={setTitle} error={titleError} />
           <DescriptionSection description={description} setDescription={setDescription} error={descriptionError} />
 
