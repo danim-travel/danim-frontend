@@ -61,6 +61,9 @@ const conversations: Conversation[] = [
   },
 ]
 
+// 대화방 ID 전용 카운터 — 삭제 후에도 재사용되지 않도록 단조 증가
+let convSeq = conversations.length + 1
+
 // conversation_id → Message[] (최신순)
 const messageStore = new Map<string, Message[]>([
   [
@@ -141,7 +144,7 @@ export const dmHandlers: RequestHandler[] = [
 
     const now = new Date().toISOString()
     const newConv: Conversation = {
-      conversation_id: `01HDMCONV${String(conversations.length + 1).padStart(15, '0')}`,
+      conversation_id: `01HDMCONV${String(convSeq++).padStart(15, '0')}`,
       opponent,
       last_message: null,
       unread_count: 0,
@@ -218,6 +221,16 @@ export const dmHandlers: RequestHandler[] = [
       return HttpResponse.json({ error_detail: '존재하지 않는 메시지입니다.' }, { status: 404 })
     }
     msg.is_deleted = true
+
+    // 삭제 후 해당 대화방의 last_message를 최신 non-deleted 메시지로 재계산
+    const conv = conversations.find((c) => c.conversation_id === convId)
+    if (conv) {
+      const latest = messages.find((m) => !m.is_deleted)
+      conv.last_message = latest
+        ? { content: latest.content, img_url: '', created_at: latest.created_at }
+        : null
+    }
+
     return new HttpResponse(null, { status: 204 })
   }),
 
