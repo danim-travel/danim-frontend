@@ -34,6 +34,7 @@ export default function HomePage() {
   const [focusedPost, setFocusedPost] = useState<MainFeedItem | null>(null);
   const [focusedPostIndex, setFocusedPostIndex] = useState(0);
   const [spotIdx, setSpotIdx] = useState<number | undefined>(undefined);
+  const [sheetExpanded, setSheetExpanded] = useState(false);
 
   const { closePanel } = useUIStore();
   const [postId, setPostId] = useQueryState("post", parseAsString);
@@ -61,6 +62,7 @@ export default function HomePage() {
     setFocusedPost(post);
     setFocusedPostIndex(index);
     prefetchPostDetail(post.post.post_id);
+    setSheetExpanded(false); // 게시글 선택 시 반반으로 축소
   }, [prefetchPostDetail]);
 
   const handleOpenModal = useCallback((post: MainFeedItem, index: number) => {
@@ -112,13 +114,16 @@ export default function HomePage() {
           focusedPost={activeFocusedPost}
           focusedPostIndex={activeFocusedPostIndex}
           onPinClick={handlePinClick}
-          onResetFocus={() => setFocusedPost(null)}
+          onResetFocus={() => { setFocusedPost(null); setSheetExpanded(false); }}
         />
       </div>
 
       {/* 모바일: 피드 바텀시트 */}
       <div className="md:hidden">
-        <MobileBottomSheet>
+        <MobileBottomSheet
+          expanded={sheetExpanded}
+          onExpandedChange={setSheetExpanded}
+        >
           <FeedPanel {...feedPanelProps} variant="sheet" />
         </MobileBottomSheet>
       </div>
