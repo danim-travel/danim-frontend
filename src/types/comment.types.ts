@@ -35,7 +35,7 @@ export type CommentCreateRequest = {
 
 export type CommentUpdateRequest = {
   content?: string | null
-  comment_img?: CommentImageInput | null
+  comment_img?: CommentImageInput
 }
 
 export type CommentCreateResponse = {
