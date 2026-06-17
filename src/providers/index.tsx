@@ -51,7 +51,8 @@ function AuthBootstrap({ children }: { children: React.ReactNode }) {
           const { setAuth } = useAuthStore.getState()
           setAuth(toAuthUser(me), access_token)
         } catch {
-          // getCurrentUser 실패 — 토큰은 유효하므로 유지, user는 null 상태로 진입
+          // getCurrentUser 실패 — 토큰과 유저를 함께 초기화해 인증 상태 불일치를 막는다.
+          useAuthStore.getState().clearAuth()
         }
       } catch {
         // refreshToken 실패 = 비로그인 상태 유지 (accessToken 이미 null)
