@@ -9,6 +9,14 @@ export const config = {
   get apiUrl() {
     return env.NEXT_PUBLIC_API_URL
   },
+  /**
+   * WebSocket 베이스 URL. 끝의 슬래시 없이 origin 형태로 노출한다.
+   * 예: `wss://dev-api.danim.kr`
+   * 사용 측에서 `${config.wsBaseUrl}/ws/notifications/` 처럼 경로를 붙인다.
+   */
+  get wsBaseUrl() {
+    return env.NEXT_PUBLIC_WS_URL.replace(/\/+$/, '')
+  },
   get kakaoMapKey() {
     return env.NEXT_PUBLIC_KAKAO_MAP_KEY
   },
