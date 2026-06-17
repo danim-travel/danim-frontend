@@ -18,7 +18,7 @@ export function FollowList({ userId, tab, followers, following, isLoading }: Fol
   const followersQueryKey = queryKeys.users.followers(userId)
   const followingQueryKey = queryKeys.users.following(userId)
 
-  const list = isFollowers ? followers : following
+  const list = isFollowers ? followers : following.filter(u => u.is_following)
 
   // followers ↔ following userId 교집합으로 맞팔 여부 계산
   const followingIds = new Set(following.filter(u => u.is_following).map(u => u.user_id))
@@ -39,9 +39,9 @@ export function FollowList({ userId, tab, followers, following, isLoading }: Fol
   }
 
   return (
-    <ul>
+    <ul className="divide-y divide-border">
       {list.map(user => (
-        <li key={user.user_id}>
+        <li key={user.user_id} className="py-4">
           <FollowUserItem
             user={user}
             followersQueryKey={followersQueryKey}
