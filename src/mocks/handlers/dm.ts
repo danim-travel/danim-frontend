@@ -30,6 +30,9 @@ type WsClient = Parameters<
 
 // ---------- Mock 데이터 ----------
 
+/** mock 내부 전용 타입 — Conversation 외에 정렬·POST 응답 생성용 created_at 보관 */
+type StoredConversation = Conversation & { created_at: string }
+
 const NOW = Date.UTC(2026, 5, 17, 12, 0, 0) // 2026-06-17 12:00:00Z 기준
 
 const OPPONENTS: Conversation['opponent'][] = [
@@ -38,7 +41,7 @@ const OPPONENTS: Conversation['opponent'][] = [
   { user_id: '01HDMPARTNER0000000000003', nickname: '이바다', profile_img: null },
 ]
 
-const conversations: Conversation[] = [
+const conversations: StoredConversation[] = [
   {
     conversation_id: '01HDMCONV000000000000001',
     opponent: OPPONENTS[0],
@@ -146,7 +149,7 @@ export const dmHandlers: RequestHandler[] = [
     }
 
     const now = new Date().toISOString()
-    const newConv: Conversation = {
+    const newConv: StoredConversation = {
       conversation_id: `01HDMCONV${String(convSeq++).padStart(15, '0')}`,
       opponent,
       last_message: null,
@@ -168,9 +171,10 @@ export const dmHandlers: RequestHandler[] = [
   http.get('*/direct-messages/conversations', ({ request }) => {
     if (!isAuthed(request)) return unauthorized()
 
+    // last_message 없는 신규 대화방은 최상단으로 (먼 미래 날짜로 폴백)
     const sorted = [...conversations].sort((a, b) => {
-      const ta = a.last_message?.created_at ?? a.created_at
-      const tb = b.last_message?.created_at ?? b.created_at
+      const ta = a.last_message?.created_at ?? '9999-12-31T23:59:59.999Z'
+      const tb = b.last_message?.created_at ?? '9999-12-31T23:59:59.999Z'
       return tb.localeCompare(ta)
     })
 

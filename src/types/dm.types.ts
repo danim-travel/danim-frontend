@@ -5,11 +5,14 @@
  * WS:   /ws/dm
  */
 
-export interface DmParticipant {
+export interface UserBrief {
   user_id: string
   nickname: string
   profile_img: string | null
 }
+
+/** 대화 상대방·메시지 발신자에 공통으로 사용되는 유저 요약 타입. */
+export type DmParticipant = UserBrief
 
 export interface LastMessage {
   content: string | null
@@ -22,13 +25,6 @@ export interface Conversation {
   opponent: DmParticipant
   last_message: LastMessage | null
   unread_count: number
-  created_at: string
-}
-
-export interface UserBrief {
-  user_id: string
-  nickname: string
-  profile_img: string | null
 }
 
 export interface Message {
