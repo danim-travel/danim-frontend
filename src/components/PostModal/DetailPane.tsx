@@ -33,16 +33,16 @@ export default function PostModalDetailPane({
           initial={data.user.nickname?.[0] ?? "?"}
           size="md"
         />
-        <span className="text-base font-bold text-text">{data.user.nickname}</span>
+        <span className="text-base font-bold text-text truncate">{data.user.nickname}</span>
       </header>
 
       {activeSpot && (
         <div className="flex items-center justify-between gap-3 px-6 pt-2 pb-4 shrink-0">
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 min-w-0">
             <span className="w-[22px] h-[22px] rounded-full flex items-center justify-center text-text-inverse text-nav font-bold shrink-0 bg-primary">
               {activeSpotIdx + 1}
             </span>
-            <span className="text-base font-semibold text-text">
+            <span className="text-base font-semibold text-text truncate">
               {activeSpot.location.place_name}
             </span>
           </div>

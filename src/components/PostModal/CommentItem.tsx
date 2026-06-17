@@ -3,40 +3,26 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
-import { Heart, Pencil, Plus, Trash2, X } from "lucide-react";
+import { Heart, Pencil, Trash2, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
-import type { Comment, CommentImageInput } from "@/types";
+import type { Comment } from "@/types";
 import { Avatar, Button, Modal } from "@/components/common";
-import { toast } from "@/store/toastStore";
 import { KebabMenu } from "./KebabMenu";
-import { useCommentImageAttachment } from "./_hooks/useCommentImageAttachment";
-import { uploadCommentImageFile } from "./_lib/uploadCommentImageFile";
 
 interface Props {
   comment: Comment;
   isOwn: boolean;
   onLike: () => void;
-  onEdit: (content: string | null, commentImg: CommentImageInput | null | undefined) => void;
+  onEdit: (content: string) => void;
   onDelete: () => void;
 }
 
 export default function CommentItem({ comment, isOwn, onLike, onEdit, onDelete }: Props) {
+  // null = 수정 중 아님, string = 수정 중인 임시 텍스트
   const [editDraft, setEditDraft] = useState<string | null>(null);
   const editing = editDraft !== null;
   const draft = editDraft ?? comment.content ?? "";
-
-  const {
-    imageFile: editImageFile,
-    imagePreview: editImagePreview,
-    imageRemovedRef: editImageRemovedRef,
-    fileInputRef: editFileInputRef,
-    handleFileChange: handleEditFileChange,
-    handleRemoveImage: handleRemoveEditImage,
-    reset: resetImageAttachment,
-  } = useCommentImageAttachment({ trackRemoved: true });
-  const [editUploading, setEditUploading] = useState(false);
-
   const [zoomedImg, setZoomedImg] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -45,35 +31,31 @@ export default function CommentItem({ comment, isOwn, onLike, onEdit, onDelete }
   useEffect(() => {
     if (!zoomedImg) return;
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") { e.stopPropagation(); closeZoom(); }
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        closeZoom();
+      }
     };
+    // capture: true — window capture phase에서 처리해 document의 PostModal 핸들러에 도달하지 않도록 차단
     window.addEventListener("keydown", handler, { capture: true });
     return () => window.removeEventListener("keydown", handler, { capture: true });
   }, [zoomedImg, closeZoom]);
+
 
   const timeAgo = formatDistanceToNow(new Date(comment.created_at), {
     addSuffix: true,
     locale: ko,
   });
 
+  // onDelete는 부모 렌더마다 새 참조이므로 ref로 안정화 → menuItems useMemo 효과 보장
   const onDeleteRef = useRef(onDelete);
   useEffect(() => { onDeleteRef.current = onDelete; }, [onDelete]);
-
-  const startEditing = useCallback(() => {
-    setEditDraft(comment.content ?? "");
-    resetImageAttachment(comment.comment_img?.img_url ?? null);
-  }, [comment.content, comment.comment_img?.img_url, resetImageAttachment]);
-
-  const cancelEditing = useCallback(() => {
-    setEditDraft(null);
-    resetImageAttachment(null);
-  }, [resetImageAttachment]);
 
   const menuItems = useMemo(() => [
     {
       label: "수정",
       icon: <Pencil size={12} />,
-      onClick: startEditing,
+      onClick: () => setEditDraft(comment.content ?? ""),
     },
     {
       label: "삭제",
@@ -81,59 +63,22 @@ export default function CommentItem({ comment, isOwn, onLike, onEdit, onDelete }
       danger: true as const,
       onClick: () => setConfirmDelete(true),
     },
-  ], [startEditing]);
+  ], [comment.content]);
 
-  const canSkipSave = (trimmed: string) =>
-    trimmed === (comment.content?.trim() ?? "") && !editImageFile && !editImageRemovedRef.current;
-
-  const buildImagePatch = () => {
-    if (editImageRemovedRef.current) return { original_img: "", key: "" };
-    if (editImageFile) return { original_img: editImageFile.name, key: "" };
-    return undefined;
-  };
-
-  const hasRemainingCommentMedia = (trimmed: string) =>
-    trimmed.length > 0 || !!editImageFile || (!!editImagePreview && !editImageRemovedRef.current);
-
-  const handleSaveEdit = async () => {
+  const handleSaveEdit = () => {
     const trimmed = draft.trim();
-    if (canSkipSave(trimmed)) {
-      cancelEditing();
+    if (!trimmed || trimmed === comment.content?.trim()) {
+      setEditDraft(null);
       return;
     }
-
-    if (!hasRemainingCommentMedia(trimmed)) {
-      toast.error("텍스트 또는 이미지 중 하나는 있어야 합니다.");
-      return;
-    }
-
-    const contentToSend = trimmed || null;
-    const nextCommentImage = buildImagePatch();
-
-    if (editImageFile) {
-      setEditUploading(true);
-      try {
-        const commentImg = await uploadCommentImageFile(editImageFile);
-        onEdit(contentToSend, commentImg);
-        cancelEditing();
-      } catch {
-        // uploadCommentImageFile 내부에서 toast 처리
-      } finally {
-        setEditUploading(false);
-      }
-      return;
-    }
-
-    onEdit(contentToSend, nextCommentImage);
-    cancelEditing();
+    onEdit(trimmed);
+    setEditDraft(null);
   };
 
   const handleEditKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.nativeEvent.isComposing) handleSaveEdit();
-    if (e.key === "Escape") { e.stopPropagation(); cancelEditing(); }
+    if (e.key === "Escape") { e.stopPropagation(); setEditDraft(null); }
   };
-
-  const existingImgUrl = comment.comment_img?.img_url ?? null;
 
   return (
     <div className="group flex gap-2.5 py-2.5 relative">
@@ -144,92 +89,46 @@ export default function CommentItem({ comment, isOwn, onLike, onEdit, onDelete }
       />
 
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5">
-          <span className="text-body-sm font-semibold text-text">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="text-body-sm font-semibold text-text truncate min-w-0">
             {comment.user.nickname}
           </span>
-          <span className="text-nav text-text-disabled">{timeAgo}</span>
+          <span className="text-nav text-text-disabled shrink-0 whitespace-nowrap">{timeAgo}</span>
         </div>
 
         {editing ? (
-          <div className="mt-1 flex flex-col gap-1.5">
-            {editImagePreview && (
-              <div className="relative w-16 h-16">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={editImagePreview}
-                  alt="첨부 이미지"
-                  className="w-full h-full object-cover rounded-lg"
-                />
-                <button
-                  type="button"
-                  onClick={handleRemoveEditImage}
-                  className="absolute -top-1.5 -right-1.5 z-10 w-6 h-6 bg-black/80 rounded-full flex items-center justify-center shadow-md"
-                  aria-label="사진 삭제"
-                >
-                  <X className="w-3 h-3 text-text-inverse" />
-                </button>
-              </div>
-            )}
-            {editImagePreview && (
-              <button
-                type="button"
-                onClick={handleRemoveEditImage}
-                className="self-start text-caption font-semibold text-text-muted hover:text-text-secondary"
-              >
-                사진 삭제
-              </button>
-            )}
-            <div className="flex items-center gap-1.5">
-              <div className="flex flex-1 items-center gap-2 bg-bg-subtle rounded-full border border-border px-3 py-1.5 focus-within:border-primary transition-colors">
-                <button
-                  type="button"
-                  aria-label="이미지 첨부"
-                  onClick={() => editFileInputRef.current?.click()}
-                  className="text-text-muted hover:text-text-secondary shrink-0"
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
-                <input
-                  autoFocus
-                  value={draft}
-                  onChange={(e) => setEditDraft(e.target.value)}
-                  onKeyDown={handleEditKeyDown}
-                  className="flex-1 text-caption bg-transparent outline-none text-text-secondary"
-                />
-              </div>
-              <Button variant="secondary" size="sm" onClick={cancelEditing} disabled={editUploading}>
-                취소
-              </Button>
-              <Button variant="primary" size="sm" onClick={handleSaveEdit} disabled={editUploading}>
-                {editUploading ? "···" : "저장"}
-              </Button>
-            </div>
+          <div className="mt-1 flex items-center gap-1.5">
             <input
-              ref={editFileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleEditFileChange}
+              autoFocus
+              value={draft}
+              onChange={(e) => setEditDraft(e.target.value)}
+              onKeyDown={handleEditKeyDown}
+              className="flex-1 text-caption bg-bg-subtle rounded-full border border-border px-3 py-1.5 outline-none text-text-secondary focus:border-primary"
             />
+            <Button variant="secondary" size="sm" onClick={() => setEditDraft(null)}>
+              취소
+            </Button>
+            <Button variant="primary" size="sm" onClick={handleSaveEdit}>
+              저장
+            </Button>
           </div>
         ) : (
           comment.content && (
-            <p className="mt-0.5 text-body-sm text-text-body leading-5 line-clamp-2 wrap-break-word">
+            <p className="mt-0.5 text-body-sm text-text-body leading-5 line-clamp-2 break-words">
               {comment.content}
             </p>
           )
         )}
 
-        {existingImgUrl && !editing && (
+        {comment.comment_img.img_url && !editing && (
           <button
             type="button"
             aria-label="이미지 확대"
             className="mt-2 w-20 h-20 rounded-lg overflow-hidden shrink-0 cursor-zoom-in"
-            onClick={() => setZoomedImg(existingImgUrl)}
+            onClick={() => setZoomedImg(comment.comment_img.img_url)}
           >
             <Image
-              src={existingImgUrl}
+              src={comment.comment_img.img_url}
               alt="댓글 이미지"
               width={80}
               height={80}
@@ -240,7 +139,7 @@ export default function CommentItem({ comment, isOwn, onLike, onEdit, onDelete }
 
         {zoomedImg && createPortal(
           <div
-            className="fixed inset-0 z-9999 flex items-center justify-center bg-black/70"
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70"
             onClick={closeZoom}
           >
             <div className="relative max-w-[90vw] max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
