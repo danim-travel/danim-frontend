@@ -13,8 +13,6 @@ if (process.env.NODE_ENV === 'production') {
 const nextConfig: NextConfig = {
   devIndicators: false,
   images: {
-    formats: ['image/avif', 'image/webp'],
-    minimumCacheTTL: 60 * 60 * 24 * 7,
     remotePatterns: [
       { protocol: 'https', hostname: 'picsum.photos' },
       { protocol: 'https', hostname: '*.s3.ap-northeast-2.amazonaws.com' },
