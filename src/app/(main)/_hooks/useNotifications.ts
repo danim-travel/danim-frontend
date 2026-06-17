@@ -128,7 +128,7 @@ export function useCreateOrGetConversation() {
   return useMutation({
     mutationFn: (receiverId: string) =>
       apiClient
-        .post('conversations', { json: { receiver_id: receiverId } })
+        .post('direct-messages/conversations', { json: { receiver_id: receiverId } })
         .json<ConversationResponse>(),
     onError: (err) => {
       toast.error(
