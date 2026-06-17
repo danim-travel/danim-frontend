@@ -45,8 +45,8 @@ export default function ExplorePage() {
             className={[
               "px-5 py-2.5 rounded-(--chip-radius) text-body-sm font-semibold transition-colors border",
               category === cat
-                ? "bg-(--chip-bg-selected) text-(color:--chip-text-selected) border-transparent"
-                : "bg-(--chip-bg) text-(color:--chip-text) border-(--chip-border) hover:bg-bg-subtle",
+                ? "bg-(--chip-bg-selected) text-(--chip-text-selected) border-transparent"
+                : "bg-(--chip-bg) text-(--chip-text) border-(--chip-border) hover:bg-bg-subtle",
             ].join(" ")}
           >
             {cat}

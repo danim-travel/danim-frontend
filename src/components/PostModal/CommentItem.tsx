@@ -148,7 +148,7 @@ export default function CommentItem({ comment, isOwn, onLike, onEdit, onDelete }
                 alt="댓글 이미지 확대"
                 width={800}
                 height={800}
-                className="object-contain max-w-[90vw] max-h-[90vh] rounded-xl"
+                className="object-contain max-w-[90vw] max-h-[90vh] w-auto h-auto rounded-xl"
               />
               <button
                 onClick={closeZoom}

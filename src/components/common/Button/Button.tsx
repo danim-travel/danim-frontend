@@ -23,23 +23,23 @@ const sizeClasses: Record<ButtonSize, string> = {
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    "bg-(--button-primary-bg) text-(color:--button-primary-text) shadow-(--button-primary-shadow) border-transparent " +
+    "bg-(--button-primary-bg) text-(--button-primary-text) shadow-(--button-primary-shadow) border-transparent " +
     "hover:bg-(--button-primary-bg-hover) active:bg-(--button-primary-bg-active) " +
     "focus-visible:outline-none focus-visible:shadow-(--button-primary-shadow-focus)",
   secondary:
-    "bg-(--button-secondary-bg) text-(color:--button-secondary-text) border border-(--button-secondary-border) " +
+    "bg-(--button-secondary-bg) text-(--button-secondary-text) border border-(--button-secondary-border) " +
     "hover:bg-(--button-secondary-bg-hover) " +
     "focus-visible:outline-none focus-visible:shadow-(--button-primary-shadow-focus)",
   outline:
-    "bg-(--button-outline-bg) text-(color:--button-outline-text) border border-(--button-outline-border) " +
+    "bg-(--button-outline-bg) text-(--button-outline-text) border border-(--button-outline-border) " +
     "hover:bg-(--button-outline-bg-hover) " +
     "focus-visible:outline-none focus-visible:shadow-(--button-primary-shadow-focus)",
 };
 
 const disabledClasses: Record<ButtonVariant, string> = {
-  primary:   "bg-(--button-primary-bg-disabled) text-(color:--button-primary-text-disabled) shadow-none border-transparent",
-  secondary: "bg-(--button-secondary-bg-disabled) text-(color:--button-secondary-text-disabled) border border-(--button-secondary-border)",
-  outline:   "bg-(--button-outline-bg-disabled) text-(color:--button-outline-text-disabled) border border-(--button-outline-border-disabled)",
+  primary:   "bg-(--button-primary-bg-disabled) text-(--button-primary-text-disabled) shadow-none border-transparent",
+  secondary: "bg-(--button-secondary-bg-disabled) text-(--button-secondary-text-disabled) border border-(--button-secondary-border)",
+  outline:   "bg-(--button-outline-bg-disabled) text-(--button-outline-text-disabled) border border-(--button-outline-border-disabled)",
 };
 
 export function Button({
