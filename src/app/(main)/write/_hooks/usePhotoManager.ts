@@ -21,10 +21,11 @@ export function usePhotoManager({ spots, active, updateSpot, initialThumbnailKey
   const [thumbnailKey, setThumbnailKey] = useState<string | null>(() => initialThumbnailKey ?? null)
   // 현재 선택된 사진의 인덱스
   const [selectedPhotoIdx, setSelectedPhotoIdx] = useState(0)
-  // 사진 업로드 중 여부
-  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false)
-  // 업로드 진행률 — 다중 사진 동시 업로드 시 "N / M" 표시용
-  const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number }>({ current: 0, total: 0 })
+  // 스팟별 업로드 상태 — 단일 boolean으로 두면 업로드 중 다른 스팟으로 전환 시 새 스팟에도 스피너가 새서 보이는 버그 발생
+  const [spotUploads, setSpotUploads] = useState<Map<string, { current: number; total: number }>>(new Map())
+  const activeUpload = spotUploads.get(active.id)
+  const isUploadingPhoto = !!activeUpload
+  const uploadProgress = activeUpload ?? { current: 0, total: 0 }
   // 언마운트 후 setState/updateSpot 호출 방지
   const aliveRef = useRef(true)
 
@@ -60,13 +61,17 @@ export function usePhotoManager({ spots, active, updateSpot, initialThumbnailKey
       previewUrl: URL.createObjectURL(file),
     }))
 
-    setIsUploadingPhoto(true)
-    setUploadProgress({ current: 0, total: pairs.length })
+    setSpotUploads((prev) => new Map(prev).set(targetSpotId, { current: 0, total: pairs.length }))
     try {
       const uploaded = await Promise.all(
         pairs.map(async ({ file, previewUrl }) => {
           const { img_url, key } = await uploadImage('posts/presigned-url', file)
-          setUploadProgress((prev) => ({ ...prev, current: prev.current + 1 }))
+          setSpotUploads((prev) => {
+            const next = new Map(prev)
+            const curr = next.get(targetSpotId)
+            if (curr) next.set(targetSpotId, { current: curr.current + 1, total: curr.total })
+            return next
+          })
           const image: CreatePostSpotImage = { original_img: img_url, key }
           return { image, previewUrl }
         })
@@ -92,8 +97,11 @@ export function usePhotoManager({ spots, active, updateSpot, initialThumbnailKey
       toast.error(getApiErrorMessage(err, { client: '사진 업로드에 실패했습니다.' }))
     } finally {
       e.target.value = ''
-      setIsUploadingPhoto(false)
-      setUploadProgress({ current: 0, total: 0 })
+      setSpotUploads((prev) => {
+        const next = new Map(prev)
+        next.delete(targetSpotId)
+        return next
+      })
     }
   }
 
