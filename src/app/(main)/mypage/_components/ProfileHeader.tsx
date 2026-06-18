@@ -29,7 +29,7 @@ function StatItem({ label, value, href }: StatItemProps) {
   const content = (
     <>
       <div className="text-sm font-bold text-text leading-tight sm:text-lg md:text-xl">{formatCount(value)}</div>
-      <div className="text-[10px] text-text-muted sm:text-xs sm:mt-0.5 md:text-xs md:mt-1">{label}</div>
+      <div className="text-[10px] text-text-muted sm:text-xs sm:mt-2 md:text-xs md:mt-1">{label}</div>
     </>
   );
 
@@ -76,7 +76,7 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
           {/* 데스크톱: 수정 전 웹 레이아웃처럼 소개 영역과 스탯을 분리 */}
           <div className="hidden md:block">
             <h2 className="text-lg font-bold text-text">{profile.nickname}</h2>
-            {profile.name && <p className="text-xs text-text-muted mt-0.5">{profile.name}</p>}
+            {profile.name && <p className="text-xs text-text-muted mt-2">{profile.name}</p>}
             {profile.intro && (
               <p className="text-sm text-text-muted mt-1 whitespace-pre-wrap">{profile.intro}</p>
             )}
@@ -98,7 +98,7 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
       {/* 모바일: 닉네임/소개 */}
       <div className="mt-3 md:hidden">
         <h2 className="text-lg font-bold text-text truncate">{profile.nickname}</h2>
-        {profile.name && <p className="text-xs text-text-muted mt-0.5 truncate">{profile.name}</p>}
+        {profile.name && <p className="text-xs text-text-muted mt-2 truncate">{profile.name}</p>}
         {profile.intro && (
           <p className="text-sm text-text-muted mt-1 whitespace-pre-wrap">{profile.intro}</p>
         )}

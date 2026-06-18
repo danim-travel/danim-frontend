@@ -104,14 +104,16 @@ function KakaoMap({ selectedPost, onBoundsChange, onPinClick, onCurrentLocation 
   };
 
   useEffect(() => {
-    if (!mapRef.current) return;
+    // status를 의존성에 포함 — 초기 마운트 시 selectedPost가 이미 존재할 때(예: /?solo=...),
+    // mapRef가 채워지기 전(이펙트 1차 실행)에는 적용을 못 하므로 ready 직후 재실행으로 보정
+    if (!mapRef.current || status !== "ready") return;
     if (selectedPost) {
       applyPost(selectedPost);
     } else {
       clearGroup();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedPost]);
+  }, [selectedPost, status]);
 
   const goToCurrentLocation = () => {
     if (!navigator.geolocation) {
