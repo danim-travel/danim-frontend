@@ -261,7 +261,13 @@ export function useDmSocket(
       }
 
       socket.onerror = (event) => {
-        console.error('[DM WebSocket] error', event)
+        console.error('[DM WebSocket] error', {
+          event,
+          url: wsUrl,
+          readyState: socket?.readyState,
+          conversationId,
+          hasAccessToken: Boolean(accessToken),
+        })
         // error 이후 onclose가 이어지므로 별도 처리 없음
       }
     }
