@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import type { Comment, PostDetail, Spot } from "@/types";
 import { Avatar, Button } from "@/components/common";
@@ -7,6 +8,7 @@ import ActionBar from "./ActionBar";
 import CommentInputBar from "./CommentInputBar";
 import CommentSection from "./CommentSection";
 import SpotContent from "./SpotContent";
+import { usePostModalContext } from "./PostModalContext";
 
 interface Props {
   data: PostDetail;
@@ -25,15 +27,26 @@ export default function PostModalDetailPane({
   showGoToMain,
   onGoToMain,
 }: Props) {
+  const { currentUserId, onClose } = usePostModalContext();
+  const isOwn = !!currentUserId && currentUserId === data.user.user_id;
+  const profileHref = isOwn ? "/mypage" : `/users/${data.user.user_id}`;
+
   return (
     <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-      <header className="flex items-center gap-3 px-6 pt-5 pb-4 shrink-0">
-        <Avatar
-          src={data.user.profile_img ?? undefined}
-          initial={data.user.nickname?.[0] ?? "?"}
-          size="md"
-        />
-        <span className="text-base font-bold text-text truncate">{data.user.nickname}</span>
+      <header className="flex items-center px-6 pt-5 pb-4 shrink-0">
+        <Link
+          href={profileHref}
+          onClick={onClose}
+          className="flex items-center gap-3 min-w-0 rounded-lg -mx-1 px-1 py-0.5 hover:bg-bg-subtle transition-colors"
+          aria-label={`${data.user.nickname} 프로필로 이동`}
+        >
+          <Avatar
+            src={data.user.profile_img ?? undefined}
+            initial={data.user.nickname?.[0] ?? "?"}
+            size="md"
+          />
+          <span className="text-base font-bold text-text truncate">{data.user.nickname}</span>
+        </Link>
       </header>
 
       {activeSpot && (

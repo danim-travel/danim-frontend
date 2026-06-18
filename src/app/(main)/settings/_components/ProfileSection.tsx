@@ -1,5 +1,6 @@
 "use client"
 import { useState, useRef, useEffect } from "react"
+import { Camera, Trash2 } from "lucide-react"
 import { Avatar, Button, TextField } from "@/components/common"
 import { getApiErrorMessage } from "@/lib/apiError"
 import { uploadImage } from "@/lib/uploadImage"
@@ -66,20 +67,42 @@ export function ProfileSection({
   return (
     <section>
       <h2 className="text-body-lg font-bold text-text mb-4">내 프로필</h2>
-      <div className="bg-bg-card border border-border rounded-card shadow-sm p-8 flex flex-col gap-5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Avatar
-              src={displayImg ?? undefined}
-              initial={me.nickname[0]}
-              size="xl"
-            />
-            <div className="flex flex-col gap-0.5">
+      <div className="bg-bg-card border border-border rounded-card shadow-sm p-5 md:p-8 flex flex-col gap-5">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-4 min-w-0">
+            <div className="relative shrink-0">
+              <Avatar
+                src={displayImg ?? undefined}
+                initial={me.nickname[0]}
+                size="xl"
+                className="w-20 h-20 md:w-28 md:h-28"
+              />
+              {/* 모바일 오버레이 아이콘 */}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+                aria-label="사진 변경"
+                className="md:hidden absolute bottom-0 right-0 w-7 h-7 bg-primary rounded-full flex items-center justify-center shadow disabled:opacity-50"
+              >
+                <Camera size={14} className="text-text-inverse" />
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={isUploading}
+                aria-label="사진 삭제"
+                className="md:hidden absolute bottom-0 left-0 w-7 h-7 bg-error rounded-full flex items-center justify-center shadow disabled:opacity-50"
+              >
+                <Trash2 size={14} className="text-text-inverse" />
+              </button>
+            </div>
+            <div className="flex flex-col gap-0.5 min-w-0 flex-1">
               <span className="text-body-sm font-bold text-text">프로필 사진</span>
-              <span className="text-caption text-text-muted">JPG, PNG 파일 · 최대 5MB · 정사각형 권장</span>
+              <span className="text-caption text-text-muted break-keep">JPG, PNG 파일 · 정사각형 권장</span>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="hidden md:flex gap-2 shrink-0">
             <Button
               type="button"
               variant="secondary"
@@ -104,9 +127,11 @@ export function ProfileSection({
         </div>
 
         <TextField
+          label="소개글"
+          name="intro"
           value={intro}
           onChange={e => onIntroChange(e.target.value)}
-          placeholder="소개"
+          placeholder="소개를 입력해주세요"
           maxLength={100}
         />
       </div>

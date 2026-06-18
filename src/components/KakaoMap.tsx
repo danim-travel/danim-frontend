@@ -184,6 +184,32 @@ function KakaoMap({ selectedPost, onBoundsChange, onPinClick, onCurrentLocation 
     }
   }, []);
 
+  // 컨테이너 크기 변화 시 카카오맵 캔버스 재계산
+  // (모바일 바텀시트 드래그로 높이가 바뀔 때 회색 영역이 남거나 중심이 어긋나는 문제 방지)
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    let rafId = 0;
+    const ro = new ResizeObserver(() => {
+      const map = mapRef.current;
+      if (!map) return;
+      const center = map.getCenter();
+      // 연속 리사이즈를 한 프레임으로 모음
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        // 카카오맵 타입 정의에 relayout이 빠져있어 캐스팅 — 공식 SDK는 지원
+        (map as kakao.maps.Map & { relayout: () => void }).relayout();
+        // relayout 후 중심이 어긋날 수 있어 보정
+        map.setCenter(center);
+      });
+    });
+    ro.observe(el);
+    return () => {
+      cancelAnimationFrame(rafId);
+      ro.disconnect();
+    };
+  }, []);
+
   return (
     <div className="relative w-full h-full bg-bg">
       <Script

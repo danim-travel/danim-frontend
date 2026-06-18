@@ -27,7 +27,7 @@ function formatCount(n: number): string {
   return compact(n / 1_000_000_000, "B");
 }
 
-const statCls = "flex flex-col items-center bg-bg rounded-xl px-3 py-2 flex-1 md:flex-none md:px-4 md:py-3 md:w-[160px] hover:bg-bg-subtle transition-colors";
+const statCls = "flex flex-col items-center bg-bg rounded-md px-1.5 py-1 flex-1 md:rounded-xl md:flex-none md:px-4 md:py-3 md:w-[160px] hover:bg-bg-subtle transition-colors";
 
 export default function UserProfileHeader({ profile, userId }: UserProfileHeaderProps) {
   const queryClient = useQueryClient();
@@ -88,12 +88,12 @@ export default function UserProfileHeader({ profile, userId }: UserProfileHeader
           {/* 스탯: 모바일→아바타 옆, 데스크톱→텍스트 아래 */}
           <div className="flex gap-2 md:gap-6 md:mt-4">
             <Link href={`/followers?tab=followers&userId=${userId}`} className={statCls}>
-              <div className="text-xl font-bold text-text">{formatCount(followerCount)}</div>
-              <div className="text-xs text-text-muted mt-1">팔로워</div>
+              <div className="text-xs font-bold text-text leading-tight md:text-xl">{formatCount(followerCount)}</div>
+              <div className="text-[10px] text-text-muted md:text-xs md:mt-1">팔로워</div>
             </Link>
             <Link href={`/followers?tab=following&userId=${userId}`} className={statCls}>
-              <div className="text-xl font-bold text-text">{formatCount(profile.following)}</div>
-              <div className="text-xs text-text-muted mt-1">팔로잉</div>
+              <div className="text-xs font-bold text-text leading-tight md:text-xl">{formatCount(profile.following)}</div>
+              <div className="text-[10px] text-text-muted md:text-xs md:mt-1">팔로잉</div>
             </Link>
           </div>
         </div>

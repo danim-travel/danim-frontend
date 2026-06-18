@@ -1,6 +1,6 @@
 "use client"
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { useQuery } from "@tanstack/react-query"
 import { motion, AnimatePresence } from "motion/react"
 import { Avatar, UserRow, UserRowSkeleton, EmptyState, SideDrawer, SearchBar } from "@/components/common"
@@ -12,6 +12,7 @@ import { useDebouncedValue } from "@/hooks/useDebouncedValue"
 
 export function SearchDrawer() {
   const router = useRouter()
+  const pathname = usePathname()
   const { activePanel, closePanel } = useUIStore()
   const myUserId = useAuthStore((s) => s.user?.userId)
   const isOpen = activePanel === "search"
@@ -26,6 +27,13 @@ export function SearchDrawer() {
     const t = setTimeout(() => setQuery(""), 250)
     return () => clearTimeout(t)
   }, [isOpen])
+
+  // 페이지 이동 시 드로어 자동 닫힘
+  useEffect(() => {
+    closePanel()
+    // pathname 변경 시에만 동작; closePanel은 stable
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname])
 
   const { data, isLoading, isError } = useQuery({
     queryKey: queryKeys.users.search(debouncedQuery),
@@ -86,7 +94,7 @@ export function SearchDrawer() {
         {isOpen && (
           <>
             <div
-              className="fixed top-14 inset-x-0 bottom-0 z-[4] md:hidden"
+              className="fixed top-16 inset-x-0 bottom-0 z-[4] md:hidden"
               onClick={handleClose}
               aria-hidden="true"
             />
@@ -96,8 +104,8 @@ export function SearchDrawer() {
               animate={{ y: 0 }}
               exit={{ y: "-100%" }}
               transition={{ type: "tween", duration: 0.25, ease: "easeInOut" }}
-              className="fixed top-14 inset-x-0 bg-bg-card border-b border-border shadow-overlay flex flex-col md:hidden z-(--z-drawer)"
-              style={{ maxHeight: "calc(100dvh - 3.5rem)" }}
+              className="fixed top-16 inset-x-0 bg-bg-card border-b border-border shadow-overlay flex flex-col md:hidden z-(--z-drawer)"
+              style={{ maxHeight: "calc(100dvh - 4rem)" }}
             >
               <div className="px-4 pt-3 pb-4 shrink-0">
                 <SearchBar

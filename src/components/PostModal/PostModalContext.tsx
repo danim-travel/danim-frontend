@@ -18,6 +18,8 @@ interface PostModalContextValue {
   onUpdateComment: (commentId: string, content: string | null) => void;
   onDeleteComment: (commentId: string) => void;
   toggleCommentLike: CommentsApi["toggleCommentLike"];
+  // 프로필 클릭 등 내부에서 모달을 닫아야 하는 경우에 사용
+  onClose: () => void;
 }
 
 // 실제 보관함(Context 객체). 초기값은 null

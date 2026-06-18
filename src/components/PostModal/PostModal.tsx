@@ -106,6 +106,7 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
       onUpdateComment,
       onDeleteComment,
       toggleCommentLike,
+      onClose,
     }),
     [
       postId,
@@ -116,6 +117,7 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
       onUpdateComment,
       onDeleteComment,
       toggleCommentLike,
+      onClose,
     ]
   );
 

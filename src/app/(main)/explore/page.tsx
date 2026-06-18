@@ -35,7 +35,7 @@ export default function ExplorePage() {
         onClear={() => { setInputValue(""); setSearch(null) }}
       />
 
-      <div className="flex items-center gap-(--icon-gap) flex-wrap">
+      <div className="flex items-center gap-(--icon-gap) overflow-x-auto scrollbar-none md:flex-wrap">
         {CATEGORIES.map((cat) => (
           <button
             key={cat}
@@ -43,7 +43,7 @@ export default function ExplorePage() {
             data-testid={`category-btn-${cat}`}
             onClick={() => setCategory(cat)}
             className={[
-              "px-5 py-2.5 rounded-(--chip-radius) text-body-sm font-semibold transition-colors border",
+              "shrink-0 px-3 py-1.5 md:px-5 md:py-2.5 rounded-(--chip-radius) text-caption md:text-body-sm font-semibold transition-colors border",
               category === cat
                 ? "bg-(--chip-bg-selected) text-(--chip-text-selected) border-transparent"
                 : "bg-(--chip-bg) text-(--chip-text) border-(--chip-border) hover:bg-bg-subtle",
