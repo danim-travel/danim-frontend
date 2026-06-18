@@ -5,7 +5,8 @@
  * - PATCH  *\/notifications              전체 읽음 처리
  * - DELETE *\/notifications/:id          개별 삭제
  * - DELETE *\/notifications              전체 삭제
- * - WS     *\/ws/notifications/:userId   미확인 알림 개수(unread_count) 실시간 push
+ * - POST   *\/websocket-key              일회성 WS 인증 키 발급
+ * - WS     *\/ws/notifications/          `?socket_key=<uuid>` 쿼리로 인증, unread_count push
  *
  * REST 변경 시 같은 사용자에게 연결되어 있는 모든 WebSocket 클라이언트에게
  * 갱신된 unread_count 를 다시 전송한다.
@@ -141,18 +142,11 @@ const notificationsWs = ws.link('*/ws/notifications')
 const authedClients = new Set<WsClient>()
 
 interface UnreadCountMessage {
-  type: 'unread_count'
-  count: number
-}
-
-interface ErrorMessage {
-  type: 'error'
-  detail: string
+  unread_count: number
 }
 
 const buildUnreadMessage = (): UnreadCountMessage => ({
-  type: 'unread_count',
-  count: getUnreadCount(),
+  unread_count: getUnreadCount(),
 })
 
 const broadcastUnreadCount = (): void => {
@@ -163,12 +157,36 @@ const broadcastUnreadCount = (): void => {
   }
 }
 
+// ---------- socket_key 발급 ----------
+
+/**
+ * 발급된 socket_key 보관소. WS 연결 시점에 1회 검증/소비하여 재사용을 방지한다.
+ * 실서버는 짧은 TTL을 두지만, mock에서는 단순 set 으로 충분하다.
+ */
+const issuedSocketKeys = new Set<string>()
+
+const generateMockSocketKey = (): string => {
+  // uuid4 유사 포맷 — mock 환경 식별용으로만 사용
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID()
+  }
+  return `mock-${Date.now().toString(16)}-${Math.random().toString(16).slice(2, 10)}`
+}
+
 // ---------- REST 핸들러 ----------
 
 const unauthorized = () =>
   HttpResponse.json({ error_detail: '인증되지 않은 사용자입니다.' }, { status: 401 })
 
 export const notificationHandlers: RequestHandler[] = [
+  // 일회성 WebSocket 인증 키 발급
+  http.post('*/websocket-key', ({ request }) => {
+    if (!request.headers.get('Authorization')) return unauthorized()
+    const socketKey = generateMockSocketKey()
+    issuedSocketKeys.add(socketKey)
+    return HttpResponse.json({ socket_key: socketKey })
+  }),
+
   // 목록 조회 (cursor 페이징)
   http.get('*/notifications', ({ request }) => {
     if (!request.headers.get('Authorization')) return unauthorized()
@@ -242,55 +260,26 @@ export const notificationHandlers: RequestHandler[] = [
 
 // ---------- WebSocket 핸들러 ----------
 
-const AUTH_TIMEOUT_MS = 10_000
-
 export const notificationWsHandlers: WebSocketHandler[] = [
   notificationsWs.addEventListener('connection', ({ client }) => {
-    // 10초 안에 첫 auth 메시지를 수신하지 못하면 연결을 종료한다.
-    const timeoutId = setTimeout(() => {
-      if (!authedClients.has(client)) {
-        client.send(JSON.stringify({ type: 'error', detail: '인증에 실패했습니다.' } satisfies ErrorMessage))
-        client.close()
-      }
-    }, AUTH_TIMEOUT_MS)
+    // URL 쿼리 파라미터의 socket_key 로 인증한다.
+    // (msw v2의 client.url 은 연결 시 사용된 URL 인스턴스)
+    const socketKey = client.url.searchParams.get('socket_key')
 
-    client.addEventListener('message', (event) => {
-      // 인증된 클라이언트는 이후 메시지를 무시 (mock 환경)
-      if (authedClients.has(client)) return
+    if (!socketKey || !issuedSocketKeys.has(socketKey)) {
+      // 인증 실패 — 별도 에러 메시지 없이 즉시 종료 (실서버 거동)
+      client.close()
+      return
+    }
 
-      const raw = typeof event.data === 'string' ? event.data : ''
-      let parsed: unknown
-      try {
-        parsed = JSON.parse(raw)
-      } catch {
-        client.send(JSON.stringify({ type: 'error', detail: '인증에 실패했습니다.' } satisfies ErrorMessage))
-        client.close()
-        clearTimeout(timeoutId)
-        return
-      }
+    // 일회성 키 소비
+    issuedSocketKeys.delete(socketKey)
+    authedClients.add(client)
 
-      const isAuthMessage =
-        typeof parsed === 'object' &&
-        parsed !== null &&
-        (parsed as { type?: unknown }).type === 'auth' &&
-        typeof (parsed as { token?: unknown }).token === 'string' &&
-        ((parsed as { token: string }).token.length > 0)
-
-      if (!isAuthMessage) {
-        client.send(JSON.stringify({ type: 'error', detail: '인증에 실패했습니다.' } satisfies ErrorMessage))
-        client.close()
-        clearTimeout(timeoutId)
-        return
-      }
-
-      // 토큰이 존재하면 통과 (mock 환경)
-      authedClients.add(client)
-      clearTimeout(timeoutId)
-      client.send(JSON.stringify(buildUnreadMessage()))
-    })
+    // 연결 직후 현재 unread_count push
+    client.send(JSON.stringify(buildUnreadMessage()))
 
     client.addEventListener('close', () => {
-      clearTimeout(timeoutId)
       authedClients.delete(client)
     })
   }),
