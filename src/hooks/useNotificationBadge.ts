@@ -1,11 +1,13 @@
 /**
  * 실시간 알림 뱃지 WebSocket 구독 훅.
  *
- * - 로그인 상태에서만 `wss://{wsBaseUrl}/ws/notifications/`에 연결한다.
- * - 연결 직후 `{type:'auth', token}` 메시지로 access_token을 전송한다.
- * - 서버가 push하는 `{type:'unread_count', count}` 를 notificationBadgeStore에 반영한다.
- * - access_token이 갱신되면 기존 socket을 닫고 새 토큰으로 재연결한다.
- * - 비정상 종료 시 지수 백오프(1s → 2s → 4s → 8s → 16s → 최대 30s)로 재연결한다.
+ * - 로그인 상태에서만 동작한다.
+ * - 마운트/재연결 시 `POST websocket-key`로 일회성 `socket_key`를 발급받아
+ *   `wss://{wsBaseUrl}/ws/notifications?socket_key=<uuid>` 형태로 연결한다.
+ * - 서버가 push하는 `{ unread_count }` 를 notificationBadgeStore에 반영한다.
+ * - access_token이 갱신되면 기존 socket을 닫고 새 socket_key로 재연결한다.
+ * - WS 비정상 종료 또는 socket_key 발급 실패 시 지수 백오프
+ *   (1s → 2s → 4s → 8s → 16s → 최대 30s)로 재시도한다.
  * - 정상 close(코드 1000) 또는 로그아웃/언마운트 시 재연결하지 않고 정리한다.
  *
  * `(main)/layout.tsx` 등 로그인 영역의 단일 지점에서 1회 마운트하여 사용한다.
@@ -13,13 +15,11 @@
 'use client'
 
 import { useEffect } from 'react'
+import { issueSocketKey } from '@/lib/api/websocket'
 import { config } from '@/lib/config'
 import { useAuthStore } from '@/store/authStore'
 import { useNotificationBadgeStore } from '@/store/notificationBadgeStore'
-import type {
-  NotificationWsClientMessage,
-  NotificationWsServerMessage,
-} from '@/types/notification.types'
+import type { NotificationWsServerMessage } from '@/types/notification.types'
 
 const NORMAL_CLOSE_CODE = 1000
 const INITIAL_BACKOFF_MS = 1000
@@ -27,15 +27,8 @@ const MAX_BACKOFF_MS = 30_000
 
 function isNotificationWsServerMessage(value: unknown): value is NotificationWsServerMessage {
   if (typeof value !== 'object' || value === null) return false
-  const v = value as { type?: unknown }
-  if (v.type === 'unread_count') {
-    const count = (value as { count?: unknown }).count
-    return typeof count === 'number' && Number.isInteger(count) && count >= 0
-  }
-  if (v.type === 'error') {
-    return typeof (value as { detail?: unknown }).detail === 'string'
-  }
-  return false
+  const count = (value as { unread_count?: unknown }).unread_count
+  return typeof count === 'number' && Number.isInteger(count) && count >= 0
 }
 
 export function useNotificationBadge(): void {
@@ -55,8 +48,6 @@ export function useNotificationBadge(): void {
     let backoffMs = INITIAL_BACKOFF_MS
     let cancelled = false
 
-    const url = `${config.wsBaseUrl}/ws/notifications/`
-
     const clearReconnectTimer = () => {
       if (reconnectTimerId !== null) {
         clearTimeout(reconnectTimerId)
@@ -71,23 +62,31 @@ export function useNotificationBadge(): void {
       backoffMs = Math.min(backoffMs * 2, MAX_BACKOFF_MS)
       reconnectTimerId = setTimeout(() => {
         if (cancelled) return
-        connect()
+        void connect()
       }, delay)
     }
 
-    const connect = () => {
+    const connect = async () => {
       if (cancelled) return
+
+      // 1) 일회성 socket_key 발급 (apiClient가 401 시 토큰 갱신 자동 처리)
+      let socketKey: string
+      try {
+        const { socket_key } = await issueSocketKey()
+        socketKey = socket_key
+      } catch {
+        scheduleReconnect()
+        return
+      }
+      if (cancelled) return
+
+      // 2) WS 연결 — URL 쿼리 파라미터로 인증
+      const url = `${config.wsBaseUrl}/ws/notifications?socket_key=${encodeURIComponent(socketKey)}`
       try {
         socket = new WebSocket(url)
       } catch {
         scheduleReconnect()
         return
-      }
-
-      socket.onopen = () => {
-        // 연결 성공 → access_token으로 인증 메시지 전송
-        const authMessage: NotificationWsClientMessage = { type: 'auth', token: accessToken }
-        socket?.send(JSON.stringify(authMessage))
       }
 
       socket.onmessage = (event) => {
@@ -100,13 +99,9 @@ export function useNotificationBadge(): void {
         }
         if (!isNotificationWsServerMessage(parsed)) return
 
-        if (parsed.type === 'unread_count') {
-          // 정상 데이터 수신 → 백오프 리셋
-          backoffMs = INITIAL_BACKOFF_MS
-          setUnreadCount(parsed.count)
-          return
-        }
-        // type === 'error' — 서버가 곧 close하므로 별도 액션 없음
+        // 정상 데이터 수신 → 백오프 리셋
+        backoffMs = INITIAL_BACKOFF_MS
+        setUnreadCount(parsed.unread_count)
       }
 
       socket.onclose = (event) => {
@@ -121,7 +116,7 @@ export function useNotificationBadge(): void {
       }
     }
 
-    connect()
+    void connect()
 
     return () => {
       cancelled = true
