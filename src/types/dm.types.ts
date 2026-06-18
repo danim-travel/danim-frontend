@@ -64,15 +64,13 @@ export interface DmPresignedUrlResponse {
 
 /**
  * DM WebSocket 메시지 타입.
- * 클라이언트 → 서버: auth로 인증 후 send_message로 메시지 전송.
- * 서버 → 클라이언트: auth_success / receive_message / read_receipt / message_deleted / error.
+ * 클라이언트 → 서버: send_message로 메시지 전송 (인증은 URL ?socket_key= 로 처리).
+ * 서버 → 클라이언트: receive_message / read_receipt / message_deleted / error.
  */
 export type DmWsClientMessage =
-  | { type: 'auth'; token: string }
   | { type: 'send_message'; conversation_id: string; content: string | null; img_url?: string | null }
 
 export type DmWsServerMessage =
-  | { type: 'auth_success' }
   | { type: 'receive_message'; message: Message }
   | { type: 'read_receipt'; conversation_id: string; message_id: string }
   | { type: 'message_deleted'; conversation_id: string; message_id: string }

@@ -52,7 +52,7 @@ export function useCreateConversation() {
   return useMutation<CreateConversationResponse, Error, string>({
     mutationFn: (receiverId) => createConversation(receiverId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.dm.conversations })
+      queryClient.invalidateQueries({ queryKey: queryKeys.dm.conversations, exact: true })
     },
     onError: (err) => {
       toast.error(getApiErrorMessage(err, { client: '대화방을 열 수 없습니다.' }))
@@ -67,7 +67,7 @@ export function useLeaveConversation() {
     mutationFn: (conversationId) => leaveConversation(conversationId),
     onSuccess: (_, conversationId) => {
       queryClient.removeQueries({ queryKey: queryKeys.dm.messages(conversationId) })
-      queryClient.invalidateQueries({ queryKey: queryKeys.dm.conversations })
+      queryClient.invalidateQueries({ queryKey: queryKeys.dm.conversations, exact: true })
     },
     onError: (err) => {
       toast.error(getApiErrorMessage(err, { client: '대화방을 나갈 수 없습니다.' }))
@@ -83,7 +83,7 @@ export function useDeleteMessage(conversationId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.dm.messages(conversationId) })
       // C5: 삭제된 메시지가 last_message였을 경우 대화방 목록도 갱신
-      queryClient.invalidateQueries({ queryKey: queryKeys.dm.conversations })
+      queryClient.invalidateQueries({ queryKey: queryKeys.dm.conversations, exact: true })
     },
     onError: (err) => {
       toast.error(getApiErrorMessage(err, { client: '메시지를 삭제할 수 없습니다.' }))
