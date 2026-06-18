@@ -35,6 +35,7 @@ export default function HomePage() {
   const [focusedPostIndex, setFocusedPostIndex] = useState(0);
   const [spotIdx, setSpotIdx] = useState<number | undefined>(undefined);
   const [sheetExpanded, setSheetExpanded] = useState(false);
+  const [sheetY, setSheetY] = useState<number | null>(null);
 
   const { closePanel } = useUIStore();
   const [postId, setPostId] = useQueryState("post", parseAsString);
@@ -108,8 +109,11 @@ export default function HomePage() {
         <FeedPanel {...feedPanelProps} variant="panel" />
       </div>
 
-      {/* 지도: 모바일=전체화면, 데스크탑=우측 flex-1 */}
-      <div className="h-full md:flex-1 md:min-h-0">
+      {/* 지도: 모바일=바텀시트 위쪽만큼, 데스크탑=우측 flex-1 (inline height는 md:!h-full로 무력화) */}
+      <div
+        className="md:flex-1 md:min-h-0 md:h-full!"
+        style={sheetY != null ? { height: `${sheetY}px` } : { height: "100%" }}
+      >
         <MapPanel
           focusedPost={activeFocusedPost}
           focusedPostIndex={activeFocusedPostIndex}
@@ -123,6 +127,7 @@ export default function HomePage() {
         <MobileBottomSheet
           expanded={sheetExpanded}
           onExpandedChange={setSheetExpanded}
+          onYChange={setSheetY}
         >
           <FeedPanel {...feedPanelProps} variant="sheet" />
         </MobileBottomSheet>
