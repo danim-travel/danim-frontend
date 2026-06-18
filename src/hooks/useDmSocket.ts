@@ -139,7 +139,7 @@ export function useDmSocket(
     let reconnectTimerId: ReturnType<typeof setTimeout> | null = null
     let backoffMs = INITIAL_BACKOFF_MS
     let cancelled = false
-    const wsUrl = `${config.wsBaseUrl}/ws/conversations/${conversationId}/`
+    const wsUrl = `${config.wsBaseUrl}/ws/conversations/${conversationId}`
 
     const clearReconnectTimer = () => {
       if (reconnectTimerId !== null) {
