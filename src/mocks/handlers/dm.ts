@@ -272,20 +272,18 @@ export const dmHandlers: RequestHandler[] = [
 
 const dmWs = ws.link('*/ws/conversations/:conversation_id/')
 
-const authedClients = new Set<WsClient>()
 // C3: 클라이언트가 메시지를 전송한 대화방 ID를 추적해 해당 대화방 참여자에게만 브로드캐스트
 const clientConversations = new Map<WsClient, Set<string>>()
 
-const AUTH_TIMEOUT_MS = 10_000
-
 export const dmWsHandlers: WebSocketHandler[] = [
   dmWs.addEventListener('connection', ({ client }) => {
-    const timeoutId = setTimeout(() => {
-      if (!authedClients.has(client)) {
-        client.send(JSON.stringify({ type: 'error', detail: '인증에 실패했습니다.' } satisfies DmWsServerMessage))
-        client.close()
-      }
-    }, AUTH_TIMEOUT_MS)
+    // socket_key URL 파라미터 검증 (mock: 존재 여부만 확인)
+    const socketKey = client.url.searchParams.get('socket_key')
+    if (!socketKey) {
+      client.send(JSON.stringify({ type: 'error', detail: '인증에 실패했습니다.' } satisfies DmWsServerMessage))
+      client.close()
+      return
+    }
 
     client.addEventListener('message', (event) => {
       const raw = typeof event.data === 'string' ? event.data : ''
@@ -302,24 +300,7 @@ export const dmWsHandlers: WebSocketHandler[] = [
         return
       }
 
-      const msg = parsed as { type?: unknown; token?: unknown; conversation_id?: unknown; content?: unknown; img_url?: unknown }
-
-      if (msg.type === 'auth') {
-        if (typeof msg.token !== 'string' || msg.token.length === 0) {
-          client.send(JSON.stringify({ type: 'error', detail: '인증에 실패했습니다.' } satisfies DmWsServerMessage))
-          client.close()
-          clearTimeout(timeoutId)
-          return
-        }
-        authedClients.add(client)
-        clearTimeout(timeoutId)
-        return
-      }
-
-      if (!authedClients.has(client)) {
-        client.send(JSON.stringify({ type: 'error', detail: '인증이 필요합니다.' } satisfies DmWsServerMessage))
-        return
-      }
+      const msg = parsed as { type?: unknown; conversation_id?: unknown; content?: unknown; img_url?: unknown }
 
       if (msg.type === 'send_message') {
         const content = typeof msg.content === 'string' ? msg.content.trim() : null
@@ -370,8 +351,6 @@ export const dmWsHandlers: WebSocketHandler[] = [
 
     // C8: 연결 종료 시 모든 추적 자료구조에서 제거해 stale 참조 누출 방지
     client.addEventListener('close', () => {
-      clearTimeout(timeoutId)
-      authedClients.delete(client)
       clientConversations.delete(client)
     })
   }),
