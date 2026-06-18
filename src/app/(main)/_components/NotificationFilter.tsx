@@ -21,7 +21,7 @@ const FILTERS: { key: NotificationFilterValue; label: string }[] = [
 
 export function NotificationFilter({ value, onChange }: NotificationFilterProps) {
   return (
-    <div className="flex gap-2 overflow-x-auto px-8 pb-3 scrollbar-none">
+    <div className="flex gap-2 overflow-x-auto px-4 md:px-8 pb-3 scrollbar-none">
       {FILTERS.map(({ key, label }) => (
         <Badge
           key={key}
