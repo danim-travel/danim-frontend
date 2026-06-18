@@ -12,7 +12,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { AccountSection } from "./_components/AccountSection"
 import { BasicInfoSection } from "./_components/BasicInfoSection"
 import { ProfileSection } from "./_components/ProfileSection"
-import type { MeDetailResponse } from "@/types"
+import type { MeDetailResponse, UserProfileResponse } from "@/types"
 
 export default function SettingsPage() {
   const { data: me, isLoading } = useQuery({
@@ -118,11 +118,33 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
       })
       setProfileKey(undefined)
       setProfileSectionKey(k => k + 1)
-      // PATCH 응답의 profile_img는 raw S3 URL일 수 있으므로, getMe()를 재호출해 presigned URL을 받는다
-      await queryClient.invalidateQueries({ queryKey: queryKeys.users.me })
-      if (updated.nickname !== me.nickname || updated.profile_img !== me.profile_img) {
-        updateAuthUser({ userId: updated.user_id, nickname: updated.nickname, profileImg: updated.profile_img })
-      }
+
+      // 마이페이지가 실제로 사용하는 키와 정확히 동일하게 맞추기 위해 authStore의 userId를 우선 사용
+      // (PATCH 응답에서 user_id가 누락/상이한 경우의 키 미스매치 방지)
+      const profileUserId = useAuthStore.getState().user?.userId ?? updated.user_id
+
+      // 1) PATCH 응답으로 캐시를 즉시 패치 — 마이페이지 first paint 부터 새 값 반영
+      queryClient.setQueryData<UserProfileResponse>(
+        queryKeys.users.profile(profileUserId),
+        (old) => old ? {
+          ...old,
+          nickname: updated.nickname,
+          profile_img: updated.profile_img,
+          intro: updated.intro ?? old.intro,
+          name: updated.name ?? old.name,
+        } : old
+      )
+
+      // 2) me는 settings에서 active observer가 있어 invalidate만으로 refetch 트리거됨.
+      //    profile은 inactive(다른 페이지)라 invalidate만으로는 네트워크 호출이 안 일어남
+      //    → refetchQueries로 강제 호출. 이 await가 끝나면 캐시에 서버 fresh 데이터가 들어와 있음.
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.users.me }),
+        queryClient.refetchQueries({ queryKey: queryKeys.users.profile(profileUserId) }),
+      ])
+
+      // 3) authStore도 동기화 — SideNav 아바타/닉네임 등 store 기반 UI 즉시 반영
+      updateAuthUser({ userId: updated.user_id, nickname: updated.nickname, profileImg: updated.profile_img })
       toast.success("변경사항이 저장되었습니다.")
     } catch (err) {
       toast.error(getApiErrorMessage(err, { client: "저장에 실패했습니다." }))
@@ -133,7 +155,7 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="max-w-3xl mx-auto px-10 py-10 flex flex-col gap-8">
+      <div className="max-w-3xl mx-auto px-4 py-6 md:px-10 md:py-10 flex flex-col gap-8">
         <h1 className="text-section-title font-bold text-text">내 정보 수정</h1>
 
         <ProfileSection

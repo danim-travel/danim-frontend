@@ -11,6 +11,7 @@ import PostModal from "@/components/PostModal";
 import { useMyProfile } from "./_hooks/useMyProfile";
 import ProfileHeader from "./_components/ProfileHeader";
 import PostGrid from "./_components/PostGrid";
+import { useAuthHydrationFallback } from "@/hooks/useAuthHydrationFallback";
 
 type MyPageTab = "posts" | "bookmarks";
 
@@ -103,8 +104,12 @@ function MyPageContent({ userId }: { userId: string }) {
 
 function MyPageContainer() {
   const isHydrated = useAuthStore((s) => s.isHydrated);
+  const accessToken = useAuthStore((s) => s.accessToken);
   const userId = useAuthStore((s) => s.user?.userId);
+  // accessToken은 있는데 userId가 없는 gap을 getCurrentUser로 복구 (새로고침/설정 저장 직후 등)
+  const { authFallbackMessage } = useAuthHydrationFallback();
 
+  // silent refresh 진행 중에는 스피너 — AuthBootstrap 완료 전 라우팅 판단 방지
   if (!isHydrated) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -113,7 +118,20 @@ function MyPageContainer() {
     );
   }
 
-  if (!userId) {
+  // accessToken은 있는데 userId가 없는 짧은 gap — useAuthHydrationFallback이 getCurrentUser로 복구 중
+  if (accessToken && !userId) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        {authFallbackMessage ? (
+          <p className="text-text-muted">{authFallbackMessage}</p>
+        ) : (
+          <Spinner size="lg" />
+        )}
+      </div>
+    );
+  }
+
+  if (!accessToken || !userId) {
     return (
       <div className="flex items-center justify-center py-20">
         <p className="text-text-muted">로그인이 필요합니다.</p>
