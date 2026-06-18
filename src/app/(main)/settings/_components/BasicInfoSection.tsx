@@ -1,5 +1,5 @@
 "use client"
-import { Button, TextField } from "@/components/common"
+import { TextField } from "@/components/common"
 import type { MeDetailResponse } from "@/types"
 
 interface BasicInfoSectionProps {
@@ -48,27 +48,6 @@ export function BasicInfoSection({ me, nickname, nicknameError, onNicknameChange
           maxLength={20}
           helperText={nicknameError ? undefined : "다른 사용자에게 보이는 이름이에요."}
         />
-
-        {/* 휴대폰 인증 — 준비 중 */}
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <label className="text-caption font-bold text-text-muted">휴대폰 인증</label>
-            <span className="text-caption text-text-muted bg-bg-muted px-1.5 py-0.5 rounded">준비 중</span>
-          </div>
-          <div className="flex gap-2">
-            <div className="flex-1">
-              <TextField
-                type="tel"
-                placeholder="010-0000-0000"
-                disabled
-              />
-            </div>
-            <Button type="button" variant="primary" disabled>
-              인증 요청
-            </Button>
-          </div>
-          <p className="text-caption text-text-muted">안전한 계정 보호를 위해 인증해주세요.</p>
-        </div>
       </div>
     </section>
   )
