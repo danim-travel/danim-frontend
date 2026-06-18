@@ -20,20 +20,20 @@ export function BasicInfoSection({ me, nickname, nicknameError, onNicknameChange
   return (
     <section>
       <h2 className="text-body-lg font-bold text-text mb-4">기본 정보</h2>
-      <div className="bg-bg-card border border-border rounded-card shadow-sm p-8 flex flex-col gap-7">
+      <div className="bg-bg-card border border-border rounded-card shadow-sm p-5 md:p-8 flex flex-col gap-7">
         {/* 읽기 전용 정보 */}
-        <div className="flex gap-16">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-16">
           <div className="flex flex-col gap-2 min-w-0">
             <span className="text-caption font-bold text-text-muted">이름</span>
-            <span className="text-body-sm text-text">{me.name}</span>
+            <span className="text-body-sm text-text break-all">{me.name}</span>
           </div>
           <div className="flex flex-col gap-2 min-w-0">
             <span className="text-caption font-bold text-text-muted">이메일</span>
-            <span className="text-body-sm text-text">{me.email}</span>
+            <span className="text-body-sm text-text break-all">{me.email}</span>
           </div>
           <div className="flex flex-col gap-2 min-w-0">
             <span className="text-caption font-bold text-text-muted">생년월일</span>
-            <span className="text-body-sm text-text">{formatBirthDate(me.birth_day)}</span>
+            <span className="text-body-sm text-text break-all">{formatBirthDate(me.birth_day)}</span>
           </div>
         </div>
 
