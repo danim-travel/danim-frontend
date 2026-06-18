@@ -22,7 +22,8 @@ export function ChatComposer({ onSend, disabled }: Props) {
   }
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    // isComposing=true: 한글 IME 조합 중 Enter → 글자 확정만 하고 전송하지 않음
+    if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault()
       handleSend()
     }
