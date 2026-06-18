@@ -2,7 +2,7 @@
  * DM(다이렉트 메시지) 도메인 타입.
  * REST: POST/GET /v1/direct-messages/conversations
  *       GET/DELETE /v1/direct-messages/conversations/{id}/messages
- * WS:   /ws/dm
+ * WS:   /ws/conversations/{conversation_id}/
  */
 
 export interface UserBrief {

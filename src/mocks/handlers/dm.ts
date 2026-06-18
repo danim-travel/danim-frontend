@@ -6,7 +6,7 @@
  * - POST   *\/direct-messages/conversations/:conversation_id/messages/presigned-url  이미지 presigned URL 발급
  * - DELETE *\/direct-messages/conversations/:conversation_id/messages/:message_id    메시지 삭제
  * - GET    *\/direct-messages/conversations/:conversation_id/messages        메시지 목록 (cursor 페이지네이션, 최신순)
- * - WS     *\/ws/dm                                                          실시간 메시지 송수신
+ * - WS     *\/ws/conversations/:conversation_id/                             실시간 메시지 송수신
  */
 import { http, HttpResponse, ws } from 'msw'
 import type { RequestHandler, WebSocketHandler } from 'msw'
@@ -270,7 +270,7 @@ export const dmHandlers: RequestHandler[] = [
 
 // ---------- WebSocket ----------
 
-const dmWs = ws.link('*/ws/dm')
+const dmWs = ws.link('*/ws/conversations/:conversation_id/')
 
 const authedClients = new Set<WsClient>()
 // C3: 클라이언트가 메시지를 전송한 대화방 ID를 추적해 해당 대화방 참여자에게만 브로드캐스트

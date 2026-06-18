@@ -139,7 +139,7 @@ export function useDmSocket(
       // FIX 3: 재연결 시 stale 항목 초기화 — 끊김 후 동일 내용 재전송 시 오탐 방지
       pendingRef.current = []
       try {
-        socket = new WebSocket(`${config.wsBaseUrl}/ws/dm`)
+        socket = new WebSocket(`${config.wsBaseUrl}/ws/conversations/${conversationId}/`)
         socketRef.current = socket
       } catch {
         scheduleReconnect()
