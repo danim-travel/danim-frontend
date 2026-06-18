@@ -35,14 +35,14 @@ export interface NotificationListResponse {
 }
 
 /**
- * 알림 WebSocket 메시지 타입.
- * 클라이언트 → 서버: 연결 직후 access_token으로 인증한다.
- * 서버 → 클라이언트: 인증 성공 시 unread_count를 push, 실패 시 error.
+ * 알림 WebSocket 서버 메시지 타입.
+ * 인증은 WS URL의 `socket_key` 쿼리 파라미터로 처리되며, 서버는 연결 직후·이벤트 시점에
+ * `{ unread_count }`만 push한다. 클라이언트는 메시지를 송신하지 않는다.
  */
-export type NotificationWsClientMessage =
-  | { type: 'auth'; token: string }
+export type NotificationWsServerMessage = { unread_count: number }
 
-export type NotificationWsServerMessage =
-  | { type: 'unread_count'; count: number }
-  | { type: 'error'; detail: string }
+/** POST v1/websocket-key 응답 — 일회성 WS 인증 키 */
+export interface SocketKeyResponse {
+  socket_key: string
+}
 
