@@ -3,8 +3,10 @@
 import { MessageSquare } from "lucide-react"
 import { EmptyState } from "@/components/common"
 import { useAuthStore } from "@/store/authStore"
+import { toast } from "@/store/toastStore"
 import { useConversations } from "@/hooks/useDmQueries"
 import { useDmSocket } from "@/hooks/useDmSocket"
+import { uploadDmImage } from "@/lib/api/dmUpload"
 import { ChatHeader } from "./ChatHeader"
 import { MessageList } from "./MessageList"
 import { ChatComposer } from "./ChatComposer"
@@ -20,6 +22,15 @@ export function ChatRoom({ conversationId }: Props) {
   const conversation = conversations.find(c => c.conversation_id === conversationId)
 
   const { sendMessage, isReady } = useDmSocket(conversationId, accessToken, myUserId ?? null)
+
+  const handleSendImage = async (file: File) => {
+    try {
+      const { img_url } = await uploadDmImage(conversationId, file)
+      sendMessage("", img_url)
+    } catch {
+      toast.error("이미지를 전송할 수 없습니다.")
+    }
+  }
 
   // conversations 로드 중이면 대기
   if (!myUserId || isLoading) return null
@@ -44,7 +55,7 @@ export function ChatRoom({ conversationId }: Props) {
         myUserId={myUserId}
         opponent={conversation.opponent}
       />
-      <ChatComposer onSend={sendMessage} disabled={!isReady} />
+      <ChatComposer onSend={sendMessage} onSendImage={handleSendImage} disabled={!isReady} />
     </div>
   )
 }
