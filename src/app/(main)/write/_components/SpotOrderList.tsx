@@ -67,7 +67,8 @@ function SpotOrderItem({
   onDrop,
   onDragEnd,
 }: SpotOrderItemProps) {
-  const [textareaOpen, setTextareaOpen] = useState(false)
+  // 코스 순서 항목은 펼친 상태로 진입 — 본문 입력을 한 번 더 펼쳐야 하는 불편 제거
+  const [textareaOpen, setTextareaOpen] = useState(true)
   const isTextareaVisible = textareaOpen || forceTextareaOpen
   const gripHeld = useRef(false)
 
@@ -166,6 +167,7 @@ function SpotOrderItem({
           value={spot.location ? [spot.location] : []}
           onChange={(places) => onUpdateSpot({ location: places[0] ?? null })}
           singleMode
+          hasError={!!error?.location}
         />
         {error?.location && (
           <span className="block mt-1 text-caption text-(--input-text-error)">{error.location}</span>

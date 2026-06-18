@@ -10,9 +10,10 @@ interface Props {
   value: CreatePostSpotLocation[]
   onChange: (places: CreatePostSpotLocation[]) => void
   singleMode?: boolean
+  hasError?: boolean
 }
 
-export default function LocationSearch({ value, onChange, singleMode = false }: Props) {
+export default function LocationSearch({ value, onChange, singleMode = false, hasError = false }: Props) {
   const [input, setInput] = useState('')
   const [results, setResults] = useState<kakao.maps.services.PlaceItem[]>([])
   const [isOpen, setIsOpen] = useState(false)
@@ -95,21 +96,24 @@ export default function LocationSearch({ value, onChange, singleMode = false }: 
 
   return (
     <div ref={containerRef} className="relative">
-      <SearchBar
-        value={input}
-        onChange={handleChange}
-        onKeyDown={handleKeyDown}
-        onFocus={() => results.length > 0 && setIsOpen(true)}
-        placeholder="목적지 검색 (예: 광안리 해수욕장, 성산일출봉)"
-        disabled={!sdkReady}
-        onClear={() => {
-          clearDebounce()
-          setInput('')
-          setResults([])
-          setIsOpen(false)
-        }}
-        variant="panel"
-      />
+      {/* SearchBar에 직접 보더 prop이 없어, 에러 상태에서는 ring으로 붉은 보더를 입힘 — 다른 입력의 border 패턴과 시각적으로 동일 */}
+      <div className={hasError ? 'rounded-input ring-1 ring-(--input-border-error)' : undefined}>
+        <SearchBar
+          value={input}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          onFocus={() => results.length > 0 && setIsOpen(true)}
+          placeholder="목적지 검색 (예: 광안리 해수욕장, 성산일출봉)"
+          disabled={!sdkReady}
+          onClear={() => {
+            clearDebounce()
+            setInput('')
+            setResults([])
+            setIsOpen(false)
+          }}
+          variant="panel"
+        />
+      </div>
 
       {isOpen && results.length > 0 && (
         <div className="absolute top-full left-0 right-0 mt-1 bg-bg-card rounded-xl border border-border shadow-xl z-50 overflow-hidden max-h-60 overflow-y-auto">
