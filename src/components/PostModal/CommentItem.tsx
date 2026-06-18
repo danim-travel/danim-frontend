@@ -3,12 +3,14 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
+import Link from "next/link";
 import { Heart, Pencil, Trash2, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
 import type { Comment } from "@/types";
 import { Avatar, Button, Modal } from "@/components/common";
 import { KebabMenu } from "./KebabMenu";
+import { usePostModalContext } from "./PostModalContext";
 
 interface Props {
   comment: Comment;
@@ -19,6 +21,12 @@ interface Props {
 }
 
 export default function CommentItem({ comment, isOwn, onLike, onEdit, onDelete }: Props) {
+  const { currentUserId, onClose: onCloseModal } = usePostModalContext();
+  // 삭제된 유저(id null) 또는 익명은 프로필 링크 불가
+  const canLinkProfile = !!comment.user.id && !comment.user.is_deleted;
+  const profileHref = comment.user.id
+    ? (currentUserId && currentUserId === comment.user.id ? "/mypage" : `/users/${comment.user.id}`)
+    : null;
   // null = 수정 중 아님, string = 수정 중인 임시 텍스트
   const [editDraft, setEditDraft] = useState<string | null>(null);
   const editing = editDraft !== null;
@@ -82,17 +90,42 @@ export default function CommentItem({ comment, isOwn, onLike, onEdit, onDelete }
 
   return (
     <div className="group flex gap-2.5 py-2.5 relative">
-      <Avatar
-        src={comment.user.profile_img ?? undefined}
-        initial={comment.user.nickname?.[0] ?? "?"}
-        size="sm"
-      />
+      {canLinkProfile && profileHref ? (
+        <Link
+          href={profileHref}
+          onClick={onCloseModal}
+          aria-label={`${comment.user.nickname} 프로필로 이동`}
+          className="shrink-0 rounded-full hover:opacity-80 transition-opacity"
+        >
+          <Avatar
+            src={comment.user.profile_img ?? undefined}
+            initial={comment.user.nickname?.[0] ?? "?"}
+            size="sm"
+          />
+        </Link>
+      ) : (
+        <Avatar
+          src={comment.user.profile_img ?? undefined}
+          initial={comment.user.nickname?.[0] ?? "?"}
+          size="sm"
+        />
+      )}
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 min-w-0">
-          <span className="text-body-sm font-semibold text-text truncate min-w-0">
-            {comment.user.nickname}
-          </span>
+          {canLinkProfile && profileHref ? (
+            <Link
+              href={profileHref}
+              onClick={onCloseModal}
+              className="text-body-sm font-semibold text-text truncate min-w-0 hover:underline"
+            >
+              {comment.user.nickname}
+            </Link>
+          ) : (
+            <span className="text-body-sm font-semibold text-text truncate min-w-0">
+              {comment.user.nickname}
+            </span>
+          )}
           <span className="text-nav text-text-disabled shrink-0 whitespace-nowrap">{timeAgo}</span>
         </div>
 
