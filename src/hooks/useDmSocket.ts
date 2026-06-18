@@ -139,7 +139,7 @@ export function useDmSocket(
     let reconnectTimerId: ReturnType<typeof setTimeout> | null = null
     let backoffMs = INITIAL_BACKOFF_MS
     let cancelled = false
-    const wsUrl = `${config.wsBaseUrl}/ws/conversations/${conversationId}/`
+    const wsUrl = `${config.wsBaseUrl}/ws/conversations/${conversationId}`
 
     const clearReconnectTimer = () => {
       if (reconnectTimerId !== null) {
@@ -191,6 +191,11 @@ export function useDmSocket(
         }
         if (!isDmWsServerMessage(parsed)) return
         console.info(`[DM WebSocket] message: ${parsed.type}`)
+
+        if (parsed.type === 'error') {
+          console.error('[DM WebSocket] server error', parsed.detail)
+          return
+        }
 
         if (parsed.type === 'auth_success') {
           isAuthedRef.current = true
@@ -301,12 +306,20 @@ export function useDmSocket(
   const sendMessage = useCallback(
     (content: string, imgUrl?: string) => {
       const socket = socketRef.current
-      if (!socket || socket.readyState !== WebSocket.OPEN || !isAuthedRef.current || !myUserId) return
+      if (!socket || socket.readyState !== WebSocket.OPEN || !isAuthedRef.current || !myUserId) {
+        console.warn('[DM WebSocket] send skipped: socket is not ready', {
+          readyState: socket?.readyState,
+          isAuthed: isAuthedRef.current,
+          hasMyUserId: Boolean(myUserId),
+          conversationId,
+        })
+        return false
+      }
 
       const trimmed = content.trim()
       const normalizedContent = trimmed || null
       const normalizedImgUrl = imgUrl ?? null
-      if (!normalizedContent && !normalizedImgUrl) return
+      if (!normalizedContent && !normalizedImgUrl) return false
 
       const tempId = `opt-${Date.now()}-${Math.random().toString(36).slice(2)}`
       const optimistic: Message = {
@@ -324,17 +337,27 @@ export function useDmSocket(
 
       // FIX 4: send 실패 시 낙관적 메시지 롤백
       try {
+        const payload: DmWsClientMessage = normalizedImgUrl
+          ? {
+              type: 'send_message',
+              conversation_id: conversationId,
+              content: normalizedContent,
+              img_url: normalizedImgUrl,
+            }
+          : {
+              type: 'send_message',
+              conversation_id: conversationId,
+              content: normalizedContent ?? '',
+            }
+
         socket.send(
-          JSON.stringify({
-            type: 'send_message',
-            conversation_id: conversationId,
-            content: normalizedContent,
-            img_url: normalizedImgUrl,
-          } satisfies DmWsClientMessage)
+          JSON.stringify(payload)
         )
+        return true
       } catch {
         removeFromCache(queryClient, conversationId, tempId)
         pendingRef.current.pop()
+        return false
       }
     },
     [conversationId, myUserId, queryClient]
