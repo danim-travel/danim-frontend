@@ -19,7 +19,7 @@ export function ChatRoom({ conversationId }: Props) {
   const { data: conversations = [], isLoading } = useConversations()
   const conversation = conversations.find(c => c.conversation_id === conversationId)
 
-  const { sendMessage } = useDmSocket(conversationId, accessToken)
+  const { sendMessage, isReady } = useDmSocket(conversationId, accessToken, myUserId ?? null)
 
   // conversations 로드 중이면 대기
   if (!myUserId || isLoading) return null
@@ -44,7 +44,7 @@ export function ChatRoom({ conversationId }: Props) {
         myUserId={myUserId}
         opponent={conversation.opponent}
       />
-      <ChatComposer onSend={sendMessage} />
+      <ChatComposer onSend={sendMessage} disabled={!isReady} />
     </div>
   )
 }

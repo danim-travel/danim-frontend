@@ -21,7 +21,9 @@ function formatDateSeparator(dateStr: string) {
 
 export function MessageList({ conversationId, myUserId, opponent }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null)
-  const isFirstRender = useRef(true)
+  // FIX 5: 두 개의 effect가 isFirstRender 공유 → 초기 로드 시 이중 스크롤 발생 문제 해결
+  // prevLastMessageIdRef 하나로 초기 로드(instant)와 신규 메시지(smooth)를 구분
+  const prevLastMessageIdRef = useRef<string | undefined>(undefined)
 
   const {
     data,
@@ -37,20 +39,17 @@ export function MessageList({ conversationId, myUserId, opponent }: Props) {
     .reverse()
     .flatMap(page => [...page.results].reverse()) ?? []
 
-  // 첫 로드 시 맨 아래로 스크롤
-  useEffect(() => {
-    if (!isLoading && isFirstRender.current && messages.length > 0) {
-      bottomRef.current?.scrollIntoView({ behavior: "instant" })
-      isFirstRender.current = false
-    }
-  }, [isLoading, messages.length])
-
-  // 새 메시지 수신 시 맨 아래로 스크롤 (무한 스크롤로 과거 메시지 로드 시에는 미동작)
   const lastMessageId = messages[messages.length - 1]?.message_id
+
+  // 초기 로드: instant / 새 메시지: smooth / 과거 메시지 추가(fetchNextPage): 미동작
   useEffect(() => {
-    if (isFirstRender.current || !lastMessageId) return
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [lastMessageId])
+    if (isLoading || !lastMessageId) return
+    if (lastMessageId === prevLastMessageIdRef.current) return
+
+    const isFirstLoad = prevLastMessageIdRef.current === undefined
+    prevLastMessageIdRef.current = lastMessageId
+    bottomRef.current?.scrollIntoView({ behavior: isFirstLoad ? "instant" : "smooth" })
+  }, [isLoading, lastMessageId])
 
   const handleLoadMore = useCallback(() => {
     fetchNextPage()
