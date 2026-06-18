@@ -6,7 +6,7 @@
  * - POST   *\/direct-messages/conversations/:conversation_id/messages/presigned-url  이미지 presigned URL 발급
  * - DELETE *\/direct-messages/conversations/:conversation_id/messages/:message_id    메시지 삭제
  * - GET    *\/direct-messages/conversations/:conversation_id/messages        메시지 목록 (cursor 페이지네이션, 최신순)
- * - WS     *\/ws/dm                                                          실시간 메시지 송수신
+ * - WS     *\/ws/conversations/:conversation_id/                             실시간 메시지 송수신
  */
 import { http, HttpResponse, ws } from 'msw'
 import type { RequestHandler, WebSocketHandler } from 'msw'
@@ -270,7 +270,7 @@ export const dmHandlers: RequestHandler[] = [
 
 // ---------- WebSocket ----------
 
-const dmWs = ws.link('*/ws/dm')
+const dmWs = ws.link('*/ws/conversations/:conversation_id/')
 
 const authedClients = new Set<WsClient>()
 // C3: 클라이언트가 메시지를 전송한 대화방 ID를 추적해 해당 대화방 참여자에게만 브로드캐스트
@@ -302,7 +302,7 @@ export const dmWsHandlers: WebSocketHandler[] = [
         return
       }
 
-      const msg = parsed as { type?: unknown; token?: unknown; conversation_id?: unknown; content?: unknown }
+      const msg = parsed as { type?: unknown; token?: unknown; conversation_id?: unknown; content?: unknown; img_url?: unknown }
 
       if (msg.type === 'auth') {
         if (typeof msg.token !== 'string' || msg.token.length === 0) {
@@ -322,7 +322,9 @@ export const dmWsHandlers: WebSocketHandler[] = [
       }
 
       if (msg.type === 'send_message') {
-        if (typeof msg.conversation_id !== 'string' || typeof msg.content !== 'string' || msg.content.trim() === '') {
+        const content = typeof msg.content === 'string' ? msg.content.trim() : null
+        const imgUrl = typeof msg.img_url === 'string' && msg.img_url ? msg.img_url : null
+        if (typeof msg.conversation_id !== 'string' || (!content && !imgUrl)) {
           client.send(JSON.stringify({ type: 'error', detail: '올바르지 않은 메시지 형식입니다.' } satisfies DmWsServerMessage))
           return
         }
@@ -338,8 +340,8 @@ export const dmWsHandlers: WebSocketHandler[] = [
         const newMessage: Message = {
           message_id: createMessageId(),
           sender: ME,
-          content: msg.content.trim(),
-          img_url: null,
+          content,
+          img_url: imgUrl,
           original_img: null,
           is_deleted: false,
           created_at: now,
@@ -348,7 +350,7 @@ export const dmWsHandlers: WebSocketHandler[] = [
 
         const conv = conversations.find((c) => c.conversation_id === convId)
         if (conv) {
-          conv.last_message = { content: newMessage.content, img_url: '', created_at: now } satisfies LastMessage
+          conv.last_message = { content: newMessage.content, img_url: newMessage.img_url ?? '', created_at: now } satisfies LastMessage
         }
 
         // C3: 해당 대화방을 구독 중인 클라이언트에게만 브로드캐스트

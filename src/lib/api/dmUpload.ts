@@ -1,8 +1,7 @@
 'use client'
 
-import { compressImage } from '@/lib/imageCompression'
+import { uploadImage } from '@/lib/uploadImage'
 import type { DmPresignedUrlResponse } from '@/types'
-import { getDmImagePresignedUrl } from './dm'
 
 /**
  * DM 이미지를 S3에 업로드한다.
@@ -13,13 +12,5 @@ export async function uploadDmImage(
   conversationId: string,
   file: File,
 ): Promise<DmPresignedUrlResponse> {
-  const compressed = await compressImage(file)
-  const result = await getDmImagePresignedUrl(conversationId, compressed.name)
-  const s3Res = await fetch(result.presigned_url, {
-    method: 'PUT',
-    body: compressed,
-    headers: { 'Content-Type': compressed.type || 'application/octet-stream' },
-  })
-  if (!s3Res.ok) throw new Error(`S3 upload failed: ${s3Res.status}`)
-  return result
+  return uploadImage(`direct-messages/conversations/${conversationId}/messages/presigned-url`, file)
 }
