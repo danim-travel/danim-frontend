@@ -39,9 +39,9 @@ export function FollowList({ userId, tab, followers, following, isLoading }: Fol
   }
 
   return (
-    <ul className="divide-y divide-border">
+    <ul className="flex flex-col gap-1 py-2">
       {list.map(user => (
-        <li key={user.user_id} className="py-4">
+        <li key={user.user_id}>
           <FollowUserItem
             user={user}
             followersQueryKey={followersQueryKey}

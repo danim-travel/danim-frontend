@@ -1,5 +1,6 @@
 "use client"
 import { Check } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Avatar, Button, UserRow } from "@/components/common"
 import { followUser, unfollowUser } from "@/lib/api/users"
@@ -41,6 +42,7 @@ function applyIsFollowing(cache: FollowCache, targetId: string, isFollowing: boo
 
 /** 팔로워/팔로잉 목록의 유저 행 컴포넌트. 팔로우·언팔로우 토글과 낙관적 업데이트를 담당한다. */
 export function FollowUserItem({ user, followersQueryKey, followingQueryKey, isMutualFollow }: FollowUserItemProps) {
+  const router = useRouter()
   const queryClient = useQueryClient()
 
   /** 진행 중인 쿼리를 취소하고 이전 캐시를 스냅샷한 뒤 낙관적 업데이트를 적용한다. */
@@ -100,6 +102,8 @@ export function FollowUserItem({ user, followersQueryKey, followingQueryKey, isM
       }
       title={user.nickname}
       titleSuffix={mutualBadge}
+      onClick={() => router.push(`/users/${user.user_id}`)}
+      className="px-3 py-3 rounded-xl hover:bg-bg-subtle transition-colors"
       trailing={
         user.is_following ? (
           <Button
@@ -108,7 +112,10 @@ export function FollowUserItem({ user, followersQueryKey, followingQueryKey, isM
             leftIcon={<Check size={14} />}
             loading={isPending}
             disabled={isPending}
-            onClick={() => toggleMutation.mutate(false)}
+            onClick={(e) => {
+              e.stopPropagation()
+              toggleMutation.mutate(false)
+            }}
           >
             팔로잉
           </Button>
@@ -118,7 +125,10 @@ export function FollowUserItem({ user, followersQueryKey, followingQueryKey, isM
             size="sm"
             loading={isPending}
             disabled={isPending}
-            onClick={() => toggleMutation.mutate(true)}
+            onClick={(e) => {
+              e.stopPropagation()
+              toggleMutation.mutate(true)
+            }}
           >
             팔로우
           </Button>
