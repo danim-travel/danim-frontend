@@ -16,7 +16,7 @@
  *   1. 채팅방 목록 렌더링 / 검색 / 빈 검색 결과
  *   2. 새 대화 모달에서 팔로잉 사용자 선택 → 채팅방 생성 API 호출 → 방으로 이동
  *   3. 방 입장 후 헤더·기존 메시지 렌더링
- *   4. MSW mock 대화방에서는 WebSocket 미연결 및 전송 UI 비활성화
+ *   4. MSW mock 대화방에서는 WebSocket 미연결, 입력 가능, 전송 실패 시 입력 유지
  */
 
 import { test, expect, type Page } from '@playwright/test'
@@ -248,7 +248,7 @@ test.describe('DM — 채팅방 대화', () => {
     expect(warnings.some(message => message.includes('Mock DM data detected'))).toBe(true)
   })
 
-  test('mock 대화방에서는 입력과 이모지 선택은 가능하지만 전송은 비활성화된다', async ({ page }) => {
+  test('mock 대화방에서는 입력과 이모지 선택이 가능하고 전송 실패 시 입력을 유지한다', async ({ page }) => {
     await openFirstConversation(page)
 
     const input = page.getByPlaceholder('메시지 입력...')
@@ -260,7 +260,9 @@ test.describe('DM — 채팅방 대화', () => {
     await page.getByRole('button', { name: '이모지' }).click()
     await page.getByRole('button', { name: '😀' }).click()
     await expect(input).toHaveValue('😀')
-    await expect(sendButton).toBeDisabled()
+    await expect(sendButton).toBeEnabled()
+    await sendButton.click()
+    await expect(input).toHaveValue('😀')
   })
 
   test('mock ID warning에는 conversation_id가 포함된다', async ({ page }) => {

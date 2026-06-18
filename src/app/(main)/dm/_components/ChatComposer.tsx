@@ -5,7 +5,7 @@ import { Send, ImagePlus, Smile } from "lucide-react"
 import { IconButton } from "@/components/common"
 
 interface Props {
-  onSend: (content: string) => void
+  onSend: (content: string) => boolean
   onSendImage: (file: File) => Promise<void>
   disabled?: boolean
 }
@@ -24,8 +24,9 @@ export function ChatComposer({ onSend, onSendImage, disabled }: Props) {
 
   const handleSend = () => {
     const trimmed = value.trim()
-    if (!trimmed || isSendDisabled) return
-    onSend(trimmed)
+    if (!trimmed || isUploading) return
+    const sent = onSend(trimmed)
+    if (!sent) return
     setValue("")
     setEmojiOpen(false)
     inputRef.current?.focus()
@@ -126,7 +127,7 @@ export function ChatComposer({ onSend, onSendImage, disabled }: Props) {
         aria-label="전송"
         size="sm"
         onClick={handleSend}
-        disabled={!value.trim() || isSendDisabled}
+        disabled={!value.trim() || isUploading}
         className={value.trim() ? "text-primary" : "text-text-disabled"}
       />
     </div>
