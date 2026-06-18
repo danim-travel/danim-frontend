@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import { MapPin, Heart, MessageCircle, Bookmark } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -20,6 +21,31 @@ interface FeedCardProps {
   onCommentClick?: () => void;
   priority?: boolean;
   variant?: "panel" | "sheet";
+}
+
+// 카드 내부에서만 펼침/접기 상태를 가지는 description — 카드 외부 너비엔 영향 없음(높이만 가변)
+function ExpandableDescription({ text, clampClass }: { text: string; clampClass: string }) {
+  const [expanded, setExpanded] = useState(false);
+  // 잘림 여부 판정 — 폰트 메트릭 의존 없이 글자 수 기준으로 보수적 추정. 짧으면 토글 자체를 노출하지 않아 UI 노이즈 방지
+  const mayOverflow = text.length > 60;
+
+  return (
+    <div className="flex-1 min-w-0">
+      <p className={`text-body-sm text-text-secondary break-words ${expanded ? "" : clampClass}`}>{text}</p>
+      {mayOverflow && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setExpanded((v) => !v);
+          }}
+          className="mt-1 text-nav font-medium text-text-muted hover:text-text-secondary transition-colors"
+        >
+          {expanded ? "접기" : "더보기"}
+        </button>
+      )}
+    </div>
+  );
 }
 
 export function FeedCard({
@@ -143,7 +169,7 @@ export function FeedCard({
           </div>
 
           {/* 설명 */}
-          <p className="text-body-sm text-text-secondary line-clamp-2 flex-1">{feed.post.description}</p>
+          <ExpandableDescription text={feed.post.description} clampClass="line-clamp-2" />
 
           {/* 액션 */}
           <div className="flex items-center gap-3">
@@ -229,7 +255,7 @@ export function FeedCard({
         </div>
 
         {/* 설명 */}
-        <p className="text-body-sm text-text-secondary line-clamp-2">{feed.post.description}</p>
+        <ExpandableDescription text={feed.post.description} clampClass="line-clamp-2" />
 
         <hr className="border-border" />
 
