@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import type { Comment, PostDetail, Spot } from "@/types";
 import { Avatar, Button } from "@/components/common";
@@ -27,17 +27,26 @@ export default function PostModalDetailPane({
   showGoToMain,
   onGoToMain,
 }: Props) {
-  const { currentUserId, onClose } = usePostModalContext();
+  const router = useRouter();
+  const { currentUserId } = usePostModalContext();
   const isOwn = !!currentUserId && currentUserId === data.user.user_id;
   const profileHref = isOwn ? "/mypage" : `/users/${data.user.user_id}`;
+
+  // 부모의 onClose(예: HomePage의 nuqs setQueryState)가 같은 tick에 URL을 또 갱신해
+  // router.push와 충돌하는 케이스가 있어 명시적으로 호출하지 않는다.
+  // 라우트가 바뀌면 nuqs가 ?post= 쿼리 해제 → AnimatePresence가 모달 unmount.
+  const handleProfileClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    router.push(profileHref);
+  };
 
   return (
     <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
       <header className="flex items-center px-6 pt-5 pb-4 shrink-0">
-        <Link
+        <a
           href={profileHref}
-          onClick={onClose}
-          className="flex items-center gap-3 min-w-0 rounded-lg -mx-1 px-1 py-0.5 hover:bg-bg-subtle transition-colors"
+          onClick={handleProfileClick}
+          className="flex items-center gap-3 min-w-0 rounded-lg -mx-1 px-1 py-0.5 hover:bg-bg-subtle transition-colors cursor-pointer"
           aria-label={`${data.user.nickname} 프로필로 이동`}
         >
           <Avatar
@@ -46,7 +55,7 @@ export default function PostModalDetailPane({
             size="md"
           />
           <span className="text-base font-bold text-text truncate">{data.user.nickname}</span>
-        </Link>
+        </a>
       </header>
 
       {activeSpot && (

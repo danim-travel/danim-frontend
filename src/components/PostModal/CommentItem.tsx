@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Heart, Pencil, Trash2, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
@@ -21,12 +21,22 @@ interface Props {
 }
 
 export default function CommentItem({ comment, isOwn, onLike, onEdit, onDelete }: Props) {
-  const { currentUserId, onClose: onCloseModal } = usePostModalContext();
+  const router = useRouter();
+  const { currentUserId } = usePostModalContext();
   // 삭제된 유저(id null) 또는 익명은 프로필 링크 불가
   const canLinkProfile = !!comment.user.id && !comment.user.is_deleted;
   const profileHref = comment.user.id
     ? (currentUserId && currentUserId === comment.user.id ? "/mypage" : `/users/${comment.user.id}`)
     : null;
+
+  // 부모의 onClose(예: HomePage의 nuqs setQueryState)가 같은 tick에 URL을 또 갱신해
+  // router.push와 충돌하는 케이스가 있어 명시적으로 호출하지 않는다.
+  // 라우트가 바뀌면 nuqs가 ?post= 쿼리 해제 → AnimatePresence가 모달 unmount.
+  const handleProfileClick = (e: React.MouseEvent) => {
+    if (!profileHref) return;
+    e.preventDefault();
+    router.push(profileHref);
+  };
   // null = 수정 중 아님, string = 수정 중인 임시 텍스트
   const [editDraft, setEditDraft] = useState<string | null>(null);
   const editing = editDraft !== null;
@@ -91,18 +101,18 @@ export default function CommentItem({ comment, isOwn, onLike, onEdit, onDelete }
   return (
     <div className="group flex gap-2.5 py-2.5 relative">
       {canLinkProfile && profileHref ? (
-        <Link
+        <a
           href={profileHref}
-          onClick={onCloseModal}
+          onClick={handleProfileClick}
           aria-label={`${comment.user.nickname} 프로필로 이동`}
-          className="shrink-0 rounded-full hover:opacity-80 transition-opacity"
+          className="shrink-0 rounded-full hover:opacity-80 transition-opacity cursor-pointer"
         >
           <Avatar
             src={comment.user.profile_img ?? undefined}
             initial={comment.user.nickname?.[0] ?? "?"}
             size="sm"
           />
-        </Link>
+        </a>
       ) : (
         <Avatar
           src={comment.user.profile_img ?? undefined}
@@ -114,13 +124,13 @@ export default function CommentItem({ comment, isOwn, onLike, onEdit, onDelete }
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 min-w-0">
           {canLinkProfile && profileHref ? (
-            <Link
+            <a
               href={profileHref}
-              onClick={onCloseModal}
-              className="text-body-sm font-semibold text-text truncate min-w-0 hover:underline"
+              onClick={handleProfileClick}
+              className="text-body-sm font-semibold text-text truncate min-w-0 hover:underline cursor-pointer"
             >
               {comment.user.nickname}
-            </Link>
+            </a>
           ) : (
             <span className="text-body-sm font-semibold text-text truncate min-w-0">
               {comment.user.nickname}
