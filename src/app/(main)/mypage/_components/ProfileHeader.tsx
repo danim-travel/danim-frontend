@@ -28,12 +28,15 @@ function formatCount(n: number): string {
 function StatItem({ label, value, href }: StatItemProps) {
   const content = (
     <>
-      <div className="text-xl font-bold text-text">{formatCount(value)}</div>
-      <div className="text-xs text-text-muted mt-1">{label}</div>
+      <div className="text-sm font-bold text-text leading-tight sm:text-lg md:text-xl">{formatCount(value)}</div>
+      <div className="text-[10px] text-text-muted sm:text-xs sm:mt-0.5 md:text-xs md:mt-1">{label}</div>
     </>
   );
 
-  const cls = "flex flex-col items-center bg-bg rounded-xl px-3 py-2 flex-1 md:flex-none md:px-4 md:py-3 md:w-[160px]";
+  // <640px(모바일): 가변(flex-1) — 폰 뷰포트 차이 대응
+  // 640~768px(태블릿): w-36 (144px) — 충분히 큰 고정 너비
+  // ≥768px(데스크탑): w-[160px]
+  const cls = "flex flex-col items-center bg-bg rounded-md px-2 py-1.5 flex-1 min-w-0 sm:rounded-lg sm:px-4 sm:py-2.5 sm:flex-none sm:w-36 md:rounded-xl md:px-4 md:py-3 md:w-[160px]";
 
   if (href) {
     return (
@@ -78,7 +81,7 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
               <p className="text-sm text-text-muted mt-1 whitespace-pre-wrap">{profile.intro}</p>
             )}
           </div>
-          <div className="flex gap-2 md:hidden">
+          <div className="flex gap-2 sm:justify-end md:hidden">
             <StatItem label="팔로워" value={profile.follower} href="/followers?tab=followers" />
             <StatItem label="팔로잉" value={profile.following} href="/followers?tab=following" />
           </div>
