@@ -24,7 +24,7 @@ export function ChatComposer({ onSend, onSendImage, disabled }: Props) {
 
   const handleSend = () => {
     const trimmed = value.trim()
-    if (!trimmed || isUploading) return
+    if (!trimmed || isSendDisabled) return
     const sent = onSend(trimmed)
     if (!sent) return
     setValue("")
@@ -127,8 +127,8 @@ export function ChatComposer({ onSend, onSendImage, disabled }: Props) {
         aria-label="전송"
         size="sm"
         onClick={handleSend}
-        disabled={!value.trim() || isUploading}
-        className={value.trim() ? "text-primary" : "text-text-disabled"}
+        disabled={!value.trim() || isSendDisabled}
+        className={value.trim() && !isSendDisabled ? "text-primary" : "text-text-disabled"}
       />
     </div>
   )
