@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useRef, type ChangeEvent, type KeyboardEvent } from "react"
+import { useState, useRef, useCallback, type ChangeEvent, type KeyboardEvent } from "react"
+import { useOnClickOutside } from "@/hooks/useOnClickOutside"
 import { Send, ImagePlus, Smile } from "lucide-react"
 import { IconButton } from "@/components/common"
 
@@ -18,6 +19,10 @@ export function ChatComposer({ onSend, onSendImage, disabled }: Props) {
   const [isUploading, setIsUploading] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const emojiRef = useRef<HTMLDivElement>(null)
+
+  const closeEmoji = useCallback(() => setEmojiOpen(false), [])
+  useOnClickOutside(emojiRef, closeEmoji, emojiOpen)
 
   const isInputDisabled = isUploading
   const isSendDisabled = disabled || isUploading
@@ -71,7 +76,7 @@ export function ChatComposer({ onSend, onSendImage, disabled }: Props) {
 
   return (
     <div className="relative flex items-center gap-1 px-3 h-14 border-t border-border shrink-0">
-      <div className="relative">
+      <div ref={emojiRef} className="relative">
         <IconButton
           icon={<Smile size={20} />}
           aria-label="이모지"
@@ -104,24 +109,20 @@ export function ChatComposer({ onSend, onSendImage, disabled }: Props) {
         disabled={isInputDisabled}
         className="flex-1 bg-transparent outline-none text-body-sm text-text placeholder:text-text-placeholder disabled:cursor-not-allowed"
       />
-      {!value.trim() && (
-        <>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleImageSelect}
-          />
-          <IconButton
-            icon={<ImagePlus size={20} />}
-            aria-label="이미지 전송"
-            size="sm"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isSendDisabled}
-          />
-        </>
-      )}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleImageSelect}
+      />
+      <IconButton
+        icon={<ImagePlus size={20} />}
+        aria-label="이미지 전송"
+        size="sm"
+        onClick={() => fileInputRef.current?.click()}
+        disabled={isSendDisabled}
+      />
       <IconButton
         icon={<Send size={18} />}
         aria-label="전송"
