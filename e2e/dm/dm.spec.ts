@@ -10,13 +10,13 @@
  *     - GET    v1/direct-messages/conversations
  *     - GET    v1/direct-messages/conversations/:conversationId/messages
  *   WS:
- *     - /ws/dm auth 후 send_message 전송
+ *     - mock conversation_id에서는 실제 WebSocket 연결을 시도하지 않음
  *
  * 검증 항목:
  *   1. 채팅방 목록 렌더링 / 검색 / 빈 검색 결과
  *   2. 새 대화 모달에서 팔로잉 사용자 선택 → 채팅방 생성 API 호출 → 방으로 이동
  *   3. 방 입장 후 헤더·기존 메시지 렌더링
- *   4. 메시지 입력 후 버튼/Enter 전송 → 낙관적 렌더링 및 WebSocket echo 반영
+ *   4. MSW mock 대화방에서는 WebSocket 미연결 및 전송 UI 비활성화
  */
 
 import { test, expect, type Page } from '@playwright/test'
@@ -32,15 +32,22 @@ async function bootstrapAuthedDmPage(page: Page) {
     content: `
       (() => {
         const orig = window.fetch.bind(window);
+        const origWarn = window.console.warn.bind(window.console);
         const OriginalWebSocket = window.WebSocket;
         window.__fetchCaptures = [];
         window.__wsCaptures = [];
+        window.__warnCaptures = [];
 
         window.WebSocket = class extends OriginalWebSocket {
           constructor(url, protocols) {
             window.__wsCaptures.push(String(url));
             super(url, protocols);
           }
+        };
+
+        window.console.warn = (...args) => {
+          window.__warnCaptures.push(args.map(String).join(' '));
+          origWarn(...args);
         };
 
         window.fetch = async (input, init) => {
@@ -116,6 +123,12 @@ async function getCaptures(page: Page): Promise<CapturedRequest[]> {
 async function getWsCaptures(page: Page): Promise<string[]> {
   return page.evaluate(
     () => (window as Window & { __wsCaptures?: string[] }).__wsCaptures ?? [],
+  )
+}
+
+async function getWarnCaptures(page: Page): Promise<string[]> {
+  return page.evaluate(
+    () => (window as Window & { __warnCaptures?: string[] }).__warnCaptures ?? [],
   )
 }
 
@@ -225,50 +238,29 @@ test.describe('DM — 채팅방 대화', () => {
     )).toBe(true)
   })
 
-  test('입력 후 전송 버튼을 누르면 내 메시지가 추가되고 입력창이 비워진다', async ({ page }) => {
+  test('mock 대화방에서는 WebSocket 연결을 시도하지 않는다', async ({ page }) => {
+    await openFirstConversation(page)
+
+    const wsCaptures = await getWsCaptures(page)
+    expect(wsCaptures.some(url => url.includes('/ws/conversations/'))).toBe(false)
+
+    const warnings = await getWarnCaptures(page)
+    expect(warnings.some(message => message.includes('Mock DM data detected'))).toBe(true)
+  })
+
+  test('mock 대화방에서는 메시지 입력과 전송 버튼이 비활성화된다', async ({ page }) => {
     await openFirstConversation(page)
 
     const input = page.getByPlaceholder('메시지 입력...')
     const sendButton = page.getByRole('button', { name: '전송', exact: true })
-    await expect(input).toBeEnabled({ timeout: 15000 })
+    await expect(input).toBeDisabled({ timeout: 15000 })
     await expect(sendButton).toBeDisabled()
-
-    const message = `E2E 버튼 전송 ${Date.now()}`
-    await input.fill(message)
-    await expect(sendButton).toBeEnabled()
-    await sendButton.click()
-
-    await expect(input).toHaveValue('')
-    await expect(page.getByText(message).last()).toBeVisible()
   })
 
-  test('Enter 키로 메시지를 전송하고 대화방 WebSocket에 연결한다', async ({ page }) => {
+  test('mock ID warning에는 conversation_id가 포함된다', async ({ page }) => {
     await openFirstConversation(page)
 
-    const input = page.getByPlaceholder('메시지 입력...')
-    await expect(input).toBeEnabled({ timeout: 15000 })
-
-    const message = `E2E Enter 전송 ${Date.now()}`
-    await input.fill(message)
-    await input.press('Enter')
-
-    await expect(input).toHaveValue('')
-    await expect(page.getByText(message).last()).toBeVisible()
-
-    const wsCaptures = await getWsCaptures(page)
-    expect(wsCaptures.some(url => url.endsWith(`/ws/conversations/${FIRST_CONVERSATION_ID}/`))).toBe(true)
-  })
-
-  test('공백만 입력하면 전송 버튼이 비활성화되고 메시지가 추가되지 않는다', async ({ page }) => {
-    await openFirstConversation(page)
-
-    const input = page.getByPlaceholder('메시지 입력...')
-    await expect(input).toBeEnabled({ timeout: 15000 })
-
-    await input.fill('   ')
-    await expect(page.getByRole('button', { name: '전송', exact: true })).toBeDisabled()
-    await input.press('Enter')
-
-    await expect(input).toHaveValue('   ')
+    const warnings = await getWarnCaptures(page)
+    expect(warnings.some(message => message.includes(FIRST_CONVERSATION_ID))).toBe(true)
   })
 })

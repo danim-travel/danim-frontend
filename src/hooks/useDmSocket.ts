@@ -10,16 +10,26 @@ const NORMAL_CLOSE_CODE = 1000
 const INITIAL_BACKOFF_MS = 1000
 const MAX_BACKOFF_MS = 30_000
 const PENDING_TTL_MS = 10_000
+const MOCK_CONVERSATION_ID_PATTERN = /^(mock_|01HDMCONV)/i
 
 function isDmWsServerMessage(value: unknown): value is DmWsServerMessage {
   if (typeof value !== 'object' || value === null) return false
   const v = value as { type?: unknown }
   return (
     v.type === 'receive_message' ||
+    v.type === 'auth_success' ||
     v.type === 'read_receipt' ||
     v.type === 'message_deleted' ||
     v.type === 'error'
   )
+}
+
+function isMockConversationId(conversationId: string) {
+  return MOCK_CONVERSATION_ID_PATTERN.test(conversationId)
+}
+
+function isMockAccessToken(accessToken: string) {
+  return accessToken.toLowerCase().includes('mock')
 }
 
 function prependToCache(
@@ -92,7 +102,8 @@ function removeFromCache(
 // FIX 2: tempId 추가 — echo 도착 시 해당 낙관적 항목을 정확히 교체하기 위함
 interface PendingEntry {
   tempId: string
-  content: string
+  content: string | null
+  imgUrl: string | null
   sentAt: number
 }
 
@@ -105,15 +116,30 @@ export function useDmSocket(
   const socketRef = useRef<WebSocket | null>(null)
   const isAuthedRef = useRef(false)
   const pendingRef = useRef<PendingEntry[]>([])
+  const skippedSocketWarningRef = useRef<string | null>(null)
   const [isReady, setIsReady] = useState(false)
 
   useEffect(() => {
-    if (!accessToken || !conversationId) return
+    if (!accessToken || !conversationId) {
+      return
+    }
+
+    if (isMockConversationId(conversationId) || isMockAccessToken(accessToken)) {
+      const warningKey = `${conversationId}:${accessToken}`
+      if (skippedSocketWarningRef.current !== warningKey) {
+        console.warn(
+          `[DM WebSocket] Mock DM data detected. Skip dev WebSocket connection for conversation_id="${conversationId}".`
+        )
+        skippedSocketWarningRef.current = warningKey
+      }
+      return
+    }
 
     let socket: WebSocket | null = null
     let reconnectTimerId: ReturnType<typeof setTimeout> | null = null
     let backoffMs = INITIAL_BACKOFF_MS
     let cancelled = false
+    const wsUrl = `${config.wsBaseUrl}/ws/conversations/${conversationId}/`
 
     const clearReconnectTimer = () => {
       if (reconnectTimerId !== null) {
@@ -139,17 +165,18 @@ export function useDmSocket(
       // FIX 3: 재연결 시 stale 항목 초기화 — 끊김 후 동일 내용 재전송 시 오탐 방지
       pendingRef.current = []
       try {
-        socket = new WebSocket(`${config.wsBaseUrl}/ws/conversations/${conversationId}/`)
+        console.info(`[DM WebSocket] connecting: ${wsUrl}`)
+        socket = new WebSocket(wsUrl)
         socketRef.current = socket
       } catch {
+        console.error(`[DM WebSocket] connect failed before opening: ${wsUrl}`)
         scheduleReconnect()
         return
       }
 
       socket.onopen = () => {
+        console.info(`[DM WebSocket] open: ${wsUrl}`)
         socket?.send(JSON.stringify({ type: 'auth', token: accessToken } satisfies DmWsClientMessage))
-        isAuthedRef.current = true
-        setIsReady(true)
         backoffMs = INITIAL_BACKOFF_MS
       }
 
@@ -159,21 +186,29 @@ export function useDmSocket(
         try {
           parsed = JSON.parse(raw)
         } catch {
+          console.warn('[DM WebSocket] message parse failed')
           return
         }
         if (!isDmWsServerMessage(parsed)) return
+        console.info(`[DM WebSocket] message: ${parsed.type}`)
+
+        if (parsed.type === 'auth_success') {
+          isAuthedRef.current = true
+          setIsReady(true)
+          return
+        }
 
         if (parsed.type === 'receive_message') {
           const { message } = parsed
           const now = Date.now()
 
           // FIX 6: null content는 매칭 제외 — 이미지 메시지에서 null===null 오탐 방지
-          const pendingIdx =
-            message.content !== null
-              ? pendingRef.current.findIndex(
-                  p => p.content === message.content && now - p.sentAt < PENDING_TTL_MS
-                )
-              : -1
+          const pendingIdx = pendingRef.current.findIndex(
+            p =>
+              now - p.sentAt < PENDING_TTL_MS &&
+              ((message.content !== null && p.content === message.content) ||
+                (message.img_url !== null && p.imgUrl === message.img_url))
+          )
 
           if (pendingIdx !== -1) {
             const { tempId } = pendingRef.current[pendingIdx]
@@ -218,11 +253,15 @@ export function useDmSocket(
       socket.onclose = (event) => {
         isAuthedRef.current = false
         setIsReady(false)
+        console.info(
+          `[DM WebSocket] close: code=${event.code} reason="${event.reason}" wasClean=${event.wasClean}`
+        )
         if (cancelled || event.code === NORMAL_CLOSE_CODE) return
         scheduleReconnect()
       }
 
-      socket.onerror = () => {
+      socket.onerror = (event) => {
+        console.error('[DM WebSocket] error', event)
         // error 이후 onclose가 이어지므로 별도 처리 없음
       }
     }
@@ -254,23 +293,28 @@ export function useDmSocket(
   }, [accessToken, conversationId, queryClient])
 
   const sendMessage = useCallback(
-    (content: string) => {
+    (content: string, imgUrl?: string) => {
       const socket = socketRef.current
       if (!socket || socket.readyState !== WebSocket.OPEN || !isAuthedRef.current || !myUserId) return
+
+      const trimmed = content.trim()
+      const normalizedContent = trimmed || null
+      const normalizedImgUrl = imgUrl ?? null
+      if (!normalizedContent && !normalizedImgUrl) return
 
       const tempId = `opt-${Date.now()}-${Math.random().toString(36).slice(2)}`
       const optimistic: Message = {
         message_id: tempId,
         sender: { user_id: myUserId, nickname: '', profile_img: null },
-        content,
-        img_url: null,
+        content: normalizedContent,
+        img_url: normalizedImgUrl,
         original_img: null,
         is_deleted: false,
         created_at: new Date().toISOString(),
       }
 
       prependToCache(queryClient, conversationId, optimistic)
-      pendingRef.current.push({ tempId, content, sentAt: Date.now() })
+      pendingRef.current.push({ tempId, content: normalizedContent, imgUrl: normalizedImgUrl, sentAt: Date.now() })
 
       // FIX 4: send 실패 시 낙관적 메시지 롤백
       try {
@@ -278,7 +322,8 @@ export function useDmSocket(
           JSON.stringify({
             type: 'send_message',
             conversation_id: conversationId,
-            content,
+            content: normalizedContent,
+            img_url: normalizedImgUrl,
           } satisfies DmWsClientMessage)
         )
       } catch {
