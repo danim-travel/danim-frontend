@@ -21,7 +21,8 @@ export default function WritePage() {
 
   const [titleError, setTitleError] = useState<string | undefined>()
   const [descriptionError, setDescriptionError] = useState<string | undefined>()
-  const [spotPhotoError, setSpotPhotoError] = useState<string | undefined>()
+  // 스팟별 사진 누락 에러를 영속 보관 — 활성 스팟 전환과 무관하게 각 스팟의 에러 표시 유지
+  const [spotPhotoErrors, setSpotPhotoErrors] = useState<Record<string, string>>({})
   const [spotErrors, setSpotErrors] = useState<Record<string, SpotError>>({})
   const [openSpotTextareaIds, setOpenSpotTextareaIds] = useState<Set<string>>(new Set())
   const [confirmRemoveSpotId, setConfirmRemoveSpotId] = useState<string | null>(null)
@@ -44,14 +45,18 @@ export default function WritePage() {
     setSpotErrors(newSpotErrors)
     setOpenSpotTextareaIds(newOpenIds)
 
+    // 사진 누락 에러는 모든 스팟에 대해 일괄 산출하여 보관 — 어느 스팟으로 이동해도 해당 스팟의 상태 그대로 노출
+    const newPhotoErrors: Record<string, string> = {}
+    for (const s of spot.spots) {
+      if (s.images.length === 0) newPhotoErrors[s.id] = "사진을 최소 1장 추가해주세요"
+    }
+    setSpotPhotoErrors(newPhotoErrors)
+
     const invalidSpot = spot.spots.find(
       (s) => s.content.trim().length === 0 || s.location === null || s.images.length === 0
     )
     if (invalidSpot) {
       spot.selectSpot(invalidSpot.id)
-      setSpotPhotoError(invalidSpot.images.length === 0 ? "사진을 최소 1장 추가해주세요" : undefined)
-    } else {
-      setSpotPhotoError(undefined)
     }
 
     if (!canSubmit) return
@@ -62,16 +67,42 @@ export default function WritePage() {
 
   const handleCancel = useCallback(() => router.back(), [router])
 
-  const clearErrors = useCallback(() => {
-    setSpotErrors({})
-    setSpotPhotoError(undefined)
-    setOpenSpotTextareaIds(new Set())
+  // 사진을 추가하면 현재 활성 스팟의 사진 에러만 해제 — 다른 스팟의 에러는 그대로 유지
+  const activeSpotId = spot.active.id
+  const handlePhotoAdd = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    photo.handlePhotoAdd(e)
+    setSpotPhotoErrors((prev) => {
+      if (!prev[activeSpotId]) return prev
+      const next = { ...prev }
+      delete next[activeSpotId]
+      return next
+    })
+  }, [photo, activeSpotId])
+
+  // 삭제된 스팟에 묶여 있던 에러만 정리 — 다른 스팟의 에러는 유지
+  const removeSpotErrors = useCallback((id: string) => {
+    setSpotErrors(prev => {
+      if (!prev[id]) return prev
+      const { [id]: _removed, ...rest } = prev
+      return rest
+    })
+    setSpotPhotoErrors(prev => {
+      if (!prev[id]) return prev
+      const { [id]: _removed, ...rest } = prev
+      return rest
+    })
+    setOpenSpotTextareaIds(prev => {
+      if (!prev.has(id)) return prev
+      const next = new Set(prev)
+      next.delete(id)
+      return next
+    })
   }, [])
 
+  // 스팟 전환은 에러 상태에 영향 없음 — 각 스팟의 에러는 그 스팟이 수정될 때까지 유지
   const handleSelectSpot = useCallback((id: string) => {
     spot.selectSpot(id)
-    clearErrors()
-  }, [spot, clearErrors])
+  }, [spot])
 
   const handleActivateSpot = useCallback((id: string) => {
     spot.selectSpot(id)
@@ -84,10 +115,11 @@ export default function WritePage() {
   const handleConfirmRemoveSpot = useCallback(() => {
     if (confirmRemoveSpotId) {
       spot.removeSpot(confirmRemoveSpotId)
-      clearErrors()
+      // 삭제된 스팟의 에러만 정리, 나머지는 보존
+      removeSpotErrors(confirmRemoveSpotId)
       setConfirmRemoveSpotId(null)
     }
-  }, [confirmRemoveSpotId, spot, clearErrors])
+  }, [confirmRemoveSpotId, spot, removeSpotErrors])
 
   const handleRemoveSpot = handleRequestRemoveSpot
 
@@ -100,12 +132,20 @@ export default function WritePage() {
     })
   }, [])
 
+  // 해당 필드를 사용자가 채웠을 때만 그 필드의 에러를 해제 — 다른 스팟·다른 필드 에러는 그대로
   const handleUpdateSpot = useCallback((id: string, updates: Parameters<typeof spot.updateSpot>[1]) => {
     spot.updateSpot(id, updates)
     setSpotErrors(prev => {
-      if (!prev[id]) return prev
-      const { [id]: _, ...rest } = prev
-      return rest
+      const current = prev[id]
+      if (!current) return prev
+      const next: SpotError = { ...current }
+      if (updates.content !== undefined && updates.content.trim().length > 0) delete next.content
+      if (updates.location !== undefined && updates.location !== null) delete next.location
+      if (Object.keys(next).length === 0) {
+        const { [id]: _removed, ...rest } = prev
+        return rest
+      }
+      return { ...prev, [id]: next }
     })
   }, [spot])
 
@@ -118,12 +158,12 @@ export default function WritePage() {
         {/* 사진 업로드 */}
         <PhotoPanel
           active={spot.active}
-          photoError={spotPhotoError}
+          photoError={spotPhotoErrors[spot.active.id]}
           photosState={{
             selectedPhotoIdx: photo.selectedPhotoIdx,
             isUploadingPhoto: photo.isUploadingPhoto,
             uploadProgress: photo.uploadProgress,
-            onPhotoAdd: photo.handlePhotoAdd,
+            onPhotoAdd: handlePhotoAdd,
             onRemovePhoto: photo.removePhoto,
             onSelectPhoto: photo.setSelectedPhotoIdx,
             onReorderPhotos: photo.reorderPhotos,
