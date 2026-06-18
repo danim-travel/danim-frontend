@@ -19,11 +19,12 @@ export function ChatComposer({ onSend, onSendImage, disabled }: Props) {
   const inputRef = useRef<HTMLInputElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const isDisabled = disabled || isUploading
+  const isInputDisabled = isUploading
+  const isSendDisabled = disabled || isUploading
 
   const handleSend = () => {
     const trimmed = value.trim()
-    if (!trimmed || isDisabled) return
+    if (!trimmed || isSendDisabled) return
     onSend(trimmed)
     setValue("")
     setEmojiOpen(false)
@@ -39,7 +40,7 @@ export function ChatComposer({ onSend, onSendImage, disabled }: Props) {
   }
 
   const handleEmojiSelect = (emoji: string) => {
-    if (isDisabled) return
+    if (isInputDisabled) return
     const input = inputRef.current
     const start = input?.selectionStart ?? value.length
     const end = input?.selectionEnd ?? value.length
@@ -55,7 +56,7 @@ export function ChatComposer({ onSend, onSendImage, disabled }: Props) {
   const handleImageSelect = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     event.target.value = ""
-    if (!file || isDisabled) return
+    if (!file || isSendDisabled) return
 
     setEmojiOpen(false)
     setIsUploading(true)
@@ -74,8 +75,8 @@ export function ChatComposer({ onSend, onSendImage, disabled }: Props) {
           icon={<Smile size={20} />}
           aria-label="이모지"
           size="sm"
-          onClick={() => !isDisabled && setEmojiOpen(open => !open)}
-          disabled={isDisabled}
+          onClick={() => !isInputDisabled && setEmojiOpen(open => !open)}
+          disabled={isInputDisabled}
         />
         {emojiOpen && (
           <div className="absolute bottom-11 left-0 z-10 grid w-52 grid-cols-8 gap-1 rounded-card border border-border bg-bg-card p-2 shadow-modal">
@@ -99,7 +100,7 @@ export function ChatComposer({ onSend, onSendImage, disabled }: Props) {
         onChange={e => setValue(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="메시지 입력..."
-        disabled={isDisabled}
+        disabled={isInputDisabled}
         className="flex-1 bg-transparent outline-none text-body-sm text-text placeholder:text-text-placeholder disabled:cursor-not-allowed"
       />
       {!value.trim() && (
@@ -116,7 +117,7 @@ export function ChatComposer({ onSend, onSendImage, disabled }: Props) {
             aria-label="이미지 전송"
             size="sm"
             onClick={() => fileInputRef.current?.click()}
-            disabled={isDisabled}
+            disabled={isSendDisabled}
           />
         </>
       )}
@@ -125,7 +126,7 @@ export function ChatComposer({ onSend, onSendImage, disabled }: Props) {
         aria-label="전송"
         size="sm"
         onClick={handleSend}
-        disabled={!value.trim() || isDisabled}
+        disabled={!value.trim() || isSendDisabled}
         className={value.trim() ? "text-primary" : "text-text-disabled"}
       />
     </div>

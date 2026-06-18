@@ -248,12 +248,18 @@ test.describe('DM — 채팅방 대화', () => {
     expect(warnings.some(message => message.includes('Mock DM data detected'))).toBe(true)
   })
 
-  test('mock 대화방에서는 메시지 입력과 전송 버튼이 비활성화된다', async ({ page }) => {
+  test('mock 대화방에서는 입력과 이모지 선택은 가능하지만 전송은 비활성화된다', async ({ page }) => {
     await openFirstConversation(page)
 
     const input = page.getByPlaceholder('메시지 입력...')
     const sendButton = page.getByRole('button', { name: '전송', exact: true })
-    await expect(input).toBeDisabled({ timeout: 15000 })
+    const imageButton = page.getByRole('button', { name: '이미지 전송' })
+
+    await expect(input).toBeEnabled({ timeout: 15000 })
+    await expect(imageButton).toBeDisabled()
+    await page.getByRole('button', { name: '이모지' }).click()
+    await page.getByRole('button', { name: '😀' }).click()
+    await expect(input).toHaveValue('😀')
     await expect(sendButton).toBeDisabled()
   })
 
