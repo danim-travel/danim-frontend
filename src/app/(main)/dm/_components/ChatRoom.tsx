@@ -17,11 +17,10 @@ interface Props {
 
 export function ChatRoom({ conversationId }: Props) {
   const myUserId = useAuthStore(s => s.user?.userId)
-  const accessToken = useAuthStore(s => s.accessToken)
   const { data: conversations = [], isLoading } = useConversations()
   const conversation = conversations.find(c => c.conversation_id === conversationId)
 
-  const { sendMessage, isReady } = useDmSocket(conversationId, accessToken, myUserId ?? null)
+  const { sendMessage, isReady } = useDmSocket(conversationId, myUserId ?? null)
 
   const handleSendImage = async (file: File) => {
     try {

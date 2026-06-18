@@ -4,6 +4,8 @@ import { useEffect, useRef, useCallback, useState } from 'react'
 import { useQueryClient, type InfiniteData } from '@tanstack/react-query'
 import { config } from '@/lib/config'
 import { queryKeys } from '@/lib/queryKeys'
+import { useAuthStore } from '@/store/authStore'
+import { issueSocketKey } from '@/lib/api/websocket'
 import type { Message, MessageListResponse, DmWsClientMessage, DmWsServerMessage } from '@/types'
 
 const NORMAL_CLOSE_CODE = 1000
@@ -17,7 +19,6 @@ function isDmWsServerMessage(value: unknown): value is DmWsServerMessage {
   const v = value as { type?: unknown }
   return (
     v.type === 'receive_message' ||
-    v.type === 'auth_success' ||
     v.type === 'read_receipt' ||
     v.type === 'message_deleted' ||
     v.type === 'error'
@@ -109,14 +110,14 @@ interface PendingEntry {
 
 export function useDmSocket(
   conversationId: string,
-  accessToken: string | null,
   myUserId: string | null
 ) {
   const queryClient = useQueryClient()
+  const accessToken = useAuthStore(s => s.accessToken)
   const socketRef = useRef<WebSocket | null>(null)
-  const isAuthedRef = useRef(false)
   const pendingRef = useRef<PendingEntry[]>([])
   const skippedSocketWarningRef = useRef<string | null>(null)
+  const isMockModeRef = useRef(false)
   const [isReady, setIsReady] = useState(false)
 
   useEffect(() => {
@@ -132,14 +133,21 @@ export function useDmSocket(
         )
         skippedSocketWarningRef.current = warningKey
       }
-      return
+      // mock 모드: 소켓 없이 UI 활성화 — sendMessage가 낙관적 삽입으로 동작
+      isMockModeRef.current = true
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsReady(true)
+      return () => {
+        isMockModeRef.current = false
+        setIsReady(false)
+      }
     }
+    isMockModeRef.current = false
 
     let socket: WebSocket | null = null
     let reconnectTimerId: ReturnType<typeof setTimeout> | null = null
     let backoffMs = INITIAL_BACKOFF_MS
     let cancelled = false
-    const wsUrl = `${config.wsBaseUrl}/ws/conversations/${conversationId}`
 
     const clearReconnectTimer = () => {
       if (reconnectTimerId !== null) {
@@ -155,28 +163,41 @@ export function useDmSocket(
       backoffMs = Math.min(backoffMs * 2, MAX_BACKOFF_MS)
       reconnectTimerId = setTimeout(() => {
         if (cancelled) return
-        connect()
+        void connect()
       }, delay)
     }
 
-    const connect = () => {
+    const connect = async () => {
       if (cancelled) return
-      isAuthedRef.current = false
       // FIX 3: 재연결 시 stale 항목 초기화 — 끊김 후 동일 내용 재전송 시 오탐 방지
       pendingRef.current = []
+
+      // Issue one-time socket_key
+      let socketKey: string
       try {
-        console.info(`[DM WebSocket] connecting: ${wsUrl}`)
+        const { socket_key } = await issueSocketKey()
+        socketKey = socket_key
+      } catch {
+        console.warn('[DM WebSocket] socket_key 발급 실패, 재연결 예약')
+        scheduleReconnect()
+        return
+      }
+      if (cancelled) return
+
+      const wsUrl = `${config.wsBaseUrl}/ws/conversations/${conversationId}?socket_key=${encodeURIComponent(socketKey)}`
+      try {
+        console.info(`[DM WebSocket] connecting: ${config.wsBaseUrl}/ws/conversations/${conversationId}`)
         socket = new WebSocket(wsUrl)
         socketRef.current = socket
       } catch {
-        console.error(`[DM WebSocket] connect failed before opening: ${wsUrl}`)
+        console.error('[DM WebSocket] connect failed before opening')
         scheduleReconnect()
         return
       }
 
       socket.onopen = () => {
-        console.info(`[DM WebSocket] open: ${wsUrl}`)
-        socket?.send(JSON.stringify({ type: 'auth', token: accessToken } satisfies DmWsClientMessage))
+        console.info('[DM WebSocket] open')
+        setIsReady(true)
         backoffMs = INITIAL_BACKOFF_MS
       }
 
@@ -197,12 +218,6 @@ export function useDmSocket(
           return
         }
 
-        if (parsed.type === 'auth_success') {
-          isAuthedRef.current = true
-          setIsReady(true)
-          return
-        }
-
         if (parsed.type === 'receive_message') {
           const { message } = parsed
           const now = Date.now()
@@ -220,13 +235,13 @@ export function useDmSocket(
             pendingRef.current.splice(pendingIdx, 1)
             // FIX 2: echo 스킵 대신 낙관적 메시지를 실제 서버 메시지로 교체
             replaceInCache(queryClient, conversationId, tempId, message)
-            queryClient.invalidateQueries({ queryKey: queryKeys.dm.conversations })
+            queryClient.invalidateQueries({ queryKey: queryKeys.dm.conversations, exact: true })
             return
           }
 
           // 상대방 메시지 → 캐시에 추가
           prependToCache(queryClient, conversationId, message)
-          queryClient.invalidateQueries({ queryKey: queryKeys.dm.conversations })
+          queryClient.invalidateQueries({ queryKey: queryKeys.dm.conversations, exact: true })
         }
 
         if (parsed.type === 'message_deleted') {
@@ -245,18 +260,17 @@ export function useDmSocket(
               }
             }
           )
-          queryClient.invalidateQueries({ queryKey: queryKeys.dm.conversations })
+          queryClient.invalidateQueries({ queryKey: queryKeys.dm.conversations, exact: true })
         }
 
         if (parsed.type === 'read_receipt') {
           // Message 타입에 읽음 필드 없음 → messages 캐시 변경 불가
           // conversations의 unread_count 갱신으로 읽음 상태 반영
-          queryClient.invalidateQueries({ queryKey: queryKeys.dm.conversations })
+          queryClient.invalidateQueries({ queryKey: queryKeys.dm.conversations, exact: true })
         }
       }
 
       socket.onclose = (event) => {
-        isAuthedRef.current = false
         setIsReady(false)
         console.info(
           `[DM WebSocket] close: code=${event.code} reason="${event.reason}" wasClean=${event.wasClean}`
@@ -268,7 +282,6 @@ export function useDmSocket(
       socket.onerror = (event) => {
         console.error('[DM WebSocket] error', {
           event,
-          url: wsUrl,
           readyState: socket?.readyState,
           conversationId,
           hasAccessToken: Boolean(accessToken),
@@ -277,11 +290,10 @@ export function useDmSocket(
       }
     }
 
-    connect()
+    void connect()
 
     return () => {
       cancelled = true
-      isAuthedRef.current = false
       setIsReady(false)
       // FIX 3: 언마운트 시 pending 항목 초기화
       pendingRef.current = []
@@ -305,21 +317,37 @@ export function useDmSocket(
 
   const sendMessage = useCallback(
     (content: string, imgUrl?: string) => {
-      const socket = socketRef.current
-      if (!socket || socket.readyState !== WebSocket.OPEN || !isAuthedRef.current || !myUserId) {
-        console.warn('[DM WebSocket] send skipped: socket is not ready', {
-          readyState: socket?.readyState,
-          isAuthed: isAuthedRef.current,
-          hasMyUserId: Boolean(myUserId),
-          conversationId,
-        })
-        return false
-      }
+      if (!myUserId) return false
 
       const trimmed = content.trim()
       const normalizedContent = trimmed || null
       const normalizedImgUrl = imgUrl ?? null
       if (!normalizedContent && !normalizedImgUrl) return false
+
+      // mock 모드: 소켓 없이 낙관적 삽입만 수행
+      if (isMockModeRef.current) {
+        const tempId = `opt-${Date.now()}-${Math.random().toString(36).slice(2)}`
+        prependToCache(queryClient, conversationId, {
+          message_id: tempId,
+          sender: { user_id: myUserId, nickname: '', profile_img: null },
+          content: normalizedContent,
+          img_url: normalizedImgUrl,
+          original_img: null,
+          is_deleted: false,
+          created_at: new Date().toISOString(),
+        })
+        queryClient.invalidateQueries({ queryKey: queryKeys.dm.conversations, exact: true })
+        return true
+      }
+
+      const socket = socketRef.current
+      if (!socket || socket.readyState !== WebSocket.OPEN) {
+        console.warn('[DM WebSocket] send skipped: socket is not ready', {
+          readyState: socket?.readyState,
+          conversationId,
+        })
+        return false
+      }
 
       const tempId = `opt-${Date.now()}-${Math.random().toString(36).slice(2)}`
       const optimistic: Message = {
