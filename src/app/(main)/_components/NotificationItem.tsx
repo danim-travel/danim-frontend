@@ -8,7 +8,6 @@ import { Avatar } from "@/components/common"
 import { cn } from "@/lib/utils"
 import { useUIStore } from "@/store/uiStore"
 import type { NotificationItem as NotificationItemType } from "@/types"
-import { useCreateConversation } from "@/hooks/useDmQueries"
 import {
   useDeleteNotification,
   useMarkNotificationRead,
@@ -23,7 +22,6 @@ export function NotificationItem({ item }: NotificationItemProps) {
   const closePanel = useUIStore((s) => s.closePanel)
   const markRead = useMarkNotificationRead()
   const deleteOne = useDeleteNotification()
-  const createOrGetConversation = useCreateConversation()
 
   const relativeTime = (() => {
     try {
@@ -36,7 +34,7 @@ export function NotificationItem({ item }: NotificationItemProps) {
     }
   })()
 
-  const handleClick = async () => {
+  const handleClick = () => {
     // 읽지 않은 알림이면 읽음 처리 (실패해도 라우팅은 진행)
     if (!item.is_read) {
       markRead.mutate(item.notification_id)
@@ -55,13 +53,8 @@ export function NotificationItem({ item }: NotificationItemProps) {
     }
 
     if (item.target_type === "dm") {
-      try {
-        const res = await createOrGetConversation.mutateAsync(item.target_id)
-        router.push(`/dm/${res.conversation_id}`)
-        closePanel()
-      } catch {
-        // onError에서 토스트 처리됨
-      }
+      router.push(`/dm/${item.target_id}`)
+      closePanel()
     }
   }
 
