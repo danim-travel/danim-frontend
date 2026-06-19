@@ -47,13 +47,11 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
 
   // profileKey가 없으면 서버에서 받은 원본 이미지를, 있으면 업로드 중인 로컬 미리보기를 표시한다
   const displayedProfileImg = profileKey === undefined ? me.profile_img : profileImg
-  const [nicknameError, setNicknameError] = useState<string | undefined>(undefined)
+  // 닉네임 중복확인 버튼 클릭 후 통과 여부. 닉네임 입력 변경 시 초기화된다.
+  const [nicknameChecked, setNicknameChecked] = useState(false)
   const [isCheckingNickname, setIsCheckingNickname] = useState(false)
+  const nicknameAtCheckRef = useRef<string | null>(null)
   const [isPending, setIsPending] = useState(false)
-  const nicknameCheckGen = useRef(0)
-  // blur로 시작된 닉네임 검사와 저장 버튼 클릭을 조율하기 위한 refs
-  const nicknameCheckPending = useRef<Promise<void> | null>(null)
-  const nicknameErrorRef = useRef<string | undefined>(undefined)
 
   const isDirty =
     nickname !== me.nickname ||
@@ -61,63 +59,49 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
     profileKey !== undefined
 
   function handleCancel() {
-    nicknameCheckGen.current++
     setNickname(me.nickname)
     setIntro(me.intro ?? "")
     setProfileImg(null)
     setProfileKey(undefined)
     setProfileSectionKey(k => k + 1)
-    setNicknameError(undefined)
-    nicknameErrorRef.current = undefined
-    setIsCheckingNickname(false)
-    nicknameCheckPending.current = null
+    setNicknameChecked(false)
     toast.success("변경사항이 취소되었습니다.")
   }
 
-  async function handleNicknameBlur() {
-    if (!nickname.trim() || nickname === me.nickname) {
-      setNicknameError(undefined)
-      nicknameErrorRef.current = undefined
+  async function handleNicknameCheck() {
+    if (nickname === me.nickname) {
+      toast.error("현재 사용 중인 닉네임입니다.")
       return
     }
-    const gen = ++nicknameCheckGen.current
+    const target = nickname
+    nicknameAtCheckRef.current = target
     setIsCheckingNickname(true)
-    nicknameCheckPending.current = (async () => {
-      try {
-        await checkNickname(nickname)
-        if (gen === nicknameCheckGen.current) {
-          setNicknameError(undefined)
-          nicknameErrorRef.current = undefined
-        }
-      } catch (err) {
-        if (gen === nicknameCheckGen.current) {
-          const msg = getApiErrorMessage(err, { client: "이미 사용 중인 닉네임입니다." })
-          setNicknameError(msg)
-          nicknameErrorRef.current = msg
-        }
-      } finally {
-        if (gen === nicknameCheckGen.current) {
-          setIsCheckingNickname(false)
-          nicknameCheckPending.current = null
-        }
+    try {
+      await checkNickname(target)
+      if (nicknameAtCheckRef.current === target) {
+        setNicknameChecked(true)
+        toast.success("사용 가능한 닉네임입니다.")
       }
-    })()
+    } catch (err) {
+      setNicknameChecked(false)
+      toast.error(getApiErrorMessage(err, { client: "이미 사용 중인 닉네임입니다." }))
+    } finally {
+      setIsCheckingNickname(false)
+    }
   }
 
   async function handleSave() {
     if (!isDirty || isPending) return
-    // 블러로 시작된 닉네임 검사가 진행 중이면 결과를 기다린 후 저장 여부를 판단한다
-    if (nicknameCheckPending.current) await nicknameCheckPending.current
-    if (nicknameErrorRef.current) return
     setIsPending(true)
     try {
       const updated = await updateUser({
         nickname: nickname !== me.nickname ? nickname : undefined,
         intro: intro !== me.intro ? intro : undefined,
-        key: profileKey !== undefined ? profileKey : undefined,
+        key: profileKey !== undefined ? (profileKey ?? "") : undefined,
       })
       setProfileKey(undefined)
       setProfileSectionKey(k => k + 1)
+      setNicknameChecked(false)
 
       // 마이페이지가 실제로 사용하는 키와 정확히 동일하게 맞추기 위해 authStore의 userId를 우선 사용
       // (PATCH 응답에서 user_id가 누락/상이한 경우의 키 미스매치 방지)
@@ -171,13 +155,14 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
         <BasicInfoSection
           me={me}
           nickname={nickname}
-          nicknameError={nicknameError}
+          nicknameChecked={nicknameChecked}
+          isCheckingNickname={isCheckingNickname}
           onNicknameChange={(v) => {
             setNickname(v)
-            setNicknameError(undefined)
-            nicknameErrorRef.current = undefined
+            setNicknameChecked(false)
+            nicknameAtCheckRef.current = null
           }}
-          onNicknameBlur={() => { void handleNicknameBlur() }}
+          onNicknameCheck={() => { void handleNicknameCheck() }}
         />
 
         <AccountSection />
@@ -196,7 +181,7 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
             type="button"
             variant="primary"
             loading={isPending}
-            disabled={!isDirty || !!nicknameError || isPending || isCheckingNickname}
+            disabled={!isDirty || isPending || (nickname !== me.nickname && !nicknameChecked)}
             onClick={handleSave}
           >
             변경사항 저장

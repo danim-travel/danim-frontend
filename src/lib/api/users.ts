@@ -1,5 +1,5 @@
 import { apiClient } from '@/lib/apiClient'
-import type { MeDetailResponse, UpdateUserRequest, ChangePasswordRequest, DetailResponse, ProfileImagePresignedResponse, FollowListResponse, FollowUser, FollowResponse, UserSearchResponse } from '@/types'
+import type { MeDetailResponse, UpdateUserRequest, ChangePasswordRequest, DeleteUserRequest, DetailResponse, ProfileImagePresignedResponse, FollowListResponse, FollowUser, FollowResponse, UserSearchResponse } from '@/types'
 
 /** 내 상세 정보(닉네임·이메일·소개 등)를 조회한다. */
 export async function getMe(): Promise<MeDetailResponse> {
@@ -12,8 +12,8 @@ export async function updateUser(data: UpdateUserRequest): Promise<MeDetailRespo
 }
 
 /** 회원 탈퇴 처리한다. 성공 시 204 No Content 반환. */
-export async function deleteUser(): Promise<void> {
-  await apiClient.delete('users/me')
+export async function deleteUser(data: DeleteUserRequest): Promise<void> {
+  await apiClient.delete('users/me', { json: data })
 }
 
 /** 비밀번호를 변경한다. */

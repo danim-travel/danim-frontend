@@ -1,10 +1,13 @@
 "use client";
 
+import { useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Home, Compass, PenLine, Search, MessageCircle, Bell, Settings, type LucideIcon } from 'lucide-react'
 import { useUIStore } from '@/store/uiStore'
 import { useAuthStore } from '@/store/authStore'
+import { useOnClickOutside } from '@/hooks/useOnClickOutside'
+import { LogoutModal } from '@/components/common'
 
 const NAV_LINKS = [
   { href: '/', label: '홈', Icon: Home },
@@ -57,6 +60,14 @@ export default function SideNav() {
   const { activePanel, setActivePanel, closePanel } = useUIStore()
   const user = useAuthStore((s) => s.user)
 
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [logoutModal, setLogoutModal] = useState(false)
+  const settingsRef = useRef<HTMLDivElement>(null)
+
+  useOnClickOutside(settingsRef, () => setSettingsOpen(false), settingsOpen)
+
+  const isSettingsActive = pathname === '/settings'
+
   return (
     <nav className="w-(--sidebar-width) bg-bg-card border-r border-border flex flex-col items-center shrink-0 h-full py-4">
       {/* 메인 로고, 클릭하면 홈으로 이동 */}
@@ -66,7 +77,6 @@ export default function SideNav() {
 
       {/* 메인 네비게이션 링크 */}
       <div className="flex flex-col items-center gap-0.5 flex-1 w-full px-2">
-        {/* 메인 네비게이션 링크 매핑 */}
         {NAV_LINKS.map(({ href, label, Icon }) => (
           <NavLink
             key={href}
@@ -85,7 +95,39 @@ export default function SideNav() {
 
       {/* 하단 설정, 마이페이지 */}
       <div className="flex flex-col items-center gap-3 px-2 w-full">
-        <NavLink href="/settings" Icon={Settings} active={pathname === '/settings'} onClick={closePanel} />
+        {/* 설정 버튼 — 클릭 시 드롭다운 */}
+        <div ref={settingsRef} className="relative w-full">
+          <button
+            type="button"
+            aria-label="설정"
+            onClick={() => setSettingsOpen(o => !o)}
+            className={`flex flex-col items-center justify-center gap-1 w-full py-3 rounded-xl transition-all ${isSettingsActive ? 'bg-primary/10' : 'hover:bg-bg-subtle'}`}
+          >
+            <Settings
+              className={`w-(--icon-size-lg) h-(--icon-size-lg) ${isSettingsActive ? 'text-primary' : 'text-text-disabled'}`}
+              strokeWidth={isSettingsActive ? 2.5 : 2}
+            />
+          </button>
+
+          {settingsOpen && (
+            <div className="absolute bottom-0 left-full ml-2 bg-bg-card border border-border rounded-card shadow-modal min-w-[140px] py-1 z-(--z-drawer)">
+              <Link
+                href="/settings"
+                onClick={() => { setSettingsOpen(false); closePanel() }}
+                className="flex px-4 py-2.5 text-body-sm text-text hover:bg-bg-subtle transition-colors"
+              >
+                내 정보 수정
+              </Link>
+              <button
+                type="button"
+                onClick={() => { setSettingsOpen(false); setLogoutModal(true) }}
+                className="w-full text-left px-4 py-2.5 text-body-sm text-error hover:bg-bg-subtle transition-colors"
+              >
+                로그아웃
+              </button>
+            </div>
+          )}
+        </div>
 
         <Link href="/mypage" onClick={closePanel}>
           {user?.profileImg ? (
@@ -99,6 +141,8 @@ export default function SideNav() {
           )}
         </Link>
       </div>
+
+      <LogoutModal open={logoutModal} onClose={() => setLogoutModal(false)} />
     </nav>
   )
 }

@@ -5,9 +5,10 @@ import type { MeDetailResponse } from "@/types"
 interface BasicInfoSectionProps {
   me: MeDetailResponse
   nickname: string
-  nicknameError?: string
+  nicknameChecked: boolean
+  isCheckingNickname: boolean
   onNicknameChange: (v: string) => void
-  onNicknameBlur?: () => void
+  onNicknameCheck: () => void
 }
 
 function formatBirthDate(date: string | null) {
@@ -16,7 +17,7 @@ function formatBirthDate(date: string | null) {
   return `${y}년  ${m}월  ${d}일`
 }
 
-export function BasicInfoSection({ me, nickname, nicknameError, onNicknameChange, onNicknameBlur }: BasicInfoSectionProps) {
+export function BasicInfoSection({ me, nickname, nicknameChecked, isCheckingNickname, onNicknameChange, onNicknameCheck }: BasicInfoSectionProps) {
   return (
     <section>
       <h2 className="text-body-lg font-bold text-text mb-4">기본 정보</h2>
@@ -43,10 +44,18 @@ export function BasicInfoSection({ me, nickname, nicknameError, onNicknameChange
           required
           value={nickname}
           onChange={e => onNicknameChange(e.target.value)}
-          onBlur={onNicknameBlur}
-          error={nicknameError}
           maxLength={20}
-          helperText={nicknameError ? undefined : "다른 사용자에게 보이는 이름이에요."}
+          helperText="다른 사용자에게 보이는 이름이에요."
+          rightSlot={
+            <button
+              type="button"
+              onClick={onNicknameCheck}
+              disabled={!nickname.trim() || isCheckingNickname}
+              className="text-xs font-semibold text-primary hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap transition-opacity"
+            >
+              {isCheckingNickname ? "확인 중" : "중복확인"}
+            </button>
+          }
         />
       </div>
     </section>

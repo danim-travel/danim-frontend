@@ -1,7 +1,9 @@
 "use client";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { Settings } from "lucide-react";
-import { Avatar } from "@/components/common";
+import { Avatar, LogoutModal } from "@/components/common";
+import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import type { UserProfileResponse } from "@/types";
 
 export interface ProfileHeaderProps {
@@ -55,6 +57,11 @@ function StatItem({ label, value, href }: StatItemProps) {
 
 export function ProfileHeader({ profile }: ProfileHeaderProps) {
   const initial = profile.nickname?.slice(0, 1).toUpperCase() ?? "?";
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [logoutModal, setLogoutModal] = useState(false);
+  const settingsRef = useRef<HTMLDivElement>(null);
+
+  useOnClickOutside(settingsRef, () => setSettingsOpen(false), settingsOpen);
 
   return (
     <section className="relative bg-bg-card rounded-2xl p-5 md:flex md:items-start md:gap-6 md:p-6">
@@ -63,14 +70,38 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
         {/* 아바타 + 우하단 설정 버튼 */}
         <div className="relative shrink-0">
           <Avatar size="xl" src={profile.profile_img || undefined} initial={initial} />
-          <Link
-            href="/settings"
-            className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-bg-card border border-border flex items-center justify-center shadow-sm hover:bg-bg-subtle transition-colors md:hidden"
-            aria-label="설정"
-          >
-            <Settings className="w-3.5 h-3.5 text-text-muted" strokeWidth={2} />
-          </Link>
+          {/* 모바일 전용 설정 드롭다운 */}
+          <div ref={settingsRef} className="absolute bottom-0 right-0 md:hidden">
+            <button
+              type="button"
+              onClick={() => setSettingsOpen(o => !o)}
+              className="w-7 h-7 rounded-full bg-bg-card border border-border flex items-center justify-center shadow-sm hover:bg-bg-subtle transition-colors"
+              aria-label="설정"
+            >
+              <Settings className="w-3.5 h-3.5 text-text-muted" strokeWidth={2} />
+            </button>
+            {settingsOpen && (
+              <div className="absolute bottom-full right-0 mb-1 bg-bg-card border border-border rounded-card shadow-modal min-w-[140px] py-1 z-(--z-drawer)">
+                <Link
+                  href="/settings"
+                  onClick={() => setSettingsOpen(false)}
+                  className="flex px-4 py-2.5 text-body-sm text-text hover:bg-bg-subtle transition-colors"
+                >
+                  내 정보 수정
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => { setSettingsOpen(false); setLogoutModal(true) }}
+                  className="w-full text-left px-4 py-2.5 text-body-sm text-error hover:bg-bg-subtle transition-colors"
+                >
+                  로그아웃
+                </button>
+              </div>
+            )}
+          </div>
         </div>
+
+        <LogoutModal open={logoutModal} onClose={() => setLogoutModal(false)} />
 
         <div className="flex-1 min-w-0">
           {/* 데스크톱: 수정 전 웹 레이아웃처럼 소개 영역과 스탯을 분리 */}

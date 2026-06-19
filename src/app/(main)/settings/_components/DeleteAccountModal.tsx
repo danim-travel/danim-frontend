@@ -3,7 +3,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button, Checkbox, Modal, PasswordField, TextField } from "@/components/common"
 import { deleteUser } from "@/lib/api/users"
-import { getApiErrorMessage } from "@/lib/apiError"
+import { getApiErrorMessage, isApiError } from "@/lib/apiError"
 import { useAuthStore } from "@/store/authStore"
 import { toast } from "@/store/toastStore"
 
@@ -49,12 +49,16 @@ export function DeleteAccountModal({ open, onClose }: DeleteAccountModalProps) {
 
     setIsPending(true)
     try {
-      await deleteUser()
+      await deleteUser({ password })
       onClose()
       clearAuth()
       router.push("/login")
     } catch (err) {
-      toast.error(getApiErrorMessage(err, { client: "회원 탈퇴에 실패했습니다." }))
+      if (isApiError(err) && err.status === 400) {
+        setPasswordError(getApiErrorMessage(err, { client: "현재 비밀번호가 일치하지 않습니다." }))
+      } else {
+        toast.error(getApiErrorMessage(err, { client: "회원 탈퇴에 실패했습니다." }))
+      }
     } finally {
       setIsPending(false)
     }
