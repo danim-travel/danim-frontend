@@ -27,7 +27,14 @@ export default function ActionBar({ data }: Props) {
 
   return (
     <div className="flex items-center gap-4 px-6 py-3 border-t border-border-subtle shrink-0">
-      <button onClick={toggleLike} data-testid="modal-like-button" className="flex items-center gap-1.5 group">
+      <button
+        type="button"
+        onClick={toggleLike}
+        data-testid="modal-like-button"
+        aria-label={isLiked ? "좋아요 취소" : "좋아요"}
+        aria-pressed={isLiked}
+        className="flex items-center gap-1.5 group"
+      >
         <Heart
           className={`w-5 h-5 transition-transform group-active:scale-125 ${isLiked ? "text-error" : "text-text-disabled"}`}
           fill={isLiked ? "currentColor" : "none"}
@@ -37,7 +44,14 @@ export default function ActionBar({ data }: Props) {
           {likeCountDisplay}
         </span>
       </button>
-      <button onClick={toggleBookmark} data-testid="modal-bookmark-button" className="group ml-auto">
+      <button
+        type="button"
+        onClick={toggleBookmark}
+        data-testid="modal-bookmark-button"
+        aria-label={isBookmarked ? "북마크 해제" : "북마크"}
+        aria-pressed={isBookmarked}
+        className="group ml-auto"
+      >
         <Bookmark
           className={`w-5 h-5 transition-transform group-active:scale-110 ${isBookmarked ? "text-primary" : "text-text-disabled"}`}
           fill={isBookmarked ? "currentColor" : "none"}

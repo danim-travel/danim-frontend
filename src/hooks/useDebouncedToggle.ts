@@ -28,7 +28,7 @@ interface UseDebouncedToggleResult {
   /**
    * 좋아요·북마크 count 표시에 사용하는 보정 delta.
    * serverCount + countDelta 로 현재 UI 카운트를 산출한다.
-   * 디바운스 세션 중에는 localState 기준으로 ±1, 세션 없을 땐 0.
+   * 초기 서버 상태와 비교해 최종적으로 되돌아왔으면 0을 반환한다.
    */
   countDelta: -1 | 0 | 1
 }
@@ -47,6 +47,7 @@ export function useDebouncedToggle({
   delay = 400,
 }: UseDebouncedToggleOptions): UseDebouncedToggleResult {
   const [localState, setLocalState] = useState<boolean>(serverState)
+  const [baseState, setBaseState] = useState<boolean>(serverState)
   const [isPending, setIsPending] = useState<boolean>(false)
 
   // 디바운스 세션 진행 중 여부 — 외부 serverState 변화로 인한 동기화를 막는 가드.
@@ -68,6 +69,7 @@ export function useDebouncedToggle({
   useEffect(() => {
     if (sessionActiveRef.current) return
     setLocalState(serverState)
+    setBaseState(serverState)
     localStateRef.current = serverState
   }, [serverState])
 
@@ -99,6 +101,7 @@ export function useDebouncedToggle({
       // 완료된 상태"가 initial이 되어버려 net-zero 판단이 틀어짐.
       sessionActiveRef.current = true
       initialStateRef.current = localStateRef.current
+      setBaseState(localStateRef.current)
       setIsPending(true)
     }
     const next = !localStateRef.current
@@ -126,7 +129,7 @@ export function useDebouncedToggle({
     }
   }, [clearTimer])
 
-  const countDelta: -1 | 0 | 1 = !isPending ? 0 : localState ? 1 : -1
+  const countDelta: -1 | 0 | 1 = localState === baseState ? 0 : localState ? 1 : -1
 
   return { localState, toggle, isPending, countDelta }
 }

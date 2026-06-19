@@ -113,12 +113,20 @@ export function FeedCard({
   // 디바운스 + net-zero: UI는 즉시 토글, mutation은 마지막 의도만 1회 호출
   const { localState: isLiked, toggle: toggleLikeDebounced, countDelta: likeDelta } = useDebouncedToggle({
     serverState: feed.is_liked,
-    onCommit: (wasLiked) => likeMutation.mutate({ wasLiked }),
+    onCommit: (wasLiked) => {
+      if (!likeMutation.isPending) {
+        likeMutation.mutate({ wasLiked })
+      }
+    },
   });
 
   const { localState: isBookmarked, toggle: toggleBookmarkDebounced } = useDebouncedToggle({
     serverState: feed.is_bookmarked,
-    onCommit: (wasBookmarked) => bookmarkMutation.mutate(wasBookmarked),
+    onCommit: (wasBookmarked) => {
+      if (!bookmarkMutation.isPending) {
+        bookmarkMutation.mutate(wasBookmarked)
+      }
+    },
   });
 
   const likeCountDisplay = feed.like_count + likeDelta;
