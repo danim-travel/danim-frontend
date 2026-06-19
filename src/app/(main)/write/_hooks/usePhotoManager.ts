@@ -31,10 +31,16 @@ export function usePhotoManager({ spots, active, updateSpot, initialThumbnailKey
 
   // handlePhotoAdd는 async 함수라 클로저로 캡처된 spots가 업로드 완료 시점에 낡은 값일 수 있음 — ref로 항상 최신값 참조
   const spotsRef = useRef(spots)
+  // 업로드 시작 후 사용자가 다른 스팟으로 전환할 수 있어 selectedPhotoIdx 갱신 시 현재 활성 스팟과의 일치 여부 확인 용
+  const activeIdRef = useRef(active.id)
 
   useEffect(() => {
     spotsRef.current = spots
   }, [spots])
+
+  useEffect(() => {
+    activeIdRef.current = active.id
+  }, [active.id])
 
   useEffect(() => {
     return () => {
@@ -80,10 +86,20 @@ export function usePhotoManager({ spots, active, updateSpot, initialThumbnailKey
       // 업로드는 async라 완료될 때쯤엔 사용자가 다른 spot으로 탭을 전환했을 수 있음 -> 의도한 spot에서만 작동
       const targetSpot = spotsRef.current.find((s) => s.id === targetSpotId)
       if (targetSpot) {
+        const previousCount = targetSpot.images.length
         updateSpot(targetSpotId, {
           images: [...targetSpot.images, ...uploaded.map((u) => u.image)],
           previewUrls: [...targetSpot.previewUrls, ...uploaded.map((u) => u.previewUrl)],
         })
+
+        // 포커스 이동 규칙:
+        // - 최초 업로드(previousCount === 0): 첫 사진부터 보도록 0 유지
+        // - 기존 사진 있음 + 1장 추가: 새로 추가된 그 사진으로 이동
+        // - 기존 사진 있음 + 여러 장 추가: 추가된 사진 중 첫 번째로 이동
+        // - 업로드 중 다른 스팟으로 전환했다면: idx 갱신하지 않음
+        if (previousCount > 0 && activeIdRef.current === targetSpotId) {
+          setSelectedPhotoIdx(previousCount)
+        }
       }
 
       // 첫 번째 사진 업로드 시 썸네일 자동 지정
