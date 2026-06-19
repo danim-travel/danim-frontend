@@ -20,6 +20,8 @@ interface FeedPanelProps {
   onBack?: () => void;
   /** panel: 데스크탑 사이드 패널 (기본), sheet: 모바일 바텀시트 내부 */
   variant?: "panel" | "sheet";
+  /** 단독 게시글(solo) 모드에서는 "마지막 게시글입니다" 문구를 숨긴다 */
+  hideEndMessage?: boolean;
 }
 
 export function FeedPanel({
@@ -34,6 +36,7 @@ export function FeedPanel({
   title,
   onBack,
   variant = "panel",
+  hideEndMessage = false,
 }: FeedPanelProps) {
   // observer를 매번 재등록해 최신 클로저를 참조하고 hasNextPage/isFetchingNextPage 변경 시 중복 fetch를 방지한다
   const sentinelRef = useInfiniteScrollSentinel({
@@ -94,7 +97,7 @@ export function FeedPanel({
             </div>
           )}
 
-          {!hasNextPage && posts.length > 0 && (
+          {!hasNextPage && posts.length > 0 && !hideEndMessage && (
             <p data-testid="feed-end" className="text-center text-body-sm text-text-muted py-4">
               마지막 게시글입니다
             </p>
