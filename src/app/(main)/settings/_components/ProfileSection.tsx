@@ -1,7 +1,7 @@
 "use client"
 import { useState, useRef, useEffect } from "react"
 import { Camera, Trash2 } from "lucide-react"
-import { Avatar, Button, TextField } from "@/components/common"
+import { Avatar, Button, Modal, TextField } from "@/components/common"
 import { getApiErrorMessage } from "@/lib/apiError"
 import { uploadImage } from "@/lib/uploadImage"
 import { toast } from "@/store/toastStore"
@@ -27,6 +27,7 @@ export function ProfileSection({
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   // previewUrl이 교체되거나 컴포넌트 언마운트 시 blob URL을 해제한다
   useEffect(() => {
@@ -90,7 +91,7 @@ export function ProfileSection({
               {!!displayImg && (
                 <button
                   type="button"
-                  onClick={handleDelete}
+                  onClick={() => setShowDeleteConfirm(true)}
                   disabled={isUploading}
                   aria-label="사진 삭제"
                   className="md:hidden absolute bottom-0 left-0 w-7 h-7 bg-error rounded-full flex items-center justify-center shadow disabled:opacity-50"
@@ -121,7 +122,7 @@ export function ProfileSection({
                 variant="secondary"
                 size="sm"
                 disabled={isUploading}
-                onClick={handleDelete}
+                onClick={() => setShowDeleteConfirm(true)}
               >
                 삭제
               </Button>
@@ -139,6 +140,21 @@ export function ProfileSection({
           maxLength={100}
         />
       </div>
+
+      <Modal
+        open={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        title="프로필 사진 삭제"
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>취소</Button>
+            <Button variant="primary" onClick={() => { handleDelete(); setShowDeleteConfirm(false) }}>삭제</Button>
+          </>
+        }
+        footerAlign="stretch"
+      >
+        <p className="text-body-sm text-text">프로필 사진을 삭제하시겠습니까?</p>
+      </Modal>
     </section>
   )
 }
