@@ -1,21 +1,27 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
 import { Search, Bell } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useUIStore } from "@/store/uiStore";
 import { useNotificationBadgeStore } from "@/store/notificationBadgeStore";
 
 export function MobileHeader() {
+  const router = useRouter();
   const { activePanel, setActivePanel, closePanel } = useUIStore();
   const unreadCount = useNotificationBadgeStore((s) => s.unreadCount);
   const badgeLabel = unreadCount > 99 ? "99+" : unreadCount;
 
+  const goHome = () => {
+    router.push('/')
+    closePanel()
+  }
+
   return (
     <header className="fixed top-0 inset-x-0 h-16 z-(--z-sidenav) bg-bg-card border-b border-border flex items-center justify-between px-4 md:hidden">
-      <Link href="/" className="flex items-center" onClick={() => closePanel()}>
+      <button type="button" onClick={goHome} className="flex items-center">
         <Image src="/favicon.svg" alt="Danim" width={32} height={32} />
-      </Link>
+      </button>
 
       <div className="flex items-center gap-1">
         <button
