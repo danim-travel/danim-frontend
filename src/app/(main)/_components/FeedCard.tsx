@@ -10,6 +10,7 @@ import { extractRegion } from "@/lib/region";
 import { queryKeys } from "@/lib/queryKeys";
 import { useLikeMutation } from "@/hooks/useLikeMutation";
 import { useBookmarkMutation } from "@/hooks/useBookmarkMutation";
+import { useDebouncedToggle } from "@/hooks/useDebouncedToggle";
 import { updateFeedItem, type FeedCache } from "@/lib/feedCache";
 import { usePrefetchPostDetail } from "../_hooks/usePrefetchPostDetail";
 import type { MainFeedItem, PostDetail } from "@/types";
@@ -109,16 +110,35 @@ export function FeedCard({
     },
   });
 
+  // 디바운스 + net-zero: UI는 즉시 토글, mutation은 마지막 의도만 1회 호출
+  const { localState: isLiked, toggle: toggleLikeDebounced, countDelta: likeDelta } = useDebouncedToggle({
+    serverState: feed.is_liked,
+    onCommit: (wasLiked) => {
+      if (!likeMutation.isPending) {
+        likeMutation.mutate({ wasLiked })
+      }
+    },
+  });
+
+  const { localState: isBookmarked, toggle: toggleBookmarkDebounced } = useDebouncedToggle({
+    serverState: feed.is_bookmarked,
+    onCommit: (wasBookmarked) => {
+      if (!bookmarkMutation.isPending) {
+        bookmarkMutation.mutate(wasBookmarked)
+      }
+    },
+  });
+
+  const likeCountDisplay = feed.like_count + likeDelta;
+
   const handleLikeClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (likeMutation.isPending) return;
-    likeMutation.mutate({ wasLiked: feed.is_liked });
+    toggleLikeDebounced();
   };
 
   const handleBookmarkClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (bookmarkMutation.isPending) return;
-    bookmarkMutation.mutate(feed.is_bookmarked);
+    toggleBookmarkDebounced();
   };
 
   if (variant === "sheet") {
@@ -179,8 +199,8 @@ export function FeedCard({
               onClick={handleLikeClick}
               className="flex items-center gap-1 text-text-muted text-body-sm hover:text-error transition-colors"
             >
-              <Heart size={14} className={cn(feed.is_liked && "fill-error text-error")} />
-              <span data-testid="like-count">{feed.like_count}</span>
+              <Heart size={14} className={cn(isLiked && "fill-error text-error")} />
+              <span data-testid="like-count">{likeCountDisplay}</span>
             </button>
             <button
               type="button"
@@ -198,7 +218,7 @@ export function FeedCard({
             >
               <Bookmark
                 size={14}
-                className={cn(feed.is_bookmarked && "fill-primary text-primary")}
+                className={cn(isBookmarked && "fill-primary text-primary")}
               />
             </button>
           </div>
@@ -267,8 +287,8 @@ export function FeedCard({
             onClick={handleLikeClick}
             className="flex items-center gap-1 text-text-muted text-body-sm hover:text-error transition-colors"
           >
-            <Heart size={16} className={cn(feed.is_liked && "fill-error text-error")} />
-            <span data-testid="like-count">{feed.like_count}</span>
+            <Heart size={16} className={cn(isLiked && "fill-error text-error")} />
+            <span data-testid="like-count">{likeCountDisplay}</span>
           </button>
           <button
             type="button"
@@ -286,7 +306,7 @@ export function FeedCard({
           >
             <Bookmark
               size={16}
-              className={cn(feed.is_bookmarked && "fill-primary text-primary")}
+              className={cn(isBookmarked && "fill-primary text-primary")}
             />
           </button>
         </div>

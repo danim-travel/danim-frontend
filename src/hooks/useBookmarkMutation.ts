@@ -49,7 +49,7 @@ export function useBookmarkMutation<TCacheData>({
         : apiClient.post(endpoint).json<BookmarkResponse>()
     },
     onMutate: async (wasBookmarked) => {
-      await queryClient.cancelQueries({ queryKey })
+      await queryClient.cancelQueries({ queryKey, exact: true })
       const previous = queryClient.getQueryData<TCacheData>(queryKey)
       queryClient.setQueryData<TCacheData>(queryKey, (old) => optimisticUpdater(old, wasBookmarked))
       return { previous }

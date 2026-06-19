@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react'
+import { useCallback } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/lib/apiClient'
 import { getApiErrorMessage } from '@/lib/apiError'
@@ -20,7 +20,6 @@ export function useCommentMutations(postId: string) {
   const queryClient = useQueryClient()
   const commentsKey = queryKeys.comments.list(postId)
   const postDetailKey = queryKeys.posts.detail(postId)
-  const pendingLikeIdsRef = useRef<Set<string>>(new Set())
 
   const createMutation = useMutation({
     mutationFn: (payload: Omit<CommentCreateRequest, 'post_id'>) =>
@@ -122,9 +121,6 @@ export function useCommentMutations(postId: string) {
         ),
       }
     },
-    onSettled: ({ commentId }) => {
-      pendingLikeIdsRef.current.delete(commentId)
-    },
   })
 
   const presignedUrlMutation = useMutation({
@@ -140,8 +136,6 @@ export function useCommentMutations(postId: string) {
   const { mutate: likeMutate } = likeMutation
   const toggleCommentLike = useCallback(
     (commentId: string, wasLiked: boolean) => {
-      if (pendingLikeIdsRef.current.has(commentId)) return
-      pendingLikeIdsRef.current.add(commentId)
       likeMutate({ commentId, wasLiked })
     },
     [likeMutate]
