@@ -9,13 +9,19 @@ import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
 import type { Comment } from "@/types";
 import { Avatar, Button, Modal } from "@/components/common";
+import { useDebouncedToggle } from "@/hooks/useDebouncedToggle";
 import { KebabMenu } from "./KebabMenu";
 import { usePostModalContext } from "./PostModalContext";
 
 interface Props {
   comment: Comment;
   isOwn: boolean;
-  onLike: () => void;
+  /**
+   * 좋아요 디바운스 commit 콜백.
+   * `wasLiked`는 세션 시작 시점의 서버 상태이며,
+   * 호출자(useCommentMutations.toggleCommentLike)가 그대로 사용한다.
+   */
+  onLike: (wasLiked: boolean) => void;
   onEdit: (content: string) => void;
   onDelete: () => void;
 }
@@ -43,6 +49,13 @@ export default function CommentItem({ comment, isOwn, onLike, onEdit, onDelete }
   const draft = editDraft ?? comment.content ?? "";
   const [zoomedImg, setZoomedImg] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+
+  // 댓글 좋아요 디바운스 — UI 즉시 토글, 400ms 내 추가 클릭 없을 때 commit
+  const { localState: isLiked, toggle: toggleLikeDebounced, countDelta: likeDelta } = useDebouncedToggle({
+    serverState: comment.is_liked,
+    onCommit: onLike,
+  });
+  const likeCountDisplay = comment.like_count + likeDelta;
 
   const closeZoom = useCallback(() => setZoomedImg(null), []);
 
@@ -231,20 +244,20 @@ export default function CommentItem({ comment, isOwn, onLike, onEdit, onDelete }
           )}
         </div>
         <button
-          onClick={onLike}
-          aria-label={comment.is_liked ? "좋아요 취소" : "좋아요"}
-          aria-pressed={comment.is_liked}
+          onClick={toggleLikeDebounced}
+          aria-label={isLiked ? "좋아요 취소" : "좋아요"}
+          aria-pressed={isLiked}
           className="flex items-center gap-1 group/like"
         >
           <Heart
             className={`w-3.5 h-3.5 transition-transform group-active/like:scale-125 ${
-              comment.is_liked ? "text-error" : "text-text-disabled"
+              isLiked ? "text-error" : "text-text-disabled"
             }`}
-            fill={comment.is_liked ? "currentColor" : "none"}
+            fill={isLiked ? "currentColor" : "none"}
             stroke="currentColor"
           />
-          <span className={`text-nav font-medium ${comment.is_liked ? "text-error" : "text-text-muted"}`}>
-            {comment.like_count}
+          <span className={`text-nav font-medium ${isLiked ? "text-error" : "text-text-muted"}`}>
+            {likeCountDisplay}
           </span>
         </button>
       </div>
