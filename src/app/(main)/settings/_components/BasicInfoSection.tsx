@@ -1,5 +1,5 @@
 "use client"
-import { TextField } from "@/components/common"
+import { VerificationField } from "@/components/common"
 import type { MeDetailResponse } from "@/types"
 
 interface BasicInfoSectionProps {
@@ -39,23 +39,18 @@ export function BasicInfoSection({ me, nickname, nicknameChecked, isCheckingNick
         </div>
 
         {/* 닉네임 */}
-        <TextField
+        <VerificationField
           label="닉네임"
           required
           value={nickname}
           onChange={e => onNicknameChange(e.target.value)}
           maxLength={20}
-          helperText="다른 사용자에게 보이는 이름이에요."
-          rightSlot={
-            <button
-              type="button"
-              onClick={onNicknameCheck}
-              disabled={!nickname.trim() || isCheckingNickname}
-              className="text-xs font-semibold text-primary hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap transition-opacity"
-            >
-              {isCheckingNickname ? "확인 중" : "중복확인"}
-            </button>
-          }
+          actionLabel="중복확인"
+          onAction={onNicknameCheck}
+          actionDisabled={!nickname.trim() || isCheckingNickname}
+          actionLoading={isCheckingNickname}
+          helperText={nicknameChecked ? "사용 가능한 닉네임입니다." : "다른 사용자에게 보이는 이름이에요."}
+          helperTone={nicknameChecked ? "primary" : "muted"}
         />
       </div>
     </section>
