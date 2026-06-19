@@ -87,15 +87,17 @@ export function ProfileSection({
               >
                 <Camera size={14} className="text-text-inverse" />
               </button>
-              <button
-                type="button"
-                onClick={handleDelete}
-                disabled={isUploading}
-                aria-label="사진 삭제"
-                className="md:hidden absolute bottom-0 left-0 w-7 h-7 bg-error rounded-full flex items-center justify-center shadow disabled:opacity-50"
-              >
-                <Trash2 size={14} className="text-text-inverse" />
-              </button>
+              {!!displayImg && (
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  disabled={isUploading}
+                  aria-label="사진 삭제"
+                  className="md:hidden absolute bottom-0 left-0 w-7 h-7 bg-error rounded-full flex items-center justify-center shadow disabled:opacity-50"
+                >
+                  <Trash2 size={14} className="text-text-inverse" />
+                </button>
+              )}
             </div>
             <div className="flex flex-col gap-0.5 min-w-0 flex-1">
               <span className="text-body-sm font-bold text-text">프로필 사진</span>
@@ -113,15 +115,17 @@ export function ProfileSection({
             >
               사진 변경
             </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              disabled={isUploading}
-              onClick={handleDelete}
-            >
-              삭제
-            </Button>
+            {!!displayImg && (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                disabled={isUploading}
+                onClick={handleDelete}
+              >
+                삭제
+              </Button>
+            )}
           </div>
           <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
         </div>
