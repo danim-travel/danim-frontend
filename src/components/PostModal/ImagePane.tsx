@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import type { Spot } from "@/types";
 import { Stepper } from "@/components/common";
 import SpotImages from "./SpotImages";
@@ -13,6 +13,15 @@ interface Props {
 }
 
 export default function PostModalImagePane({ spots, activeSpotIdx, activeSpot, onSelectSpot }: Props) {
+  // 모달 열릴 때 모든 스팟 이미지를 브라우저에 preload
+  useEffect(() => {
+    spots.forEach(spot => {
+      spot.images.forEach(img => {
+        const image = new window.Image()
+        image.src = img.img_url
+      })
+    })
+  }, [spots])
   const steps = useMemo(
     () => spots.map((s) => ({ label: s.location.place_name })),
     [spots]
@@ -27,6 +36,7 @@ export default function PostModalImagePane({ spots, activeSpotIdx, activeSpot, o
           steps={steps}
           current={activeSpotIdx}
           onStepClick={onSelectSpot}
+          showLabels={false}
         />
       </div>
     </div>
