@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { Home, Compass, PenLine, Search, MessageCircle, Bell, Settings, type LucideIcon } from 'lucide-react'
 import { useUIStore } from '@/store/uiStore'
 import { useAuthStore } from '@/store/authStore'
+import { useNotificationBadgeStore } from '@/store/notificationBadgeStore'
 import { useOnClickOutside } from '@/hooks/useOnClickOutside'
 import { LogoutModal } from '@/components/common'
 
@@ -20,15 +21,24 @@ type NavButtonProps = {
   label: string
   Icon: LucideIcon
   onClick: () => void
+  badge?: number
 }
 
-function NavButton({ label, Icon, onClick }: NavButtonProps) {
+function NavButton({ label, Icon, onClick, badge }: NavButtonProps) {
+  const badgeLabel = badge && badge > 99 ? '99+' : badge
   return (
     <button
       onClick={onClick}
       className="flex flex-col items-center justify-center gap-1 w-full py-3 rounded-xl transition-all hover:bg-bg-subtle"
     >
-      <Icon className="w-(--icon-size-lg) h-(--icon-size-lg) text-text-disabled" strokeWidth={2} />
+      <span className="relative">
+        <Icon className="w-(--icon-size-lg) h-(--icon-size-lg) text-text-disabled" strokeWidth={2} />
+        {!!badge && (
+          <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-0.5 flex items-center justify-center rounded-full bg-error text-white text-[10px] font-bold leading-none">
+            {badgeLabel}
+          </span>
+        )}
+      </span>
       <span className="text-nav font-semibold tracking-wide text-text-disabled whitespace-nowrap">{label}</span>
     </button>
   )
@@ -59,6 +69,7 @@ export default function SideNav() {
   const pathname = usePathname()
   const { activePanel, setActivePanel, closePanel } = useUIStore()
   const user = useAuthStore((s) => s.user)
+  const unreadCount = useNotificationBadgeStore((s) => s.unreadCount)
 
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [settingsHovered, setSettingsHovered] = useState(false)
@@ -105,7 +116,7 @@ export default function SideNav() {
 
         {/* 검색, 알림 버튼 */}
         <NavButton label="검색" Icon={Search} onClick={() => activePanel === 'search' ? closePanel() : setActivePanel('search')} />
-        <NavButton label="알림" Icon={Bell} onClick={() => activePanel === 'notification' ? closePanel() : setActivePanel('notification')} />
+        <NavButton label="알림" Icon={Bell} onClick={() => activePanel === 'notification' ? closePanel() : setActivePanel('notification')} badge={unreadCount} />
       </div>
 
       {/* 하단 설정, 마이페이지 */}
