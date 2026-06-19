@@ -21,3 +21,4 @@ export * from "./feedback/Skeleton";
 export * from "./PageContainer";
 export * from "./SettingsRow/SettingsRow";
 export * from "./SideDrawer/SideDrawer";
+export * from "./LogoutModal/LogoutModal";
