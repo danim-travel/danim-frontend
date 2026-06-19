@@ -80,7 +80,7 @@ export default function SideNav() {
 
         {/* 검색, 알림 버튼 */}
         <NavButton label="검색" Icon={Search} onClick={() => activePanel === 'search' ? closePanel() : setActivePanel('search')} />
-        <NavButton label="알림" Icon={Bell} onClick={() => setActivePanel('notification')} />
+        <NavButton label="알림" Icon={Bell} onClick={() => activePanel === 'notification' ? closePanel() : setActivePanel('notification')} />
       </div>
 
       {/* 하단 설정, 마이페이지 */}
