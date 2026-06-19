@@ -18,7 +18,10 @@ export const queryKeys = {
     following: (userId: string) => ['users', userId, 'following'] as const,
     search: (query?: string) => ['users', 'search', query] as const,
   },
-  bookmarks: ['bookmarks'] as const,
+  bookmarks: {
+    all: ['bookmarks'] as const,
+    list: ['bookmarks', 'list'] as const,
+  },
   comments: {
     list: (postId: string) => ['comments', postId] as const,
   },

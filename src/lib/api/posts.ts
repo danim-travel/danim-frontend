@@ -1,5 +1,5 @@
 import { apiClient } from '@/lib/apiClient'
-import type { ExploreResponse } from '@/types'
+import type { BookmarkListResponse, ExploreResponse } from '@/types'
 
 export interface ExploreParams {
   search?: string
@@ -17,4 +17,15 @@ export async function getExplorePosts(params: ExploreParams = {}): Promise<Explo
   if (params.seed !== undefined) searchParams.seed = String(params.seed)
   if (params.page_size) searchParams.page_size = String(params.page_size)
   return apiClient.get('posts/explore', { searchParams }).json<ExploreResponse>()
+}
+
+export interface GetBookmarksParams {
+  cursor?: string
+}
+
+export async function getBookmarks(
+  params: GetBookmarksParams = {},
+): Promise<BookmarkListResponse> {
+  const searchParams = params.cursor ? { cursor: params.cursor } : undefined
+  return apiClient.get('posts/bookmarks', { searchParams }).json<BookmarkListResponse>()
 }
