@@ -61,10 +61,25 @@ export default function SideNav() {
   const user = useAuthStore((s) => s.user)
 
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [settingsHovered, setSettingsHovered] = useState(false)
   const [logoutModal, setLogoutModal] = useState(false)
   const settingsRef = useRef<HTMLDivElement>(null)
+  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleSettingsMouseEnter = () => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
+    setSettingsHovered(true)
+  }
+
+  const handleSettingsMouseLeave = () => {
+    hoverTimeoutRef.current = setTimeout(() => {
+      setSettingsHovered(false)
+    }, 150)
+  }
 
   useOnClickOutside(settingsRef, () => setSettingsOpen(false), settingsOpen)
+
+  const isSettingsDropdownVisible = settingsOpen || settingsHovered
 
   const isSettingsActive = pathname === '/settings'
 
@@ -95,8 +110,13 @@ export default function SideNav() {
 
       {/* 하단 설정, 마이페이지 */}
       <div className="flex flex-col items-center gap-3 px-2 w-full">
-        {/* 설정 버튼 — 클릭 시 드롭다운 */}
-        <div ref={settingsRef} className="relative w-full">
+        {/* 설정 버튼 — 클릭 또는 hover 시 드롭다운 */}
+        <div
+          ref={settingsRef}
+          className="relative w-full"
+          onMouseEnter={handleSettingsMouseEnter}
+          onMouseLeave={handleSettingsMouseLeave}
+        >
           <button
             type="button"
             aria-label="설정"
@@ -109,8 +129,12 @@ export default function SideNav() {
             />
           </button>
 
-          {settingsOpen && (
-            <div className="absolute bottom-0 left-full ml-2 bg-bg-card border border-border rounded-card shadow-modal min-w-[140px] py-1 z-(--z-drawer)">
+          {isSettingsDropdownVisible && (
+            <div
+              onMouseEnter={handleSettingsMouseEnter}
+              onMouseLeave={handleSettingsMouseLeave}
+              className="absolute bottom-0 left-full ml-2 bg-bg-card border border-border rounded-card shadow-modal min-w-[140px] py-1 z-(--z-drawer) overflow-hidden"
+            >
               <Link
                 href="/settings"
                 onClick={() => { setSettingsOpen(false); closePanel() }}
