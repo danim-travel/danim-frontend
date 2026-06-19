@@ -5,7 +5,7 @@ import type { NextRequest } from 'next/server'
  * 백엔드가 소셜 로그인 콜백을 /social-callback 대신 /로 리다이렉트하는 경우를 처리.
  * /?provider=...&is_success=...&reason=... → /social-callback?provider=...&is_success=...&reason=...
  */
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl
 
   if (pathname === '/' && searchParams.has('provider') && searchParams.has('is_success')) {
