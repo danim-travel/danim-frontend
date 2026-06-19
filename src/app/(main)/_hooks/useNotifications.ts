@@ -38,7 +38,14 @@ export function useNotificationsQuery(enabled: boolean = true) {
         .json<NotificationListResponse>()
     },
     initialPageParam: null,
-    getNextPageParam: (lastPage) => lastPage.next,
+    getNextPageParam: (lastPage) => {
+      if (!lastPage.next) return null
+      try {
+        return new URL(lastPage.next).searchParams.get('cursor')
+      } catch {
+        return null
+      }
+    },
     refetchOnWindowFocus: false,
     enabled,
   })

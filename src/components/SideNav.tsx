@@ -2,10 +2,11 @@
 
 import { useRef, useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { Home, Compass, PenLine, Search, MessageCircle, Bell, Settings, type LucideIcon } from 'lucide-react'
 import { useUIStore } from '@/store/uiStore'
 import { useAuthStore } from '@/store/authStore'
+import { useNotificationBadgeStore } from '@/store/notificationBadgeStore'
 import { useOnClickOutside } from '@/hooks/useOnClickOutside'
 import { LogoutModal } from '@/components/common'
 
@@ -20,15 +21,24 @@ type NavButtonProps = {
   label: string
   Icon: LucideIcon
   onClick: () => void
+  badge?: number
 }
 
-function NavButton({ label, Icon, onClick }: NavButtonProps) {
+function NavButton({ label, Icon, onClick, badge }: NavButtonProps) {
+  const badgeLabel = badge && badge > 99 ? '99+' : badge
   return (
     <button
       onClick={onClick}
       className="flex flex-col items-center justify-center gap-1 w-full py-3 rounded-xl transition-all hover:bg-bg-subtle"
     >
-      <Icon className="w-(--icon-size-lg) h-(--icon-size-lg) text-text-disabled" strokeWidth={2} />
+      <span className="relative">
+        <Icon className="w-(--icon-size-lg) h-(--icon-size-lg) text-text-disabled" strokeWidth={2} />
+        {!!badge && (
+          <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-0.5 flex items-center justify-center rounded-full bg-error text-white text-[10px] font-bold leading-none">
+            {badgeLabel}
+          </span>
+        )}
+      </span>
       <span className="text-nav font-semibold tracking-wide text-text-disabled whitespace-nowrap">{label}</span>
     </button>
   )
@@ -57,8 +67,15 @@ function NavLink({ href, label, Icon, active, onClick }: NavLinkProps) {
 
 export default function SideNav() {
   const pathname = usePathname()
+  const router = useRouter()
   const { activePanel, setActivePanel, closePanel } = useUIStore()
   const user = useAuthStore((s) => s.user)
+  const unreadCount = useNotificationBadgeStore((s) => s.unreadCount)
+
+  const goHome = () => {
+    router.push('/')
+    closePanel()
+  }
 
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [settingsHovered, setSettingsHovered] = useState(false)
@@ -86,9 +103,9 @@ export default function SideNav() {
   return (
     <nav className="w-(--sidebar-width) bg-bg-card border-r border-border flex flex-col items-center shrink-0 h-full py-4">
       {/* 메인 로고, 클릭하면 홈으로 이동 */}
-      <Link href="/" onClick={closePanel} className="mb-5">
+      <button type="button" onClick={goHome} className="mb-5">
         <img src="/favicon.svg" alt="Danim" className="w-10 h-10 rounded-lg shadow-md hover:shadow-lg transition-shadow" />
-      </Link>
+      </button>
 
       {/* 메인 네비게이션 링크 */}
       <div className="flex flex-col items-center gap-0.5 flex-1 w-full px-2">
@@ -99,13 +116,13 @@ export default function SideNav() {
             label={label}
             Icon={Icon}
             active={pathname === href || pathname.startsWith(href + '/')}
-            onClick={closePanel}
+            onClick={href === '/' ? goHome : closePanel}
           />
         ))}
 
         {/* 검색, 알림 버튼 */}
         <NavButton label="검색" Icon={Search} onClick={() => activePanel === 'search' ? closePanel() : setActivePanel('search')} />
-        <NavButton label="알림" Icon={Bell} onClick={() => activePanel === 'notification' ? closePanel() : setActivePanel('notification')} />
+        <NavButton label="알림" Icon={Bell} onClick={() => activePanel === 'notification' ? closePanel() : setActivePanel('notification')} badge={unreadCount} />
       </div>
 
       {/* 하단 설정, 마이페이지 */}

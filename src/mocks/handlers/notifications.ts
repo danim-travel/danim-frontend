@@ -202,7 +202,7 @@ export const notificationHandlers: RequestHandler[] = [
     const last = sliced[sliced.length - 1]
 
     const response: NotificationListResponse = {
-      next: hasNext && last ? last.notification_id : null,
+      next: hasNext && last ? `${url.origin}/notifications?cursor=${last.notification_id}&page_size=${pageSize}` : null,
       results: sliced,
     }
     return HttpResponse.json(response)
