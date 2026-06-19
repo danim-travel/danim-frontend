@@ -75,12 +75,16 @@ export interface MeDetailResponse {
 export interface UpdateUserRequest {
   nickname?: string
   intro?: string
-  key?: string | null
+  key?: string
 }
 
 export interface ChangePasswordRequest {
   password: string
   new_password: string
+}
+
+export interface DeleteUserRequest {
+  password: string
 }
 
 export interface ProfileImagePresignedResponse {
