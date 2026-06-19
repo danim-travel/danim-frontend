@@ -264,4 +264,72 @@ export const postsHandlers = [
   http.post('https://*.s3.ap-northeast-2.amazonaws.com/*', () => {
     return new HttpResponse(null, { status: 200 })
   }),
+
+  // ─────────────────────────────────────────────────────────────
+  // 게시글 수정 / 삭제
+  //
+  // 백엔드 실제 API 개발 완료. 현재 등록은 index.ts에서 `...postsHandlers,`
+  // 라인이 주석 처리되어 실서버 패스스루 상태. 활성화 시 mock 검증 가능.
+  // ─────────────────────────────────────────────────────────────
+
+  // 게시글 수정
+  http.patch('*/posts/:postId', async ({ params, request }) => {
+    if (!request.headers.get('Authorization')) {
+      return HttpResponse.json(
+        { error_detail: '인증되지 않은 사용자입니다.' },
+        { status: 401 },
+      )
+    }
+    const postId = params.postId as string
+    if (postId === 'not-owner') {
+      return HttpResponse.json(
+        { error_detail: '본인 게시글만 수정할 수 있습니다.' },
+        { status: 403 },
+      )
+    }
+    if (postId === 'not-found') {
+      return HttpResponse.json(
+        { error_detail: '존재하지 않는 게시글입니다.' },
+        { status: 404 },
+      )
+    }
+    const body = (await request.json()) as Record<string, unknown>
+    if (!body.title) {
+      return HttpResponse.json(
+        { error_detail: { title: ['이 필드는 필수 항목입니다.'] } },
+        { status: 400 },
+      )
+    }
+    return HttpResponse.json(
+      { detail: '게시글이 수정되었습니다.' },
+      { status: 200 },
+    )
+  }),
+
+  // 게시글 삭제
+  http.delete('*/posts/:postId', ({ params, request }) => {
+    if (!request.headers.get('Authorization')) {
+      return HttpResponse.json(
+        { error_detail: '인증되지 않은 사용자입니다.' },
+        { status: 401 },
+      )
+    }
+    const postId = params.postId as string
+    if (postId === 'not-owner') {
+      return HttpResponse.json(
+        { error_detail: '본인 게시글만 삭제할 수 있습니다.' },
+        { status: 403 },
+      )
+    }
+    if (postId === 'not-found') {
+      return HttpResponse.json(
+        { error_detail: '존재하지 않는 게시글입니다.' },
+        { status: 404 },
+      )
+    }
+    return HttpResponse.json(
+      { detail: '게시글이 삭제되었습니다.' },
+      { status: 200 },
+    )
+  }),
 ]

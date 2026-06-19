@@ -12,8 +12,14 @@ const makeSpot = (): SpotFormData => ({
   previewUrls: [],
 })
 
-export function useSpotManager() {
-  const [spots, setSpots] = useState<SpotFormData[]>(() => [makeSpot()])
+type UseSpotManagerOptions = {
+  initialSpots?: SpotFormData[]
+}
+
+export function useSpotManager(options: UseSpotManagerOptions = {}) {
+  const [spots, setSpots] = useState<SpotFormData[]>(
+    () => (options.initialSpots && options.initialSpots.length > 0 ? options.initialSpots : [makeSpot()]),
+  )
   // 현재 선택된 spot의 id
   const [activeId, setActiveId] = useState<string>(() => spots[0].id)
 

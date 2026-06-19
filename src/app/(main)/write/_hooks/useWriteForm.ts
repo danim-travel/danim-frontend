@@ -1,23 +1,43 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
+import type { PostDetail } from '@/types'
 import { useSpotManager } from './useSpotManager'
 import { usePhotoManager } from './usePhotoManager'
 import { usePostSubmit } from './usePostSubmit'
+import { postDetailToSpotFormData, findInitialThumbnailKey } from '../_helpers/postDetailToForm.helper'
 
 export type { SpotFormData } from '../_types/write.types'
 
-export function useWriteForm() {
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
+type UseWriteFormOptions = {
+  initial?: PostDetail
+}
+
+export function useWriteForm(options: UseWriteFormOptions = {}) {
+  const { initial } = options
+
+  // initial이 처음 도착하는 시점에 한 번만 변환해 useState 초기값에 사용한다.
+  // useMemo지만 mount 시 한 번 실행되어 setState initializer로 흘러간다.
+  const initialSpots = useMemo(
+    () => (initial ? postDetailToSpotFormData(initial) : undefined),
+    [initial],
+  )
+  const initialThumbnailKey = useMemo(
+    () => (initial ? findInitialThumbnailKey(initial) : null),
+    [initial],
+  )
+
+  const [title, setTitle] = useState(() => initial?.post.title ?? '')
+  const [description, setDescription] = useState(() => initial?.post.description ?? '')
 
   // 스팟 목록 CRUD + 활성 스팟 관리
-  const spot = useSpotManager()
+  const spot = useSpotManager({ initialSpots })
   // 스팟별 사진 업로드·순서 변경·썸네일 관리
   const photo = usePhotoManager({
     spots: spot.spots,
     active: spot.active,
     updateSpot: spot.updateSpot,
+    initialThumbnailKey,
   })
   // 게시글 제출 가능 여부 판단 + API 호출
   const submit = usePostSubmit({
