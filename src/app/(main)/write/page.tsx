@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button, FieldLabel, Modal } from '@/components/common'
 import { useWriteForm } from './_hooks/useWriteForm'
@@ -27,9 +27,23 @@ export default function WritePage() {
   const [openSpotTextareaIds, setOpenSpotTextareaIds] = useState<Set<string>>(new Set())
   const [confirmRemoveSpotId, setConfirmRemoveSpotId] = useState<string | null>(null)
 
+  const titleSectionRef = useRef<HTMLDivElement>(null)
+  const descriptionSectionRef = useRef<HTMLDivElement>(null)
+  const spotSectionRef = useRef<HTMLDivElement>(null)
+  const photoSectionRef = useRef<HTMLDivElement>(null)
+
   const handleSubmit = useCallback(async () => {
-    setTitleError(title.trim().length === 0 ? "제목을 입력해주세요" : undefined)
-    setDescriptionError(description.trim().length === 0 ? "한 줄 소개를 입력해주세요" : undefined)
+    const hasTitleError = title.trim().length === 0
+    const hasDescriptionError = description.trim().length === 0
+    setTitleError(hasTitleError ? "제목을 입력해주세요" : undefined)
+    setDescriptionError(hasDescriptionError ? "한 줄 소개를 입력해주세요" : undefined)
+
+    // 제목 → 한줄소개 우선순위로 첫 미입력 필드로 스크롤
+    if (hasTitleError) {
+      titleSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    } else if (hasDescriptionError) {
+      descriptionSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
 
     const newSpotErrors: Record<string, SpotError> = {}
     const newOpenIds = new Set<string>()
@@ -57,12 +71,22 @@ export default function WritePage() {
     )
     if (invalidSpot) {
       spot.selectSpot(invalidSpot.id)
+      // 제목·한줄소개 오류가 없을 때만 스팟/사진 영역으로 스크롤
+      if (!hasTitleError && !hasDescriptionError) {
+        const hasContentOrLocationError =
+          invalidSpot.content.trim().length === 0 || invalidSpot.location === null
+        if (hasContentOrLocationError) {
+          spotSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        } else if (invalidSpot.images.length === 0) {
+          photoSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      }
     }
 
     if (!canSubmit) return
 
     const ok = await submitPost()
-    if (ok) router.push('/')
+    if (ok) router.push('/mypage')
   }, [submitPost, canSubmit, router, title, description, spot])
 
   const handleCancel = useCallback(() => router.back(), [router])
@@ -155,25 +179,31 @@ export default function WritePage() {
 
       {/* 모바일: 단일 컬럼 스크롤 / 데스크탑(md+): 사진 좌측 고정 + 폼 우측 스크롤 2단 */}
       <div className="flex-1 min-h-0 overflow-y-auto md:flex md:overflow-hidden">
-        {/* 사진 업로드 */}
-        <PhotoPanel
-          active={spot.active}
-          photoError={spotPhotoErrors[spot.active.id]}
-          photosState={{
-            selectedPhotoIdx: photo.selectedPhotoIdx,
-            isUploadingPhoto: photo.isUploadingPhoto,
-            uploadProgress: photo.uploadProgress,
-            onPhotoAdd: handlePhotoAdd,
-            onRemovePhoto: photo.removePhoto,
-            onSelectPhoto: photo.setSelectedPhotoIdx,
-            onReorderPhotos: photo.reorderPhotos,
-          }}
-        />
+        {/* 사진 업로드 — 모바일에서 사진 오류 시 스크롤 타깃, 데스크탑에서는 contents로 레이아웃 영향 없음 */}
+        <div ref={photoSectionRef} className="scroll-mt-4 md:contents">
+          <PhotoPanel
+            active={spot.active}
+            photoError={spotPhotoErrors[spot.active.id]}
+            photosState={{
+              selectedPhotoIdx: photo.selectedPhotoIdx,
+              isUploadingPhoto: photo.isUploadingPhoto,
+              uploadProgress: photo.uploadProgress,
+              onPhotoAdd: handlePhotoAdd,
+              onRemovePhoto: photo.removePhoto,
+              onSelectPhoto: photo.setSelectedPhotoIdx,
+              onReorderPhotos: photo.reorderPhotos,
+            }}
+          />
+        </div>
 
         {/* 폼 필드: 모바일은 부모 스크롤 내 / 데스크탑은 자체 스크롤 컬럼 */}
         <div className="px-4 pb-6 flex flex-col gap-5 md:flex-1 md:overflow-y-auto md:px-7 md:py-4 md:pb-4 md:gap-4">
-          <TitleSection title={title} setTitle={setTitle} error={titleError} />
-          <DescriptionSection description={description} setDescription={setDescription} error={descriptionError} />
+          <div ref={titleSectionRef} className="scroll-mt-4">
+            <TitleSection title={title} setTitle={setTitle} error={titleError} />
+          </div>
+          <div ref={descriptionSectionRef} className="scroll-mt-4">
+            <DescriptionSection description={description} setDescription={setDescription} error={descriptionError} />
+          </div>
 
           {/* 썸네일 */}
           <div>
@@ -186,7 +216,7 @@ export default function WritePage() {
           </div>
 
           {/* 코스 순서 */}
-          <div>
+          <div ref={spotSectionRef} className="scroll-mt-4">
             <FieldLabel>코스 순서</FieldLabel>
             <SpotOrderList
               spots={spot.spots}
