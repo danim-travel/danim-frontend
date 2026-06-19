@@ -145,6 +145,7 @@ export function ProfileSection({
         open={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
         title="프로필 사진 삭제"
+        className="max-w-sm"
         footer={
           <>
             <Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>취소</Button>

@@ -29,6 +29,7 @@ export function LogoutModal({ open, onClose }: LogoutModalProps) {
       open={open}
       onClose={onClose}
       title="로그아웃"
+      className="max-w-sm"
       footer={
         <>
           <Button variant="secondary" onClick={onClose}>취소</Button>
