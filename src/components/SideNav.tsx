@@ -99,6 +99,7 @@ export default function SideNav() {
         <div ref={settingsRef} className="relative w-full">
           <button
             type="button"
+            aria-label="설정"
             onClick={() => setSettingsOpen(o => !o)}
             className={`flex flex-col items-center justify-center gap-1 w-full py-3 rounded-xl transition-all ${isSettingsActive ? 'bg-primary/10' : 'hover:bg-bg-subtle'}`}
           >

@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { getMe, updateUser } from "@/lib/api/users"
 import { checkNickname } from "@/lib/api/auth"
@@ -50,6 +50,7 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
   // 닉네임 중복확인 버튼 클릭 후 통과 여부. 닉네임 입력 변경 시 초기화된다.
   const [nicknameChecked, setNicknameChecked] = useState(false)
   const [isCheckingNickname, setIsCheckingNickname] = useState(false)
+  const nicknameAtCheckRef = useRef<string | null>(null)
   const [isPending, setIsPending] = useState(false)
 
   const isDirty =
@@ -72,11 +73,15 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
       toast.error("현재 사용 중인 닉네임입니다.")
       return
     }
+    const target = nickname
+    nicknameAtCheckRef.current = target
     setIsCheckingNickname(true)
     try {
-      await checkNickname(nickname)
-      setNicknameChecked(true)
-      toast.success("사용 가능한 닉네임입니다.")
+      await checkNickname(target)
+      if (nicknameAtCheckRef.current === target) {
+        setNicknameChecked(true)
+        toast.success("사용 가능한 닉네임입니다.")
+      }
     } catch (err) {
       setNicknameChecked(false)
       toast.error(getApiErrorMessage(err, { client: "이미 사용 중인 닉네임입니다." }))
@@ -155,6 +160,7 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
           onNicknameChange={(v) => {
             setNickname(v)
             setNicknameChecked(false)
+            nicknameAtCheckRef.current = null
           }}
           onNicknameCheck={() => { void handleNicknameCheck() }}
         />

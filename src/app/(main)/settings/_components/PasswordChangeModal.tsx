@@ -15,8 +15,13 @@ export function PasswordChangeModal({ open, onClose }: PasswordChangeModalProps)
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [currentPasswordError, setCurrentPasswordError] = useState<string | undefined>()
-  const [newPasswordError, setNewPasswordError] = useState<string | undefined>()
   const [isPending, setIsPending] = useState(false)
+
+  // 실시간 파생: 두 필드 모두 입력된 상태에서 값이 같으면 에러 표시
+  const newPasswordError =
+    newPassword.trim().length > 0 && currentPassword.trim().length > 0 && currentPassword === newPassword
+      ? "현재 비밀번호와 다른 비밀번호를 입력해주세요"
+      : undefined
 
   // 실시간 파생: confirmPassword가 입력된 상태에서 newPassword와 다르면 에러 표시
   const confirmPasswordError =
@@ -29,6 +34,7 @@ export function PasswordChangeModal({ open, onClose }: PasswordChangeModalProps)
     newPassword.trim().length > 0 &&
     confirmPassword.trim().length > 0 &&
     confirmPassword === newPassword &&
+    !newPasswordError &&
     !currentPasswordError
 
   function handleClose() {
@@ -37,20 +43,10 @@ export function PasswordChangeModal({ open, onClose }: PasswordChangeModalProps)
     setNewPassword("")
     setConfirmPassword("")
     setCurrentPasswordError(undefined)
-    setNewPasswordError(undefined)
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-
-    const nextNewPasswordError =
-      currentPassword === newPassword
-        ? "현재 비밀번호와 다른 비밀번호를 입력해주세요"
-        : undefined
-
-    setNewPasswordError(nextNewPasswordError)
-    if (nextNewPasswordError) return
-
     setIsPending(true)
     setCurrentPasswordError(undefined)
     try {
@@ -96,7 +92,7 @@ export function PasswordChangeModal({ open, onClose }: PasswordChangeModalProps)
           label="새 비밀번호"
           placeholder="새 비밀번호를 입력해 주세요"
           value={newPassword}
-          onChange={e => { setNewPassword(e.target.value); setNewPasswordError(undefined) }}
+          onChange={e => setNewPassword(e.target.value)}
           required
           autoComplete="new-password"
           name="danim-new-password"
