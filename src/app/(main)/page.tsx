@@ -100,6 +100,7 @@ export default function HomePage() {
     isFetchingNextPage,
     title: soloPostId ? "피드" : undefined,
     onBack: soloPostId ? () => router.back() : undefined,
+    hideEndMessage: !!soloPostId,
   } as const;
 
   return (

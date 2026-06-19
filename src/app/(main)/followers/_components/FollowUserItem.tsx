@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Avatar, Button, UserRow } from "@/components/common"
 import { followUser, unfollowUser } from "@/lib/api/users"
 import { getApiErrorMessage } from "@/lib/apiError"
+import { useAuthStore } from "@/store/authStore"
 import { toast } from "@/store/toastStore"
 import type { FollowUser } from "@/types"
 
@@ -44,6 +45,8 @@ function applyIsFollowing(cache: FollowCache, targetId: string, isFollowing: boo
 export function FollowUserItem({ user, followersQueryKey, followingQueryKey, isMutualFollow }: FollowUserItemProps) {
   const router = useRouter()
   const queryClient = useQueryClient()
+  const myUserId = useAuthStore(s => s.user?.userId)
+  const isMe = !!myUserId && myUserId === user.user_id
 
   /** 진행 중인 쿼리를 취소하고 이전 캐시를 스냅샷한 뒤 낙관적 업데이트를 적용한다. */
   async function prepareOptimistic(isFollowing: boolean) {
@@ -105,7 +108,7 @@ export function FollowUserItem({ user, followersQueryKey, followingQueryKey, isM
       onClick={() => router.push(`/users/${user.user_id}`)}
       className="px-3 py-3 rounded-xl hover:bg-bg-subtle transition-colors"
       trailing={
-        user.is_following ? (
+        isMe ? null : user.is_following ? (
           <Button
             variant="primary"
             size="sm"
