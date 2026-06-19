@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Avatar, Button, UserRow } from "@/components/common"
 import { followUser, unfollowUser } from "@/lib/api/users"
 import { getApiErrorMessage } from "@/lib/apiError"
+import { queryKeys } from "@/lib/queryKeys"
 import { useAuthStore } from "@/store/authStore"
 import { toast } from "@/store/toastStore"
 import type { FollowUser } from "@/types"
@@ -68,10 +69,11 @@ export function FollowUserItem({ user, followersQueryKey, followingQueryKey, isM
     queryClient.setQueryData(followingQueryKey, context?.prevFollowing)
   }
 
-  /** 팔로워·팔로잉 쿼리를 무효화해 서버 데이터와 동기화한다. */
+  /** 팔로워·팔로잉 쿼리와 대상 유저 프로필을 무효화해 서버 데이터와 동기화한다. */
   function invalidateBoth() {
     queryClient.invalidateQueries({ queryKey: followersQueryKey })
     queryClient.invalidateQueries({ queryKey: followingQueryKey })
+    queryClient.invalidateQueries({ queryKey: queryKeys.users.profile(user.user_id) })
   }
 
   const toggleMutation = useMutation({

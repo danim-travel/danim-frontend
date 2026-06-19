@@ -9,6 +9,7 @@ import { queryKeys } from "@/lib/queryKeys";
 import { getApiErrorMessage } from "@/lib/apiError";
 import { toast } from "@/store/toastStore";
 import { useDelayedPending } from "@/hooks/useDelayedPending";
+import { useAuthStore } from "@/store/authStore";
 import type { UserProfileResponse } from "@/types";
 
 interface UserProfileHeaderProps {
@@ -51,6 +52,7 @@ function StatItem({ label, value, href }: StatItemProps) {
 
 export default function UserProfileHeader({ profile, userId }: UserProfileHeaderProps) {
   const queryClient = useQueryClient();
+  const myUserId = useAuthStore((s) => s.user?.userId);
   const [isFollowing, setIsFollowing] = useState(profile.is_following);
   const [followerCount, setFollowerCount] = useState(profile.follower);
   const initial = profile.nickname?.slice(0, 1).toUpperCase() ?? "?";
@@ -67,6 +69,9 @@ export default function UserProfileHeader({ profile, userId }: UserProfileHeader
       setIsFollowing(res.is_followed);
       setFollowerCount(res.follower_count);
       queryClient.invalidateQueries({ queryKey: queryKeys.users.profile(userId) });
+      if (myUserId) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.users.profile(myUserId) });
+      }
     },
     onError: (err, _, context) => {
       const wasFollowing = context?.wasFollowing ?? isFollowing;
