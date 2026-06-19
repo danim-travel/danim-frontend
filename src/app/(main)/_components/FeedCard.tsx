@@ -40,7 +40,7 @@ function ExpandableDescription({ text, clampClass }: { text: string; clampClass:
             e.stopPropagation();
             setExpanded((v) => !v);
           }}
-          className="mt-1 text-nav font-medium text-text-muted hover:text-text-secondary transition-colors"
+          className="mt-1 text-nav font-medium text-primary hover:text-primary/70 transition-colors"
         >
           {expanded ? "접기" : "더보기"}
         </button>
