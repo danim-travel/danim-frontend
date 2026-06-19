@@ -1,16 +1,18 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence } from "motion/react";
 import { LayoutGrid, Bookmark } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { useUIStore } from "@/store/uiStore";
-import { Tabs, EmptyState, PageContainer } from "@/components/common";
+import { Tabs, PageContainer } from "@/components/common";
 import { Spinner } from "@/components/ui/spinner";
 import PostModal from "@/components/PostModal";
 import { useMyProfile } from "./_hooks/useMyProfile";
+import { useBookmarksQuery } from "./_hooks/useBookmarksQuery";
 import ProfileHeader from "./_components/ProfileHeader";
-import PostGrid from "./_components/PostGrid";
+import PostGrid, { type PostGridItem } from "./_components/PostGrid";
+import BookmarksTabPanel from "./_components/BookmarksTabPanel";
 import { useAuthHydrationFallback } from "@/hooks/useAuthHydrationFallback";
 
 type MyPageTab = "posts" | "bookmarks";
@@ -21,6 +23,37 @@ function MyPageContent({ userId }: { userId: string }) {
   const { data: profile, isLoading } = useMyProfile(userId);
   const [tab, setTab] = useState<MyPageTab>("posts");
   const [modalPostId, setModalPostId] = useState<string | null>(null);
+
+  // 마이페이지 진입 시 즉시 북마크를 fetch — 탭 카운트가 처음부터 정확히 보이도록.
+  // 탭 클릭 시점에 처음 fetch하면 카운트가 0으로 잠깐 보이는 문제가 있음.
+  const {
+    data: bookmarksData,
+    isLoading: isBookmarksLoading,
+    isError: isBookmarksError,
+    error: bookmarksError,
+    hasNextPage: hasMoreBookmarks,
+    isFetchingNextPage: isFetchingMoreBookmarks,
+    fetchNextPage: fetchMoreBookmarks,
+  } = useBookmarksQuery();
+
+  const bookmarksItems: PostGridItem[] = useMemo(() => {
+    if (!bookmarksData) return [];
+    return bookmarksData.pages.flatMap((page) =>
+      page.results.map((item) => ({
+        post_id: item.post_id,
+        thumbnail: item.thumbnail,
+        alt: item.description ?? "",
+        like_count: item.like_count,
+        comment_count: item.comment_count,
+      })),
+    );
+  }, [bookmarksData]);
+
+  const postsItems = (profile?.posts ?? []).map((p) => ({
+    post_id: p.post_id,
+    thumbnail: p.thumbnail,
+    alt: p.title,
+  }));
 
   // solo 모드에서 돌아왔을 때 해당 게시글로 스크롤 복원
   useEffect(() => {
@@ -57,7 +90,7 @@ function MyPageContent({ userId }: { userId: string }) {
           <Tabs
             items={[
               { key: "posts", label: "게시글", count: profile.posts_count ?? 0, icon: <LayoutGrid size={16} /> },
-              { key: "bookmarks", label: "저장됨", count: 0, icon: <Bookmark size={16} /> },
+              { key: "bookmarks", label: "저장됨", count: bookmarksItems.length, icon: <Bookmark size={16} /> },
             ]}
             value={tab}
             onChange={(key) => setTab(key as MyPageTab)}
@@ -68,7 +101,7 @@ function MyPageContent({ userId }: { userId: string }) {
           <Tabs
             items={[
               { key: "posts", label: "게시글", count: profile.posts_count ?? 0, icon: <LayoutGrid size={16} /> },
-              { key: "bookmarks", label: "저장됨", count: 0, icon: <Bookmark size={16} /> },
+              { key: "bookmarks", label: "저장됨", count: bookmarksItems.length, icon: <Bookmark size={16} /> },
             ]}
             value={tab}
             onChange={(key) => setTab(key as MyPageTab)}
@@ -77,11 +110,20 @@ function MyPageContent({ userId }: { userId: string }) {
       </div>
       <div className="mt-6">
         {tab === "posts" ? (
-          <PostGrid posts={profile.posts} onPostClick={(id) => { closePanel(); setModalPostId(id); }} />
+          <PostGrid
+            posts={postsItems}
+            onPostClick={(id) => { closePanel(); setModalPostId(id); }}
+          />
         ) : (
-          <EmptyState
-            title="준비 중입니다"
-            description="저장된 게시글 기능은 곧 제공될 예정이에요."
+          <BookmarksTabPanel
+            items={bookmarksItems}
+            isLoading={isBookmarksLoading}
+            isError={isBookmarksError}
+            error={bookmarksError}
+            hasNextPage={!!hasMoreBookmarks}
+            isFetchingNextPage={isFetchingMoreBookmarks}
+            onLoadMore={() => fetchMoreBookmarks()}
+            onPostClick={(id) => { closePanel(); setModalPostId(id); }}
           />
         )}
       </div>

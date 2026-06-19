@@ -142,3 +142,18 @@ export type ExploreResponse = {
   seed: number
   results: ExplorePost[]
 }
+
+// 북마크 목록 — GET /posts/bookmarks
+export type BookmarkListItem = {
+  post_id: string
+  thumbnail: string
+  description: string
+  comment_count: number
+  is_liked: boolean
+  like_count: number
+}
+
+export type BookmarkListResponse = {
+  next: string | null
+  results: BookmarkListItem[]
+}

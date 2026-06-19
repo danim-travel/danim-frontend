@@ -4,7 +4,7 @@
  * showcase-post ID는 별도 더미 데이터로 fallback.
  */
 import { http, HttpResponse } from 'msw'
-import type { PostDetail, Spot } from '@/types'
+import type { BookmarkListItem, BookmarkListResponse, PostDetail, Spot } from '@/types'
 import { likedPosts, bookmarkedPosts, postLikeCounts } from './interactions'
 import { getCommentCount } from './comments'
 import { ALL_FEED_ITEMS } from './mainFeed'
@@ -155,7 +155,50 @@ function buildPostDetail(postId: string): PostDetail {
   }
 }
 
+const BOOKMARKS_PAGE_SIZE = 8
+
+function buildBookmarkItem(postId: string): BookmarkListItem | null {
+  const feedItem = ALL_FEED_ITEMS.find((item) => item.post.post_id === postId)
+  if (!feedItem) return null
+  return {
+    post_id: feedItem.post.post_id,
+    thumbnail: feedItem.post.thumbnail,
+    description: feedItem.post.description,
+    comment_count: getCommentCount(postId),
+    is_liked: likedPosts.has(postId),
+    like_count: postLikeCounts.get(postId) ?? feedItem.like_count,
+  }
+}
+
 export const postsHandlers = [
+  // 내 북마크 목록 — cursor 페이징 mock
+  http.get('*/posts/bookmarks', ({ request }) => {
+    if (!request.headers.get('Authorization')) {
+      return HttpResponse.json(
+        { error_detail: '인증되지 않은 사용자입니다.' },
+        { status: 401 },
+      )
+    }
+    const url = new URL(request.url)
+    const cursor = url.searchParams.get('cursor')
+    const start = cursor ? Number(cursor) : 0
+    const end = start + BOOKMARKS_PAGE_SIZE
+
+    const allIds = Array.from(bookmarkedPosts)
+    const slice = allIds.slice(start, end)
+    const results = slice
+      .map(buildBookmarkItem)
+      .filter((v): v is BookmarkListItem => v !== null)
+
+    const hasMore = end < allIds.length
+    const next = hasMore
+      ? `${url.origin}${url.pathname}?cursor=${end}`
+      : null
+
+    const response: BookmarkListResponse = { next, results }
+    return HttpResponse.json(response)
+  }),
+
   http.get('*/posts/:postId', ({ params }) => {
     const postId = params.postId as string
     const detail = buildPostDetail(postId)

@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient, type QueryKey } from '@tanstack/react-query'
 import { apiClient } from '@/lib/apiClient'
 import { getApiErrorMessage } from '@/lib/apiError'
+import { queryKeys } from '@/lib/queryKeys'
 import { toast } from '@/store/toastStore'
 import type { BookmarkResponse } from '@/types'
 
@@ -62,6 +63,8 @@ export function useBookmarkMutation<TCacheData>({
     onSuccess: (res) => {
       queryClient.setQueryData<TCacheData>(queryKey, (old) => successUpdater(old, res))
       onAfterSuccess?.(res)
+      // 마이페이지 "저장됨" 목록은 어디서 토글하든 최신 상태가 반영되어야 한다.
+      queryClient.invalidateQueries({ queryKey: queryKeys.bookmarks.list })
     },
   })
 }
