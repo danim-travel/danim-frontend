@@ -12,6 +12,7 @@ interface Props {
 }
 
 const EMOJIS = ["😀", "😂", "😍", "🥹", "👍", "🙏", "🎉", "✨", "🌊", "🏝️", "☕", "🍜", "📍", "✈️", "❤️", "🔥"]
+const MAX_LENGTH = 500
 
 export function ChatComposer({ onSend, onSendImage, disabled }: Props) {
   const [value, setValue] = useState("")
@@ -51,6 +52,7 @@ export function ChatComposer({ onSend, onSendImage, disabled }: Props) {
     const start = input?.selectionStart ?? value.length
     const end = input?.selectionEnd ?? value.length
     const next = `${value.slice(0, start)}${emoji}${value.slice(end)}`
+    if (next.length > MAX_LENGTH) return
     setValue(next)
     requestAnimationFrame(() => {
       inputRef.current?.focus()
@@ -106,9 +108,15 @@ export function ChatComposer({ onSend, onSendImage, disabled }: Props) {
         onChange={e => setValue(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="메시지 입력..."
+        maxLength={MAX_LENGTH}
         disabled={isInputDisabled}
         className="flex-1 bg-transparent outline-none text-body-sm text-text placeholder:text-text-placeholder disabled:cursor-not-allowed"
       />
+      {value.length > 0 && (
+        <span className={`text-nav shrink-0 ${value.length >= MAX_LENGTH ? "text-error" : "text-text-disabled"}`}>
+          {value.length}/{MAX_LENGTH}
+        </span>
+      )}
       <input
         ref={fileInputRef}
         type="file"
