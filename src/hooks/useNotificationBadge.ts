@@ -15,10 +15,12 @@
 'use client'
 
 import { useEffect } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { issueSocketKey } from '@/lib/api/websocket'
 import { config } from '@/lib/config'
 import { useAuthStore } from '@/store/authStore'
 import { useNotificationBadgeStore } from '@/store/notificationBadgeStore'
+import { queryKeys } from '@/lib/queryKeys'
 import type { NotificationWsServerMessage } from '@/types/notification.types'
 
 const NORMAL_CLOSE_CODE = 1000
@@ -32,6 +34,7 @@ function isNotificationWsServerMessage(value: unknown): value is NotificationWsS
 }
 
 export function useNotificationBadge(): void {
+  const queryClient = useQueryClient()
   const accessToken = useAuthStore((s) => s.accessToken)
   const setUnreadCount = useNotificationBadgeStore((s) => s.setUnreadCount)
   const resetUnreadCount = useNotificationBadgeStore((s) => s.reset)
@@ -101,7 +104,12 @@ export function useNotificationBadge(): void {
 
         // 정상 데이터 수신 → 백오프 리셋
         backoffMs = INITIAL_BACKOFF_MS
+        const prev = useNotificationBadgeStore.getState().unreadCount
         setUnreadCount(parsed.unread_count)
+        // 새 알림이 생겼으면 목록 캐시 무효화 → 드로어 열 때 최신 목록 표시
+        if (parsed.unread_count > prev) {
+          queryClient.invalidateQueries({ queryKey: queryKeys.notifications.list })
+        }
       }
 
       socket.onclose = (event) => {
