@@ -27,7 +27,7 @@ export function AccountSection() {
         <button
           type="button"
           onClick={() => setDeleteModal(true)}
-          className="self-center text-body-sm font-bold text-(--color-error) hover:opacity-70 transition-opacity w-fit px-1"
+          className="self-center text-body-sm font-bold text-error hover:opacity-70 transition-opacity w-fit px-1"
         >
           계정 삭제
         </button>
