@@ -24,7 +24,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         <MobileHeader />
 
         {/* 콘텐츠 영역 — 모바일: 상단/하단 fixed UI 높이만큼 padding */}
-        <main className="flex-1 min-w-0 h-full overflow-y-auto overscroll-contain pt-16 md:pt-0 pb-16 md:pb-0">
+        <main className="flex-1 min-w-0 h-full overflow-y-auto overscroll-contain pt-16 md:pt-0 pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">
           {children}
         </main>
 

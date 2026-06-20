@@ -16,7 +16,8 @@ import { NotificationFilter, type NotificationFilterValue } from "./Notification
 import { NotificationItem } from "./NotificationItem"
 
 export function NotificationDrawer() {
-  const { activePanel, closePanel } = useUIStore()
+  const activePanel = useUIStore((s) => s.activePanel)
+  const closePanel = useUIStore((s) => s.closePanel)
   const pathname = usePathname()
   const isOpen = activePanel === "notification"
 
@@ -34,6 +35,15 @@ export function NotificationDrawer() {
     closePanel()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname])
+
+  // ESC로 닫기
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen) closePanel()
+    }
+    window.addEventListener("keydown", handler)
+    return () => window.removeEventListener("keydown", handler)
+  }, [isOpen, closePanel])
 
   const {
     data,

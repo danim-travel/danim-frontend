@@ -8,7 +8,9 @@ import { useNotificationBadgeStore } from "@/store/notificationBadgeStore";
 
 export function MobileHeader() {
   const router = useRouter();
-  const { activePanel, setActivePanel, closePanel } = useUIStore();
+  const activePanel = useUIStore((s) => s.activePanel);
+  const setActivePanel = useUIStore((s) => s.setActivePanel);
+  const closePanel = useUIStore((s) => s.closePanel);
   const unreadCount = useNotificationBadgeStore((s) => s.unreadCount);
   const badgeLabel = unreadCount > 99 ? "99+" : unreadCount;
 
