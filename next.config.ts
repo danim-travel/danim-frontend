@@ -11,14 +11,27 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 const nextConfig: NextConfig = {
+  reactStrictMode: true,
+  compiler: {
+    removeConsole: { exclude: ['error', 'warn'] },
+  },
   devIndicators: false,
+  // 외부 가변 도메인 (S3 presigned, picsum) 사용 환경에서는 Next의 on-the-fly
+  // 최적화를 강제할 수 없지만, 향후 동일 origin 또는 등록된 remote pattern에
+  // 대해서는 AVIF/WebP·resize·캐싱이 동작하도록 unoptimized=true 를 제거한다.
+  // 만약 next/image가 잡지 못하는 가변 도메인이 추가되면 onError fallback 또는
+  // unoptimized prop을 컴포넌트 단위로 지정한다.
   images: {
-    unoptimized: true,
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60 * 60 * 24,
     remotePatterns: [
-      { protocol: 'https', hostname: 'picsum.photos' },
+      { protocol: 'https', hostname: 'picsum.photos' }, // MSW mock 이미지 (개발 환경)
       { protocol: 'https', hostname: '*.s3.ap-northeast-2.amazonaws.com' },
+      { protocol: 'https', hostname: '*.amazonaws.com' },
     ],
   },
+  // 빌드 캐시 압축 — 빌드 결과물 크기 절감
+  compress: true,
 };
 
 export default nextConfig;
