@@ -227,7 +227,9 @@ export function useDmSocket(
           console.warn('[DM WebSocket] 알 수 없는 메시지 타입 수신 — 백엔드 이벤트 타입을 확인하세요:', parsed)
           return
         }
-        console.info(`[DM WebSocket] message: ${parsed.type}`, parsed)
+        if (config.isDev) {
+          console.info(`[DM WebSocket] message: ${parsed.type}`, parsed)
+        }
 
         if (parsed.type === 'error') {
           console.error('[DM WebSocket] server error', parsed.detail)
@@ -254,9 +256,14 @@ export function useDmSocket(
           // 백엔드 페이로드에 undefined 필드가 있어도 캐시에 undefined가 들어가지 않도록 정규화한다.
           const message: Message = {
             message_id: rawMsg.message_id,
-            sender: (rawMsg.sender != null && typeof rawMsg.sender === 'object')
-              ? (rawMsg.sender as Message['sender'])
-              : { user_id: '', nickname: '', profile_img: null },
+            sender: (() => {
+              const s = (rawMsg.sender != null && typeof rawMsg.sender === 'object')
+                ? rawMsg.sender as Record<string, unknown>
+                : null
+              return (s && typeof s.user_id === 'string')
+                ? (s as unknown as Message['sender'])
+                : { user_id: '', nickname: '', profile_img: null }
+            })(),
             content: typeof rawMsg.content === 'string' ? rawMsg.content : null,
             img_url: typeof rawMsg.img_url === 'string' ? rawMsg.img_url : null,
             original_img: typeof rawMsg.original_img === 'string' ? rawMsg.original_img : null,

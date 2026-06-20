@@ -4,7 +4,6 @@ import Link from "next/link"
 import { Avatar, Button, Modal } from "@/components/common"
 import { cn } from "@/lib/utils"
 import { useOnClickOutside } from "@/hooks/useOnClickOutside"
-import { useDeleteMessage } from "@/hooks/useDmQueries"
 import type { Message, UserBrief } from "@/types"
 
 interface Props {
@@ -13,24 +12,24 @@ interface Props {
   /** 연속된 메시지 중 마지막 메시지일 때 아바타를 표시한다 */
   showAvatar: boolean
   opponent: UserBrief
-  conversationId: string
+  onDelete: (messageId: string) => void
+  isPending: boolean
 }
 
-export function ChatBubble({ message, isMine, showAvatar, opponent, conversationId }: Props) {
+export function ChatBubble({ message, isMine, showAvatar, opponent, onDelete, isPending }: Props) {
   // opt- 접두사 메시지는 서버에 존재하지 않는 낙관적 임시 메시지
   const isOptimistic = message.message_id.startsWith('opt-')
   const [showMenu, setShowMenu] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
-  const { mutate: deleteMessage, isPending } = useDeleteMessage(conversationId)
 
   const closeMenu = useCallback(() => setShowMenu(false), [])
   useOnClickOutside(menuRef, closeMenu, showMenu)
 
   const handleDeleteConfirm = () => {
-    if (isOptimistic) return  // 서버 미존재 메시지 — API 호출 차단
     setShowDeleteModal(false)
-    deleteMessage(message.message_id)
+    if (isOptimistic) return  // 서버 미존재 메시지 — API 호출 차단
+    onDelete(message.message_id)
   }
 
   if (message.is_deleted) {

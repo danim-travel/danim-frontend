@@ -3,7 +3,7 @@
 import { useEffect, useRef, useCallback } from "react"
 import { format, isSameDay, differenceInMinutes } from "date-fns"
 import { ko } from "date-fns/locale"
-import { useMessages } from "@/hooks/useDmQueries"
+import { useMessages, useDeleteMessage } from "@/hooks/useDmQueries"
 import { useInfiniteScrollSentinel } from "@/hooks/useInfiniteScrollSentinel"
 import { UserRowSkeleton } from "@/components/common"
 import { ChatBubble } from "./ChatBubble"
@@ -21,6 +21,7 @@ function formatDateSeparator(dateStr: string) {
 
 export function MessageList({ conversationId, myUserId, opponent }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null)
+  const { mutate: deleteMessage, isPending: isDeleting } = useDeleteMessage(conversationId)
   // FIX 5: 두 개의 effect가 isFirstRender 공유 → 초기 로드 시 이중 스크롤 발생 문제 해결
   // prevLastMessageIdRef 하나로 초기 로드(instant)와 신규 메시지(smooth)를 구분
   const prevLastMessageIdRef = useRef<string | undefined>(undefined)
@@ -127,7 +128,8 @@ export function MessageList({ conversationId, myUserId, opponent }: Props) {
               isMine={isMine}
               showAvatar={showAvatar}
               opponent={opponent}
-              conversationId={conversationId}
+              onDelete={deleteMessage}
+              isPending={isDeleting}
             />
           </div>
         )
