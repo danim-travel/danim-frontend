@@ -22,8 +22,7 @@ const nextConfig: NextConfig = {
   // 만약 next/image가 잡지 못하는 가변 도메인이 추가되면 onError fallback 또는
   // unoptimized prop을 컴포넌트 단위로 지정한다.
   images: {
-    formats: ['image/avif', 'image/webp'],
-    minimumCacheTTL: 60 * 60 * 24,
+    unoptimized: true, // Vercel Hobby 플랜 이미지 최적화 할당량 초과 방지
     remotePatterns: [
       { protocol: 'https', hostname: 'picsum.photos' }, // MSW mock 이미지 (개발 환경)
       { protocol: 'https', hostname: '*.s3.ap-northeast-2.amazonaws.com' },
