@@ -108,8 +108,10 @@ export function useDeleteMessage(conversationId: string) {
       return originalIsDeleted !== undefined ? { originalIsDeleted } : undefined
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: messagesKey })
-      // 삭제된 메시지가 last_message였을 경우 대화방 목록도 갱신
+      // messages 리페치는 하지 않는다.
+      // onMutate의 낙관적 업데이트(is_deleted: true)가 이미 UI를 반영했고,
+      // 서버가 보내는 WebSocket message_deleted 이벤트가 동기화를 담당한다.
+      // 즉시 invalidate → refetch하면 서버 응답이 낙관적 상태를 덮어써 메시지가 복구되는 문제가 생긴다.
       queryClient.invalidateQueries({ queryKey: queryKeys.dm.conversations, exact: true })
     },
     onError: (err, messageId, context) => {
