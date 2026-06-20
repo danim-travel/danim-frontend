@@ -1,8 +1,9 @@
 "use client";
 import Image from "next/image";
 import { Heart, MessageCircle } from "lucide-react";
-import { EmptyState } from "@/components/common";
+import { EmptyState, GridSkeleton } from "@/components/common";
 import { usePrefetchPostDetail } from "@/app/(main)/_hooks/usePrefetchPostDetail";
+import { GRID_ASPECT_RATIOS } from "@/lib/imageUtils";
 
 /**
  * 마소너리 그리드에 필요한 최소 공약수 형태.
@@ -23,6 +24,7 @@ export type PostGridItem = {
 export interface PostGridProps {
   posts: PostGridItem[]
   onPostClick?: (postId: string) => void
+  isLoading?: boolean
   /** 빈 상태 메시지를 호출자가 지정할 수 있다 (게시글/저장됨 탭이 다른 문구). */
   emptyTitle?: string
   emptyDescription?: string
@@ -46,10 +48,13 @@ function StatsOverlay({ like, comment }: { like: number; comment: number }) {
 export function PostGrid({
   posts,
   onPostClick,
+  isLoading = false,
   emptyTitle = "아직 작성한 게시글이 없어요",
   emptyDescription = "첫 여행 기록을 작성해보세요.",
 }: PostGridProps) {
   const prefetchPostDetail = usePrefetchPostDetail();
+
+  if (isLoading) return <GridSkeleton />;
 
   if (posts.length === 0) {
     return (
@@ -60,64 +65,37 @@ export function PostGrid({
     );
   }
 
-  const desktopCols: typeof posts[] = [[], [], [], []];
-  posts.forEach((post, i) => desktopCols[i % 4].push(post));
+  // 순환 비율 배열 — 실제 이미지 비율을 모를 때 핀터레스트 느낌을 주기 위해 사용
+  // CSS columns 기반 통일된 마소너리 그리드 (모바일 2 / 태블릿 3 / 데스크탑 4)
 
   return (
-    <>
-      <div className="columns-2 gap-3 md:hidden">
-        {posts.map((post) => {
-          const hasStats = post.like_count !== undefined && post.comment_count !== undefined;
-          return (
-            <div key={post.post_id} data-post-id={post.post_id} className="mb-3 break-inside-avoid cursor-pointer group" onClick={() => onPostClick?.(post.post_id)}>
-              <div className="relative rounded-xl overflow-hidden">
-                {/* 외부 이미지 URL 가변 도메인이라 next/image 대신 native img 사용 */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={post.thumbnail}
-                  alt={post.alt ?? ""}
-                  className="w-full h-auto block transition-transform duration-200 group-active:scale-95"
-                  loading="lazy"
-                />
-                {hasStats && <StatsOverlay like={post.like_count!} comment={post.comment_count!} />}
-              </div>
+    <div className="columns-2 md:columns-3 lg:columns-4 gap-3">
+      {posts.map((post, i) => {
+        const hasStats = post.like_count !== undefined && post.comment_count !== undefined;
+        const aspect = GRID_ASPECT_RATIOS[i % GRID_ASPECT_RATIOS.length]
+        return (
+          <div
+            key={post.post_id}
+            data-post-id={post.post_id}
+            className="mb-3 break-inside-avoid cursor-pointer group"
+            onClick={() => onPostClick?.(post.post_id)}
+            onMouseEnter={() => prefetchPostDetail(post.post_id)}
+          >
+            <div className={`relative rounded-xl overflow-hidden bg-bg-subtle ${aspect}`}>
+              <Image
+                src={post.thumbnail}
+                alt={post.alt ?? ""}
+                fill
+                sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
+                className={`object-cover transition-transform duration-200 ${hasStats ? "group-active:scale-95" : "[@media(hover:hover)]:group-hover:scale-[1.03] group-active:scale-95"}`}
+                priority={i < 4}
+              />
+              {hasStats && <StatsOverlay like={post.like_count!} comment={post.comment_count!} />}
             </div>
-          );
-        })}
-      </div>
-
-      <div className="hidden md:grid md:grid-cols-4 md:gap-3 md:items-start">
-        {desktopCols.map((col, colIdx) => (
-          <div key={colIdx} className="flex flex-col gap-3">
-            {col.map((post, rowIdx) => {
-              const hasStats = post.like_count !== undefined && post.comment_count !== undefined;
-              return (
-                <div
-                  key={post.post_id}
-                  data-post-id={post.post_id}
-                  className="cursor-pointer group"
-                  onClick={() => onPostClick?.(post.post_id)}
-                  onMouseEnter={() => prefetchPostDetail(post.post_id)}
-                >
-                  <div className="relative rounded-xl overflow-hidden">
-                    <Image
-                      src={post.thumbnail}
-                      alt={post.alt ?? ""}
-                      width={400}
-                      height={300}
-                      sizes="25vw"
-                      className={`w-full h-auto block transition-transform duration-200 ${hasStats ? "" : "group-hover:scale-[1.03]"}`}
-                      priority={rowIdx === 0 && colIdx < 2}
-                    />
-                    {hasStats && <StatsOverlay like={post.like_count!} comment={post.comment_count!} />}
-                  </div>
-                </div>
-              );
-            })}
           </div>
-        ))}
-      </div>
-    </>
+        );
+      })}
+    </div>
   );
 }
 

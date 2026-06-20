@@ -199,7 +199,6 @@ export function useDmSocket(
 
       const wsUrl = `${config.wsBaseUrl}/ws/conversations/${conversationId}?socket_key=${encodeURIComponent(socketKey)}`
       try {
-        console.info(`[DM WebSocket] connecting: ${config.wsBaseUrl}/ws/conversations/${conversationId}`)
         socket = new WebSocket(wsUrl)
         socketRef.current = socket
       } catch {
@@ -209,7 +208,6 @@ export function useDmSocket(
       }
 
       socket.onopen = () => {
-        console.info('[DM WebSocket] open')
         setIsReady(true)
         backoffMs = INITIAL_BACKOFF_MS
       }
@@ -226,9 +224,6 @@ export function useDmSocket(
         if (!isDmWsServerMessage(parsed)) {
           console.warn('[DM WebSocket] 알 수 없는 메시지 타입 수신 — 백엔드 이벤트 타입을 확인하세요:', parsed)
           return
-        }
-        if (config.isDev) {
-          console.info(`[DM WebSocket] message: ${parsed.type}`, parsed)
         }
 
         if (parsed.type === 'error') {
@@ -322,9 +317,6 @@ export function useDmSocket(
 
       socket.onclose = (event) => {
         setIsReady(false)
-        console.info(
-          `[DM WebSocket] close: code=${event.code} reason="${event.reason}" wasClean=${event.wasClean}`
-        )
         if (cancelled || event.code === NORMAL_CLOSE_CODE) return
         scheduleReconnect()
       }

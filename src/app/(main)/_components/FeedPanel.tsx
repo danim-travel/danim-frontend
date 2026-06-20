@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { ChevronLeft } from "lucide-react";
 import { EmptyState } from "@/components/common";
 import { Spinner } from "@/components/ui/spinner";
@@ -50,7 +51,7 @@ export function FeedPanel({
     <aside className={
       variant === "sheet"
         ? "w-full h-full flex flex-col overflow-hidden px-4 pb-4"
-        : "w-(--panel-width) p-7 shrink-0 h-full flex flex-col bg-bg-subtle rounded-2xl overflow-hidden shadow-sm"
+        : "w-full p-7 h-full flex flex-col bg-bg-subtle rounded-2xl overflow-hidden shadow-sm"
     }>
       {/* 헤더 */}
       <header className="mb-5 relative">
@@ -108,4 +109,4 @@ export function FeedPanel({
   );
 }
 
-export default FeedPanel;
+export default memo(FeedPanel);

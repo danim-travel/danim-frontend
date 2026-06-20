@@ -13,7 +13,9 @@ import { useDebouncedValue } from "@/hooks/useDebouncedValue"
 export function SearchDrawer() {
   const router = useRouter()
   const pathname = usePathname()
-  const { activePanel, closePanel } = useUIStore()
+  const activePanel = useUIStore((s) => s.activePanel)
+  const closePanel = useUIStore((s) => s.closePanel)
+  const setActivePanel = useUIStore((s) => s.setActivePanel)
   const myUserId = useAuthStore((s) => s.user?.userId)
   const isOpen = activePanel === "search"
   const [query, setQuery] = useState("")
@@ -34,6 +36,30 @@ export function SearchDrawer() {
     // pathname 변경 시에만 동작; closePanel은 stable
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname])
+
+  // ESC로 닫기
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen) closePanel()
+    }
+    window.addEventListener("keydown", handler)
+    return () => window.removeEventListener("keydown", handler)
+  }, [isOpen, closePanel])
+
+  // Ctrl/Cmd+K로 토글
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        const el = document.activeElement
+        if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || (el instanceof HTMLElement && el.isContentEditable)) return
+        e.preventDefault()
+        if (activePanel === "search") closePanel()
+        else setActivePanel("search")
+      }
+    }
+    window.addEventListener("keydown", handler)
+    return () => window.removeEventListener("keydown", handler)
+  }, [activePanel, closePanel, setActivePanel])
 
   const { data, isLoading, isError } = useQuery({
     queryKey: queryKeys.users.search(debouncedQuery),

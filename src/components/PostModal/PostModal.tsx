@@ -161,7 +161,7 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
         )}
 
         {/* 항상 표시되는 닫기 버튼 */}
-        <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+        <div className="absolute top-[max(1rem,env(safe-area-inset-top))] right-4 z-20 flex items-center gap-2">
           {data && <KebabMenu items={menuItems} />}
           <IconButton
             icon={<X size={14} />}

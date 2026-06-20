@@ -21,6 +21,7 @@
 |------|-----------|
 | 프레임워크 | Next.js 16 + React 19 + TypeScript 5 |
 | 스타일 | Tailwind CSS v4 |
+| 폰트 | Pretendard Variable (다이나믹 서브셋, `public/fonts/pretendard.css`) |
 | UI 컴포넌트 | shadcn/ui + Lucide React |
 | 서버 상태 | TanStack Query v5 |
 | 클라이언트 상태 | Zustand |
@@ -113,7 +114,8 @@ Page / Component
 
 **소셜 로그인 콜백 흐름:**
 ```
-/social-callback?provider=kakao&is_success=true 수신
+백엔드 302 리다이렉트 → /?provider=kakao&is_success=true
+  → proxy.ts에서 /social-callback?provider=kakao&is_success=true 로 재리다이렉트
   → POST v1/users/token/refresh → access_token 발급
   → / 로 이동
 ```
@@ -133,7 +135,11 @@ src/lib/config.ts                 # 환경변수 접근점 (process.env 직접 �
 src/lib/queryKeys.ts              # TanStack Query 키 상수
 src/types/index.ts                # 전역 타입 정의 진입점
 src/providers/index.tsx           # Providers + AuthBootstrap + MSW 초기화 (개발 환경)
-src/app/(main)/_components/AuthGuard.tsx  # 비로그인 사용자 /login 리다이렉트
+src/proxy.ts                      # Next.js 16 proxy — 소셜 로그인 콜백 경로 보정
+src/store/notificationBadgeStore.ts  # 실시간 알림 미읽음 카운트 (WebSocket push)
+src/app/(main)/_components/AuthGuard.tsx          # 비로그인 사용자 /login 리다이렉트
+src/app/(main)/_components/NotificationBadgeSocket.tsx  # WebSocket 알림 상시 연결
+public/fonts/pretendard.css       # Pretendard Variable 다이나믹 서브셋 폰트
 docs/CONVENTION.md                # 브랜치·커밋·PR 컨벤션
 docs/PROJECT_STRUCTURE.md         # 프로젝트 폴더 구조 규칙
 ```

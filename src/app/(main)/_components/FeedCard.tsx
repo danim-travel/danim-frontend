@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useState } from "react";
 import Image from "next/image";
 import { MapPin, Heart, MessageCircle, Bookmark } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -150,7 +150,7 @@ export function FeedCard({
         data-testid="feed-card"
         className={cn(
           "flex flex-row overflow-hidden border-2 transition-colors cursor-pointer",
-          isFocused ? "border-primary" : "border-transparent hover:border-primary/70"
+          isFocused ? "border-primary" : "border-transparent [@media(hover:hover)]:hover:border-primary/70"
         )}
       >
         {/* 사진 영역 — 카드 너비의 1/2 */}
@@ -236,7 +236,7 @@ export function FeedCard({
       data-testid="feed-card"
       className={cn(
         "overflow-hidden border-2 transition-colors cursor-pointer",
-        isFocused ? "border-primary" : "border-transparent hover:border-primary/70"
+        isFocused ? "border-primary" : "border-transparent [@media(hover:hover)]:hover:border-primary/70"
       )}
     >
       {/* 썸네일 */}
@@ -315,4 +315,4 @@ export function FeedCard({
   );
 }
 
-export default FeedCard;
+export default memo(FeedCard);

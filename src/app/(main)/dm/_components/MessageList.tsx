@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useCallback } from "react"
+import { useEffect, useMemo, useRef, useCallback } from "react"
 import { format, isSameDay, differenceInMinutes } from "date-fns"
 import { ko } from "date-fns/locale"
 import { useMessages, useDeleteMessage } from "@/hooks/useDmQueries"
@@ -35,25 +35,32 @@ export function MessageList({ conversationId, myUserId, opponent }: Props) {
   } = useMessages(conversationId)
 
   // API는 최신순 반환 → 페이지 역순 + 각 페이지 메시지 역순 = 시간순(오래된 것 위)
-  const messages = data?.pages
-    .slice()
-    .reverse()
-    .flatMap(page => [...page.results].reverse()) ?? []
+  const messages = useMemo(
+    () =>
+      data?.pages
+        .slice()
+        .reverse()
+        .flatMap((page) => [...page.results].reverse()) ?? [],
+    [data],
+  )
 
   const lastMessageId = messages[messages.length - 1]?.message_id
 
   // 마지막으로 표시된 구분선 시각 기준 10분 이상이거나 날짜가 바뀌면 새 구분선 표시
-  const showSeparators: boolean[] = []
-  let lastSepTime: Date | null = null
-  for (const msg of messages) {
-    const currTime = new Date(msg.created_at)
-    const show =
-      !lastSepTime ||
-      !isSameDay(currTime, lastSepTime) ||
-      differenceInMinutes(currTime, lastSepTime) >= 10
-    showSeparators.push(show)
-    if (show) lastSepTime = currTime
-  }
+  const showSeparators = useMemo(() => {
+    const flags: boolean[] = []
+    let lastSepTime: Date | null = null
+    for (const msg of messages) {
+      const currTime = new Date(msg.created_at)
+      const show =
+        !lastSepTime ||
+        !isSameDay(currTime, lastSepTime) ||
+        differenceInMinutes(currTime, lastSepTime) >= 10
+      flags.push(show)
+      if (show) lastSepTime = currTime
+    }
+    return flags
+  }, [messages])
 
   // 초기 로드: instant / 새 메시지: smooth / 과거 메시지 추가(fetchNextPage): 미동작
   useEffect(() => {

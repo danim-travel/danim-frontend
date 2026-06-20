@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import type { Comment, PostDetail, Spot } from "@/types";
@@ -19,7 +20,7 @@ interface Props {
   onGoToMain?: () => void;
 }
 
-export default function PostModalDetailPane({
+function PostModalDetailPane({
   data,
   activeSpot,
   activeSpotIdx,
@@ -91,3 +92,5 @@ export default function PostModalDetailPane({
     </div>
   );
 }
+
+export default memo(PostModalDetailPane);

@@ -18,6 +18,7 @@ export * from "./Toast/Toast";
 export * from "./Toggle/Toggle";
 export * from "./feedback/EmptyState";
 export * from "./feedback/Skeleton";
+export * from "./GridSkeleton/GridSkeleton";
 export * from "./PageContainer";
 export * from "./SettingsRow/SettingsRow";
 export * from "./SideDrawer/SideDrawer";

@@ -72,6 +72,18 @@ export function useNotificationBadge(): void {
     const connect = async () => {
       if (cancelled) return
 
+      // 탭이 백그라운드면 visible 복귀 시까지 연결 지연 — 불필요한 idle 소켓 절감
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+        const onVisible = () => {
+          if (document.visibilityState !== 'visible') return
+          document.removeEventListener('visibilitychange', onVisible)
+          if (cancelled) return
+          void connect()
+        }
+        document.addEventListener('visibilitychange', onVisible)
+        return
+      }
+
       // 1) 일회성 socket_key 발급 (apiClient가 401 시 토큰 갱신 자동 처리)
       let socketKey: string
       try {
@@ -126,8 +138,34 @@ export function useNotificationBadge(): void {
 
     void connect()
 
+    // 탭이 hidden되면 소켓 close, 다시 visible되면 재연결 (idle 소켓 절감)
+    const handleVisibilityChange = () => {
+      if (cancelled) return
+      if (document.visibilityState === 'hidden') {
+        if (socket) {
+          socket.onopen = null
+          socket.onmessage = null
+          socket.onerror = null
+          socket.onclose = null
+          if (
+            socket.readyState === WebSocket.OPEN ||
+            socket.readyState === WebSocket.CONNECTING
+          ) {
+            socket.close(NORMAL_CLOSE_CODE)
+          }
+          socket = null
+        }
+        clearReconnectTimer()
+      } else if (document.visibilityState === 'visible' && !socket) {
+        backoffMs = INITIAL_BACKOFF_MS
+        void connect()
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
     return () => {
       cancelled = true
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
       clearReconnectTimer()
       if (socket) {
         // 핸들러 분리 — onclose에서 재연결 트리거되는 것을 막는다.
@@ -144,5 +182,5 @@ export function useNotificationBadge(): void {
         socket = null
       }
     }
-  }, [accessToken, setUnreadCount, resetUnreadCount])
+  }, [accessToken, setUnreadCount, resetUnreadCount, queryClient])
 }

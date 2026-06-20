@@ -20,13 +20,19 @@ src/
 │   │   ├── layout.tsx              # SideNav + AuthGuard 적용 레이아웃
 │   │   ├── page.tsx                # 홈 (팔로잉 피드 + 지도)
 │   │   ├── _components/            # (main) 전용 공통 컴포넌트
-│   │   │   ├── AuthGuard.tsx           # 비로그인 사용자 /login 리다이렉트
-│   │   │   ├── FeedCard.tsx            # 피드 포스트 카드
-│   │   │   ├── FeedPanel.tsx           # 좌측 팔로잉 피드 패널
-│   │   │   ├── MapPanel.tsx            # 우측 카카오맵 패널
-│   │   │   └── SearchDrawer.tsx        # 유저 검색 드로어 (SideNav 아이콘으로 토글)
+│   │   │   ├── AuthGuard.tsx               # 비로그인 사용자 /login 리다이렉트
+│   │   │   ├── FeedCard.tsx                # 피드 포스트 카드
+│   │   │   ├── FeedPanel.tsx               # 좌측 팔로잉 피드 패널
+│   │   │   ├── MapPanel.tsx                # 우측 카카오맵 패널
+│   │   │   ├── MobileBottomSheet.tsx       # 모바일 바텀시트 (홈 피드 드래그 시트)
+│   │   │   ├── NotificationBadgeSocket.tsx # WebSocket 알림 뱃지 연결 (layout에 마운트)
+│   │   │   ├── NotificationDrawer.tsx      # 알림 드로어 (SideNav/MobileHeader 아이콘으로 토글)
+│   │   │   ├── NotificationFilter.tsx      # 알림 탭 필터 (전체/팔로우/댓글 등)
+│   │   │   ├── NotificationItem.tsx        # 알림 목록 아이템
+│   │   │   └── SearchDrawer.tsx            # 유저 검색 드로어 (SideNav 아이콘으로 토글)
 │   │   ├── _hooks/                 # (main) 전용 공통 훅
 │   │   │   ├── useMainFeed.ts
+│   │   │   ├── useNotifications.ts
 │   │   │   ├── usePinColor.ts
 │   │   │   └── usePrefetchPostDetail.ts
 │   │   ├── explore/
@@ -106,7 +112,8 @@ src/
 │   │   ├── index.ts                # barrel export
 │   │   └── ...                     # TextField, SearchBar, Checkbox 등
 │   ├── layout/
-│   │   └── BottomTabBar.tsx
+│   │   ├── MobileBottomNav.tsx     # 모바일 하단 탭바
+│   │   └── MobileHeader.tsx        # 모바일 상단 헤더 (로고 + 검색/알림 아이콘)
 │   ├── SideNav.tsx
 │   ├── KakaoMap.tsx
 │   └── PostModal/                  # 복잡한 컴포넌트는 폴더로 분리
@@ -126,10 +133,18 @@ src/
 │       └── index.ts                # barrel export
 │
 ├── hooks/                          # 2개 이상 페이지에서 사용하는 공통 훅
+│   ├── useAuthHydrationFallback.ts
 │   ├── useBookmarkMutation.ts
 │   ├── useCommentMutations.ts
 │   ├── useCommentsQuery.ts
+│   ├── useDebouncedToggle.ts
+│   ├── useDebouncedValue.ts
+│   ├── useDelayedPending.ts
+│   ├── useDmQueries.ts
+│   ├── useDmSocket.ts
+│   ├── useInfiniteScrollSentinel.ts
 │   ├── useLikeMutation.ts
+│   ├── useNotificationBadge.ts     # WebSocket 알림 뱃지 구독 훅
 │   ├── useOnClickOutside.ts
 │   ├── usePostDetail.ts
 │   └── useScrollLock.ts
@@ -137,8 +152,11 @@ src/
 ├── lib/
 │   ├── api/                        # 도메인별 API 함수 (apiClient 경유)
 │   │   ├── auth.ts
+│   │   ├── dm.ts
+│   │   ├── dmUpload.ts
 │   │   ├── posts.ts
-│   │   └── users.ts
+│   │   ├── users.ts
+│   │   └── websocket.ts            # WebSocket 소켓키 발급 API
 │   ├── apiClient.ts                # ky 기반 API 클라이언트 (단일 진입점)
 │   ├── apiError.ts                 # ApiError 타입·createApiError·getApiErrorMessage
 │   ├── config.ts                   # 환경변수 접근점 (process.env 직접 사용 금지)
@@ -170,13 +188,18 @@ src/
 │
 ├── store/                          # Zustand 전역 상태
 │   ├── authStore.ts                # 인증 상태 (user 정보, accessToken)
+│   ├── notificationBadgeStore.ts   # 실시간 알림 미읽음 카운트 (WebSocket push)
 │   ├── toastStore.ts               # 토스트 알림 상태
 │   └── uiStore.ts                  # UI 상태 (activePanel 등)
+│
+├── proxy.ts                        # Next.js 16 proxy — 소셜 로그인 콜백 경로 보정
 │
 └── types/
     ├── index.ts                    # 공통 타입 + 도메인 타입 re-export
     ├── comment.types.ts
+    ├── dm.types.ts
     ├── interaction.types.ts
+    ├── notification.types.ts
     ├── post.types.ts
     ├── user.types.ts
     └── kakao.d.ts                  # KakaoMap SDK 타입 선언
