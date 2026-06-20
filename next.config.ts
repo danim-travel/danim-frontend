@@ -27,7 +27,6 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: 'https', hostname: 'picsum.photos' }, // MSW mock 이미지 (개발 환경)
       { protocol: 'https', hostname: '*.s3.ap-northeast-2.amazonaws.com' },
-      { protocol: 'https', hostname: '*.amazonaws.com' },
     ],
   },
   // 빌드 캐시 압축 — 빌드 결과물 크기 절감

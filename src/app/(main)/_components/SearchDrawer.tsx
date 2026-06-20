@@ -50,6 +50,8 @@ export function SearchDrawer() {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        const el = document.activeElement
+        if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || (el instanceof HTMLElement && el.isContentEditable)) return
         e.preventDefault()
         if (activePanel === "search") closePanel()
         else setActivePanel("search")
