@@ -69,7 +69,7 @@ export function FeedPanel({
       </header>
 
       {/* 카드 리스트 */}
-      <div data-testid="feed-list" className="flex-1 min-h-0 overflow-y-auto scrollbar-none">
+      <div data-testid="feed-list" className="flex-1 min-h-0 overflow-y-auto scrollbar-none overscroll-contain">
         {posts.length === 0 && !isLoading && !isFetchingNextPage && (
           <div className="h-full flex items-center justify-center">
             <EmptyState title="팔로우한 사람의 게시글이 없습니다." />
