@@ -19,7 +19,7 @@ export function MobileHeader() {
 
   return (
     <header className="fixed top-0 inset-x-0 h-16 z-(--z-sidenav) bg-bg-card border-b border-border flex items-center justify-between px-4 md:hidden">
-      <button type="button" onClick={goHome} className="flex items-center">
+      <button type="button" onClick={goHome} className="flex items-center cursor-pointer">
         <Image src="/favicon.svg" alt="Danim" width={32} height={32} />
       </button>
 

@@ -103,7 +103,7 @@ export default function SideNav() {
   return (
     <nav className="w-(--sidebar-width) bg-bg-card border-r border-border flex flex-col items-center shrink-0 h-full py-4">
       {/* 메인 로고, 클릭하면 홈으로 이동 */}
-      <button type="button" onClick={goHome} className="mb-5">
+      <button type="button" onClick={goHome} className="mb-5 cursor-pointer">
         <img src="/favicon.svg" alt="Danim" className="w-10 h-10 rounded-lg shadow-md hover:shadow-lg transition-shadow" />
       </button>
 
