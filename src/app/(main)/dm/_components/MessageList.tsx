@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useCallback } from "react"
-import { format, isSameDay } from "date-fns"
+import { format, isSameDay, differenceInMinutes } from "date-fns"
 import { ko } from "date-fns/locale"
 import { useMessages } from "@/hooks/useDmQueries"
 import { useInfiniteScrollSentinel } from "@/hooks/useInfiniteScrollSentinel"
@@ -40,6 +40,19 @@ export function MessageList({ conversationId, myUserId, opponent }: Props) {
     .flatMap(page => [...page.results].reverse()) ?? []
 
   const lastMessageId = messages[messages.length - 1]?.message_id
+
+  // 마지막으로 표시된 구분선 시각 기준 10분 이상이거나 날짜가 바뀌면 새 구분선 표시
+  const showSeparators: boolean[] = []
+  let lastSepTime: Date | null = null
+  for (const msg of messages) {
+    const currTime = new Date(msg.created_at)
+    const show =
+      !lastSepTime ||
+      !isSameDay(currTime, lastSepTime) ||
+      differenceInMinutes(currTime, lastSepTime) >= 10
+    showSeparators.push(show)
+    if (show) lastSepTime = currTime
+  }
 
   // 초기 로드: instant / 새 메시지: smooth / 과거 메시지 추가(fetchNextPage): 미동작
   useEffect(() => {
@@ -89,11 +102,9 @@ export function MessageList({ conversationId, myUserId, opponent }: Props) {
 
       {messages.map((message, idx) => {
         const isMine = message.sender.user_id === myUserId
-        const prev = messages[idx - 1]
         const next = messages[idx + 1]
 
-        const showDateSep =
-          !prev || !isSameDay(new Date(message.created_at), new Date(prev.created_at))
+        const showDateSep = showSeparators[idx]
 
         // 연속 메시지 중 마지막(아래)일 때 아바타 표시
         const showAvatar =
@@ -116,6 +127,7 @@ export function MessageList({ conversationId, myUserId, opponent }: Props) {
               isMine={isMine}
               showAvatar={showAvatar}
               opponent={opponent}
+              conversationId={conversationId}
             />
           </div>
         )
