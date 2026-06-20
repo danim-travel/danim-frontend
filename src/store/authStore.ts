@@ -6,11 +6,30 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { CurrentUserResponse } from '@/types'
 
+export type LoginType = 'email' | 'kakao' | 'google'
+
 export interface AuthUser {
   userId: string
   nickname: string
   profileImg: string | null
   role: 'admin' | 'user' | 'not_verified'
+  /** setAuth 시 access_token JWT payload에서 1회 추출. 렌더마다 파싱하지 않는다. */
+  loginType: LoginType | null
+}
+
+/** access_token JWT payload에서 login_type을 추출한다. 파싱 실패 시 null 반환. */
+function extractLoginType(accessToken: string): LoginType | null {
+  try {
+    const b64 = accessToken.split('.')[1]
+    if (!b64) return null
+    const norm = b64.replace(/-/g, '+').replace(/_/g, '/')
+    const padded = norm.padEnd(norm.length + (4 - norm.length % 4) % 4, '=')
+    const { login_type } = JSON.parse(atob(padded)) as { login_type?: string }
+    if (login_type === 'email' || login_type === 'kakao' || login_type === 'google') return login_type
+    return null
+  } catch {
+    return null
+  }
 }
 
 /** CurrentUserResponse → AuthUser 변환. role 기본값 정규화를 단일 진입점에서 처리한다. */
@@ -20,6 +39,7 @@ export function toAuthUser(user: CurrentUserResponse): AuthUser {
     nickname: user.nickname,
     profileImg: user.profile_img,
     role: user.role ?? 'not_verified',
+    loginType: null, // setAuth에서 access_token 기반으로 덮어쓴다
   }
 }
 
@@ -42,7 +62,7 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       accessToken: null,
       isHydrated: false,
-      setAuth: (user, accessToken) => set({ user, accessToken }),
+      setAuth: (user, accessToken) => set({ user: { ...user, loginType: extractLoginType(accessToken) }, accessToken }),
       updateAuthUser: (patch) => set((state) => ({
         user: state.user ? { ...state.user, ...patch } : null,
       })),

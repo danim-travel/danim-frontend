@@ -11,8 +11,19 @@ import { Button } from "@/components/common"
 import { Spinner } from "@/components/ui/spinner"
 import { AccountSection } from "./_components/AccountSection"
 import { BasicInfoSection } from "./_components/BasicInfoSection"
+import { DeleteAccountModal } from "./_components/DeleteAccountModal"
 import { ProfileSection } from "./_components/ProfileSection"
+import { SocialNameField } from "./_components/SocialNameField"
+import { SocialBirthDayField } from "./_components/SocialBirthDayField"
+import { BIRTHDATE_RULES } from "@/app/(public)/register/_constants/birthdateValidation"
 import type { MeDetailResponse, UserProfileResponse } from "@/types"
+
+/** "YYYY-MM-DD"를 [year, month, day]로 분해한다. 월/일의 leading zero는 입력 UI를 위해 제거한다. */
+function splitBirthDay(birthDay: string | null | undefined): [string, string, string] {
+  if (!birthDay) return ["", "", ""]
+  const [y = "", m = "", d = ""] = birthDay.split("-")
+  return [y, m.replace(/^0/, ""), d.replace(/^0/, "")]
+}
 
 export default function SettingsPage() {
   const { data: me, isLoading } = useQuery({
@@ -35,9 +46,19 @@ export default function SettingsPage() {
 function SettingsForm({ me }: { me: MeDetailResponse }) {
   const queryClient = useQueryClient()
   const updateAuthUser = useAuthStore(s => s.updateAuthUser)
+  const loginType = useAuthStore(s => s.user?.loginType)
+  const isHydrated = useAuthStore(s => s.isHydrated)
+  // isHydrated 전에는 false로 평가 — silent refresh 중 소셜 사용자가 이메일 UI를 보는 것 방지
+  const isSocial = isHydrated && (loginType === 'kakao' || loginType === 'google')
 
   const [nickname, setNickname] = useState(me.nickname)
   const [intro, setIntro] = useState(me.intro ?? "")
+  // 소셜 사용자 전용 — 이름/생년월일 편집 상태
+  const [name, setName] = useState(me.name ?? "")
+  const [initialYear, initialMonth, initialDay] = splitBirthDay(me.birth_day)
+  const [birthYear, setBirthYear] = useState(initialYear)
+  const [birthMonth, setBirthMonth] = useState(initialMonth)
+  const [birthDay, setBirthDay] = useState(initialDay)
   // 이미지 업로드 중 미리보기용 로컬 상태. profileKey === undefined 이면 me.profile_img를 그대로 사용한다.
   const [profileImg, setProfileImg] = useState<string | null>(null)
   // undefined = 변경 없음 / null = 이미지 삭제 / string = 새 S3 key
@@ -52,6 +73,17 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
   const [isCheckingNickname, setIsCheckingNickname] = useState(false)
   const nicknameAtCheckRef = useRef<string | null>(null)
   const [isPending, setIsPending] = useState(false)
+  const [deleteModal, setDeleteModal] = useState(false)
+
+  // 소셜 사용자 전용 유효성 — 이름/생년월일이 채워져야 저장 가능
+  const composedBirthDay = birthYear && birthMonth && birthDay
+    ? `${birthYear}-${birthMonth.padStart(2, "0")}-${birthDay.padStart(2, "0")}`
+    : ""
+  const isNameValid = name.trim().length > 0
+  const isBirthValid =
+    BIRTHDATE_RULES.year.test(birthYear) &&
+    BIRTHDATE_RULES.month.test(birthMonth) &&
+    BIRTHDATE_RULES.day.test(birthDay)
 
   const isDirty =
     nickname !== me.nickname ||
@@ -61,6 +93,15 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
   function handleCancel() {
     setNickname(me.nickname)
     setIntro(me.intro ?? "")
+    if (isSocial) {
+      setName(me.name ?? "")
+      // initialYear/Month/Day는 마운트 시점 값으로 저장 후 me가 갱신돼도 변하지 않는다.
+      // me.birth_day(현재 prop)를 기준으로 분해해야 가장 최근 저장값으로 복구된다.
+      const [curYear, curMonth, curDay] = splitBirthDay(me.birth_day)
+      setBirthYear(curYear)
+      setBirthMonth(curMonth)
+      setBirthDay(curDay)
+    }
     setProfileImg(null)
     setProfileKey(undefined)
     setProfileSectionKey(k => k + 1)
@@ -87,6 +128,28 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
       toast.error(getApiErrorMessage(err, { client: "이미 사용 중인 닉네임입니다." }))
     } finally {
       setIsCheckingNickname(false)
+    }
+  }
+
+  async function handleSaveName(): Promise<boolean> {
+    try {
+      await updateUser({ name: name.trim() })
+      await queryClient.invalidateQueries({ queryKey: queryKeys.users.me })
+      return true
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, { client: "이름 저장에 실패했습니다." }))
+      return false
+    }
+  }
+
+  async function handleSaveBirthDay(): Promise<boolean> {
+    try {
+      await updateUser({ birth_day: composedBirthDay })
+      await queryClient.invalidateQueries({ queryKey: queryKeys.users.me })
+      return true
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, { client: "생년월일 저장에 실패했습니다." }))
+      return false
     }
   }
 
@@ -152,6 +215,38 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
           onProfileKeyChange={setProfileKey}
         />
 
+        {isSocial && (
+          <section>
+            <h2 className="text-body-lg font-bold text-text mb-4">기본 정보</h2>
+            <div className="bg-bg-card border border-border rounded-card shadow-sm p-5 md:p-8 flex flex-col gap-5">
+              <SocialNameField
+                me={me}
+                name={name}
+                isNameValid={isNameValid}
+                nameError={name.length > 0 && !isNameValid ? "이름을 입력해주세요" : undefined}
+                onNameChange={setName}
+                onSave={handleSaveName}
+              />
+              <SocialBirthDayField
+                me={me}
+                birthYear={birthYear}
+                birthMonth={birthMonth}
+                birthDay={birthDay}
+                isBirthValid={isBirthValid}
+                birthError={(birthYear || birthMonth || birthDay) && !isBirthValid ? "생년월일을 올바르게 입력해주세요" : undefined}
+                onBirthYearChange={setBirthYear}
+                onBirthMonthChange={setBirthMonth}
+                onBirthDayChange={setBirthDay}
+                onSave={handleSaveBirthDay}
+              />
+              <div className="flex flex-col gap-2 min-w-0">
+                <span className="text-caption font-bold text-text-muted">이메일</span>
+                <span className="text-body-sm text-text break-all">{me.email}</span>
+              </div>
+            </div>
+          </section>
+        )}
+
         <BasicInfoSection
           me={me}
           nickname={nickname}
@@ -165,27 +260,42 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
           onNicknameCheck={() => { void handleNicknameCheck() }}
         />
 
-        <AccountSection />
+        {!isSocial && <AccountSection />}
 
         {/* 하단 저장 바 */}
-        <div className="flex justify-end items-center gap-3 pt-2 pb-6">
-          <Button
-            type="button"
-            variant="secondary"
-            disabled={!isDirty || isPending}
-            onClick={handleCancel}
-          >
-            취소
-          </Button>
-          <Button
-            type="button"
-            variant="primary"
-            loading={isPending}
-            disabled={!isDirty || isPending || (nickname !== me.nickname && !nicknameChecked)}
-            onClick={handleSave}
-          >
-            변경사항 저장
-          </Button>
+        <div className="flex items-center gap-3 pt-2 pb-6">
+          {isSocial && (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setDeleteModal(true)}
+                className="text-(--color-error) border-(--color-error) hover:bg-(--color-error)/5"
+              >
+                계정 삭제
+              </Button>
+              <DeleteAccountModal open={deleteModal} onClose={() => setDeleteModal(false)} />
+            </>
+          )}
+          <div className="flex items-center gap-3 ml-auto">
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={!isDirty || isPending}
+              onClick={handleCancel}
+            >
+              취소
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              loading={isPending}
+              disabled={!isDirty || isPending || (nickname !== me.nickname && !nicknameChecked)}
+              onClick={handleSave}
+            >
+              변경사항 저장
+            </Button>
+          </div>
         </div>
       </div>
     </div>

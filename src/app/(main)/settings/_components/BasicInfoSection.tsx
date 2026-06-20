@@ -22,7 +22,7 @@ export function BasicInfoSection({ me, nickname, nicknameChecked, isCheckingNick
     <section>
       <h2 className="text-body-lg font-bold text-text mb-4">기본 정보</h2>
       <div className="bg-bg-card border border-border rounded-card shadow-sm p-5 md:p-8 flex flex-col gap-7">
-        {/* 읽기 전용 정보 */}
+        {/* 이름·이메일·생년월일 읽기 전용 */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-16">
           <div className="flex flex-col gap-2 min-w-0">
             <span className="text-caption font-bold text-text-muted">이름</span>

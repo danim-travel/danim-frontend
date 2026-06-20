@@ -15,6 +15,9 @@ interface DeleteAccountModalProps {
 export function DeleteAccountModal({ open, onClose }: DeleteAccountModalProps) {
   const router = useRouter()
   const clearAuth = useAuthStore(s => s.clearAuth)
+  // authStore에 저장된 서버 기반 loginType 사용 — 렌더마다 JWT 파싱하지 않음
+  const loginType = useAuthStore(s => s.user?.loginType)
+  const isSocial = loginType === 'kakao' || loginType === 'google'
 
   const [agreed, setAgreed] = useState(false)
   const [password, setPassword] = useState("")
@@ -22,7 +25,10 @@ export function DeleteAccountModal({ open, onClose }: DeleteAccountModalProps) {
   const [confirmPhrase, setConfirmPhrase] = useState("")
   const [confirmPhraseError, setConfirmPhraseError] = useState<string | undefined>()
   const [isPending, setIsPending] = useState(false)
-  const canDelete = agreed && password.trim().length > 0 && confirmPhrase === "삭제하겠습니다"
+  const canDelete =
+    agreed &&
+    confirmPhrase === "삭제하겠습니다" &&
+    (isSocial || password.trim().length > 0)
 
   function handleClose() {
     onClose()
@@ -34,7 +40,7 @@ export function DeleteAccountModal({ open, onClose }: DeleteAccountModalProps) {
   }
 
   async function handleDelete() {
-    if (password.trim().length === 0) {
+    if (!isSocial && password.trim().length === 0) {
       setPasswordError("비밀번호를 입력해주세요")
       return
     }
@@ -49,12 +55,12 @@ export function DeleteAccountModal({ open, onClose }: DeleteAccountModalProps) {
 
     setIsPending(true)
     try {
-      await deleteUser({ password })
+      await deleteUser(isSocial ? undefined : password)
       onClose()
       clearAuth()
       router.push("/login")
     } catch (err) {
-      if (isApiError(err) && err.status === 400) {
+      if (!isSocial && isApiError(err) && err.status === 400) {
         setPasswordError(getApiErrorMessage(err, { client: "현재 비밀번호가 일치하지 않습니다." }))
       } else {
         toast.error(getApiErrorMessage(err, { client: "회원 탈퇴에 실패했습니다." }))
@@ -99,15 +105,17 @@ export function DeleteAccountModal({ open, onClose }: DeleteAccountModalProps) {
           }
         />
 
-        <PasswordField
-          label="비밀번호 입력"
-          required
-          placeholder="비밀번호를 입력해 주세요"
-          value={password}
-          onChange={e => { setPassword(e.target.value); setPasswordError(undefined) }}
-          error={passwordError}
-          autoComplete="current-password"
-        />
+        {!isSocial && (
+          <PasswordField
+            label="비밀번호 입력"
+            required
+            placeholder="비밀번호를 입력해 주세요"
+            value={password}
+            onChange={e => { setPassword(e.target.value); setPasswordError(undefined) }}
+            error={passwordError}
+            autoComplete="current-password"
+          />
+        )}
 
         <div className="flex flex-col gap-1.5">
           <p className="text-caption text-text-muted">
