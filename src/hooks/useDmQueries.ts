@@ -77,15 +77,36 @@ export function useLeaveConversation() {
 
 export function useDeleteMessage(conversationId: string) {
   const queryClient = useQueryClient()
+  const messagesKey = queryKeys.dm.messages(conversationId)
 
-  return useMutation<void, Error, string>({
+  return useMutation<void, Error, string, { previous: InfiniteData<MessageListResponse> | undefined }>({
     mutationFn: (messageId) => deleteMessage(conversationId, messageId),
+    onMutate: async (messageId) => {
+      await queryClient.cancelQueries({ queryKey: messagesKey })
+      const previous = queryClient.getQueryData<InfiniteData<MessageListResponse>>(messagesKey)
+      queryClient.setQueryData<InfiniteData<MessageListResponse>>(messagesKey, (old) => {
+        if (!old) return old
+        return {
+          ...old,
+          pages: old.pages.map(page => ({
+            ...page,
+            results: page.results.map(m =>
+              m.message_id === messageId ? { ...m, is_deleted: true } : m
+            ),
+          })),
+        }
+      })
+      return { previous }
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.dm.messages(conversationId) })
-      // C5: 삭제된 메시지가 last_message였을 경우 대화방 목록도 갱신
+      queryClient.invalidateQueries({ queryKey: messagesKey })
+      // 삭제된 메시지가 last_message였을 경우 대화방 목록도 갱신
       queryClient.invalidateQueries({ queryKey: queryKeys.dm.conversations, exact: true })
     },
-    onError: (err) => {
+    onError: (err, _messageId, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(messagesKey, context.previous)
+      }
       toast.error(getApiErrorMessage(err, { client: '메시지를 삭제할 수 없습니다.' }))
     },
   })

@@ -33,6 +33,13 @@ function isMockAccessToken(accessToken: string) {
   return accessToken.toLowerCase().includes('mock')
 }
 
+// 캐시 배열에 undefined 항목이 섞였을 경우를 방어 — setQueryData 내부에서 공통 사용
+function validMessages(results: Message[]): Message[] {
+  return (results as Array<Message | undefined>).filter(
+    (m): m is Message => m != null && Boolean(m.message_id)
+  )
+}
+
 function prependToCache(
   queryClient: ReturnType<typeof useQueryClient>,
   conversationId: string,
@@ -41,14 +48,16 @@ function prependToCache(
   queryClient.setQueryData<InfiniteData<MessageListResponse>>(
     queryKeys.dm.messages(conversationId),
     (old) => {
-      if (!old || old.pages.length === 0) return old
-      // Bug 2 fix: 동일 message_id 중복 삽입 방지
-      // (Strict Mode 이중 연결로 동일 echo가 두 번 수신될 때 두 번째를 차단)
-      if (old.pages.some(page => page.results.some(m => m.message_id === message.message_id))) return old
+      if (!old || old.pages.length === 0) {
+        // REST 초기 로드 전에 WS 메시지가 도착한 경우 첫 페이지를 생성한다
+        return { pages: [{ next: null, results: [message] }], pageParams: [null] }
+      }
+      // 동일 message_id 중복 삽입 방지 (Strict Mode 이중 연결 등)
+      if (old.pages.some(page => validMessages(page.results).some(m => m.message_id === message.message_id))) return old
       const [first, ...rest] = old.pages
       return {
         ...old,
-        pages: [{ ...first, results: [message, ...first.results] }, ...rest],
+        pages: [{ ...first, results: [message, ...validMessages(first.results)] }, ...rest],
       }
     }
   )
@@ -70,7 +79,7 @@ function replaceInCache(
           ...page,
           // Bug 1 fix: sender를 낙관적 메시지 것으로 유지 → isMine(sender.user_id === myUserId) 보존
           // MSW mock은 sender를 SHOWCASE_MOCK_USER_ID로 설정하므로 교체 시 isMine이 false로 바뀌는 문제 방지
-          results: page.results.map(m =>
+          results: validMessages(page.results).map(m =>
             m.message_id === tempId ? { ...realMessage, sender: m.sender } : m
           ),
         })),
@@ -93,7 +102,7 @@ function removeFromCache(
         ...old,
         pages: old.pages.map(page => ({
           ...page,
-          results: page.results.filter(m => m.message_id !== messageId),
+          results: validMessages(page.results).filter(m => m.message_id !== messageId),
         })),
       }
     }
@@ -169,8 +178,12 @@ export function useDmSocket(
 
     const connect = async () => {
       if (cancelled) return
-      // FIX 3: 재연결 시 stale 항목 초기화 — 끊김 후 동일 내용 재전송 시 오탐 방지
-      pendingRef.current = []
+      // 재연결 시 캐시의 낙관적 메시지 롤백 후 pending 초기화
+      // (tempId가 남은 채 echo가 오면 de-dupe 불가 → 중복 발생 방지)
+      const orphaned = pendingRef.current.splice(0)
+      for (const { tempId } of orphaned) {
+        removeFromCache(queryClient, conversationId, tempId)
+      }
 
       // Issue one-time socket_key
       let socketKey: string
@@ -207,11 +220,14 @@ export function useDmSocket(
         try {
           parsed = JSON.parse(raw)
         } catch {
-          console.warn('[DM WebSocket] message parse failed')
+          console.warn('[DM WebSocket] message parse failed:', raw)
           return
         }
-        if (!isDmWsServerMessage(parsed)) return
-        console.info(`[DM WebSocket] message: ${parsed.type}`)
+        if (!isDmWsServerMessage(parsed)) {
+          console.warn('[DM WebSocket] 알 수 없는 메시지 타입 수신 — 백엔드 이벤트 타입을 확인하세요:', parsed)
+          return
+        }
+        console.info(`[DM WebSocket] message: ${parsed.type}`, parsed)
 
         if (parsed.type === 'error') {
           console.error('[DM WebSocket] server error', parsed.detail)
@@ -219,7 +235,34 @@ export function useDmSocket(
         }
 
         if (parsed.type === 'receive_message') {
-          const { message } = parsed
+          // 백엔드가 { message: {...} } 중첩 구조 또는 { message_id, ... } 평탄 구조 모두 허용한다.
+          // isDmWsServerMessage는 type 필드만 검증하므로 실제 메시지 데이터를 별도로 추출한다.
+          const payload = parsed as Record<string, unknown>
+          const nestedMsg = payload.message
+          const rawMsg: Record<string, unknown> | undefined =
+            nestedMsg !== null && typeof nestedMsg === 'object' && 'message_id' in nestedMsg
+              ? (nestedMsg as Record<string, unknown>)  // { type, message: { message_id, ... } }
+              : 'message_id' in payload
+                ? payload                               // { type, message_id, ... } 평탄 구조
+                : undefined
+
+          if (!rawMsg || typeof rawMsg.message_id !== 'string' || !rawMsg.message_id) {
+            console.warn('[DM WebSocket] receive_message에 message_id 없음 — 실제 페이로드:', parsed)
+            return
+          }
+
+          // 백엔드 페이로드에 undefined 필드가 있어도 캐시에 undefined가 들어가지 않도록 정규화한다.
+          const message: Message = {
+            message_id: rawMsg.message_id,
+            sender: (rawMsg.sender != null && typeof rawMsg.sender === 'object')
+              ? (rawMsg.sender as Message['sender'])
+              : { user_id: '', nickname: '', profile_img: null },
+            content: typeof rawMsg.content === 'string' ? rawMsg.content : null,
+            img_url: typeof rawMsg.img_url === 'string' ? rawMsg.img_url : null,
+            original_img: typeof rawMsg.original_img === 'string' ? rawMsg.original_img : null,
+            is_deleted: Boolean(rawMsg.is_deleted),
+            created_at: typeof rawMsg.created_at === 'string' ? rawMsg.created_at : new Date().toISOString(),
+          }
           const now = Date.now()
 
           // FIX 6: null content는 매칭 제외 — 이미지 메시지에서 null===null 오탐 방지
@@ -253,7 +296,7 @@ export function useDmSocket(
                 ...old,
                 pages: old.pages.map(page => ({
                   ...page,
-                  results: page.results.map(m =>
+                  results: validMessages(page.results).map(m =>
                     m.message_id === parsed.message_id ? { ...m, is_deleted: true } : m
                   ),
                 })),
@@ -384,7 +427,8 @@ export function useDmSocket(
         return true
       } catch {
         removeFromCache(queryClient, conversationId, tempId)
-        pendingRef.current.pop()
+        const idx = pendingRef.current.findIndex(p => p.tempId === tempId)
+        if (idx !== -1) pendingRef.current.splice(idx, 1)
         return false
       }
     },

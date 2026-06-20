@@ -71,6 +71,7 @@ export function Modal({
           transition={{ duration: 0.2 }}
         >
           <motion.div
+            onMouseDown={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}
             className={cn(
               "flex flex-col gap-6 max-w-full w-full",

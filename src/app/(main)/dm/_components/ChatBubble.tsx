@@ -17,6 +17,8 @@ interface Props {
 }
 
 export function ChatBubble({ message, isMine, showAvatar, opponent, conversationId }: Props) {
+  // opt- 접두사 메시지는 서버에 존재하지 않는 낙관적 임시 메시지
+  const isOptimistic = message.message_id.startsWith('opt-')
   const [showMenu, setShowMenu] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -26,9 +28,9 @@ export function ChatBubble({ message, isMine, showAvatar, opponent, conversation
   useOnClickOutside(menuRef, closeMenu, showMenu)
 
   const handleDeleteConfirm = () => {
-    deleteMessage(message.message_id, {
-      onSuccess: () => setShowDeleteModal(false),
-    })
+    if (isOptimistic) return  // 서버 미존재 메시지 — API 호출 차단
+    setShowDeleteModal(false)
+    deleteMessage(message.message_id)
   }
 
   if (message.is_deleted) {
@@ -65,10 +67,10 @@ export function ChatBubble({ message, isMine, showAvatar, opponent, conversation
           ref={menuRef}
           className={cn("relative flex flex-col gap-1 max-w-[70%]", isMine ? "items-end" : "items-start")}
         >
-          {/* 내 메시지만 클릭 시 삭제 메뉴 토글 */}
+          {/* 내 메시지 클릭 시 삭제 메뉴 토글 — 삭제/모달 오픈 상태 제외 */}
           <div
-            onClick={() => isMine && setShowMenu(v => !v)}
-            className={cn(isMine && "cursor-pointer")}
+            onClick={() => isMine && !message.is_deleted && !showDeleteModal && setShowMenu(v => !v)}
+            className={cn(isMine && !message.is_deleted && !showDeleteModal && "cursor-pointer")}
           >
             {message.img_url && (
               <div className="rounded-card overflow-hidden bg-bg-subtle">
@@ -117,8 +119,21 @@ export function ChatBubble({ message, isMine, showAvatar, opponent, conversation
         className="max-w-sm"
         footer={
           <>
-            <Button variant="outline" disabled={isPending} onClick={() => setShowDeleteModal(false)}>취소</Button>
-            <Button variant="primary" loading={isPending} disabled={isPending} onClick={handleDeleteConfirm}>삭제</Button>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isPending}
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={(e) => { e.stopPropagation(); setShowDeleteModal(false) }}
+            >취소</Button>
+            <Button
+              type="button"
+              variant="primary"
+              loading={isPending}
+              disabled={isPending}
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={(e) => { e.stopPropagation(); handleDeleteConfirm() }}
+            >삭제</Button>
           </>
         }
         footerAlign="stretch"
