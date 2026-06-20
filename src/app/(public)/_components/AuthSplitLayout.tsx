@@ -23,7 +23,7 @@ export function AuthSplitLayout({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* 우측 영역: 화면 절반, 폼 카드 상하좌우 중앙 */}
-      <div className="w-full lg:w-1/2 min-h-screen flex items-center justify-start pl-24 py-16 pr-8">
+      <div className="w-full lg:w-1/2 min-h-screen flex items-center justify-center lg:justify-start lg:pl-24 py-16 px-6 lg:pr-8">
         {children}
       </div>
     </div>

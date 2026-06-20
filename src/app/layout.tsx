@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Providers } from "@/providers";
@@ -15,6 +15,11 @@ const pretendard = localFont({
 export const metadata: Metadata = {
   title: "Danim · 여행자들의 이야기",
   description: "여행의 모든 순간을 기록하세요",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({

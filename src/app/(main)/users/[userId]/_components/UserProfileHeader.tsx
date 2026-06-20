@@ -72,6 +72,7 @@ export default function UserProfileHeader({ profile, userId }: UserProfileHeader
       if (myUserId) {
         queryClient.invalidateQueries({ queryKey: queryKeys.users.profile(myUserId) });
       }
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.mainFeed });
     },
     onError: (err, _, context) => {
       const wasFollowing = context?.wasFollowing ?? isFollowing;

@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion, useDragControls, useMotionValue, useMotionValueEvent, animate } from "motion/react";
+import { motion, useDragControls, useMotionValue, useMotionValueEvent, useTransform, animate } from "motion/react";
 import type { PanInfo } from "motion/react";
 
 const HEADER_H = 64; // MobileHeader h-16
 const NAV_H    = 64; // MobileBottomNav h-16
-const HANDLE_H = 56; // 시트가 접혔을 때 남겨둘 핸들 영역 (드래그·탭 영역 보장)
+const HANDLE_H = 48; // 시트가 접혔을 때 남겨둘 핸들 영역 (드래그·탭 영역 보장)
+const SNAP_VELOCITY = 300; // 스냅 판정 속도 임계값 (px/s)
+const SPRING_CONFIG = { type: "spring" as const, stiffness: 500, damping: 45 };
 
 type Position = "expanded" | "half" | "collapsed";
 
@@ -20,21 +22,34 @@ interface MobileBottomSheetProps {
 }
 
 export function MobileBottomSheet({ children, expanded, onExpandedChange, onYChange }: MobileBottomSheetProps) {
-  const controls = useDragControls();
-  const y        = useMotionValue(0);
-  const halfY    = useRef(0);   // 반반 상태의 y offset
-  const maxY     = useRef(0);   // 접힘 상태의 y offset (콘텐츠 영역 하단 - 핸들 높이)
+  const controls  = useDragControls();
+  const y         = useMotionValue(0);
+  const halfY     = useRef(0);
+  const maxY      = useRef(0);
+  const contentHR = useRef(0); // 전체 콘텐츠 영역 높이 (resize 대응용)
   const [position, setPosition] = useState<Position>("half");
   const [bounds, setBounds]     = useState({ top: 0, bottom: 0 });
 
+  // y에 따라 가시 콘텐츠 높이를 실시간 계산 → 뷰포트 아래로 넘어가는 스크롤 방지
+  const visibleContentHeight = useTransform(y, (v) =>
+    Math.max(0, contentHR.current - v - HANDLE_H)
+  );
+
   // 초기 위치 계산
   useEffect(() => {
-    const contentH = window.innerHeight - NAV_H - HEADER_H;
-    halfY.current  = contentH / 2;
-    maxY.current   = Math.max(contentH - HANDLE_H, halfY.current);
-    setBounds({ top: 0, bottom: maxY.current });
+    const computePositions = () => {
+      const contentH    = window.innerHeight - NAV_H - HEADER_H;
+      contentHR.current = contentH;
+      halfY.current     = contentH / 2;
+      maxY.current      = Math.max(contentH - HANDLE_H, halfY.current);
+      setBounds({ top: 0, bottom: maxY.current });
+    };
+    computePositions();
     y.set(halfY.current);
     onYChange?.(halfY.current);
+
+    window.addEventListener("resize", computePositions);
+    return () => window.removeEventListener("resize", computePositions);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useMotionValueEvent(y, "change", (v) => {
@@ -51,7 +66,7 @@ export function MobileBottomSheet({ children, expanded, onExpandedChange, onYCha
   // position 변경 시 애니메이션
   useEffect(() => {
     const target = position === "expanded" ? 0 : position === "half" ? halfY.current : maxY.current;
-    animate(y, target, { type: "spring", stiffness: 400, damping: 40 });
+    animate(y, target, SPRING_CONFIG);
   }, [position, y]);
 
   const goTo = (next: Position) => {
@@ -63,12 +78,12 @@ export function MobileBottomSheet({ children, expanded, onExpandedChange, onYCha
 
   const onDragEnd = (_: PointerEvent, { velocity }: PanInfo) => {
     const current = y.get();
-    // velocity 우선
-    if (velocity.y < -500) {
+    // velocity 우선 — 임계값을 낮춰 더 반응적으로
+    if (velocity.y < -SNAP_VELOCITY) {
       goTo(position === "collapsed" ? "half" : "expanded");
       return;
     }
-    if (velocity.y > 500) {
+    if (velocity.y > SNAP_VELOCITY) {
       goTo(position === "expanded" ? "half" : "collapsed");
       return;
     }
@@ -109,18 +124,23 @@ export function MobileBottomSheet({ children, expanded, onExpandedChange, onYCha
       dragMomentum={false}
       onDragEnd={onDragEnd}
     >
-      {/* 드래그 핸들 — 드래그·탭 모두 지원 */}
+      {/* 드래그 핸들 — 드래그·탭 모두 지원 (HANDLE_H = 48px) */}
       <div
-        className="flex justify-center py-3 shrink-0 select-none touch-none cursor-grab active:cursor-grabbing"
+        className="flex justify-center items-center shrink-0 select-none touch-none cursor-grab active:cursor-grabbing"
+        style={{ height: HANDLE_H }}
         onPointerDown={(e) => controls.start(e)}
         onClick={onHandleClick}
       >
         <div className="w-10 h-1 rounded-full bg-border-strong" />
       </div>
 
-      <div className="flex-1 min-h-0 overflow-hidden">
+      <motion.div
+        className="overflow-y-auto scrollbar-none"
+        style={{ height: visibleContentHeight, touchAction: 'pan-y' }}
+        onPointerDownCapture={(e) => e.stopPropagation()}
+      >
         {children}
-      </div>
+      </motion.div>
     </motion.div>
   );
 }

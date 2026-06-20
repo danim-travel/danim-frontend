@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { TextField, type TextFieldProps } from "../TextField/TextField";
 
 /** 보기/숨기기 토글이 내장된 비밀번호 입력 필드. TextField를 감싸 rightSlot으로 토글을 제공한다. */
@@ -16,9 +17,10 @@ export function PasswordField(props: PasswordFieldProps) {
         <button
           type="button"
           onClick={() => setShow((v) => !v)}
-          className="text-caption font-bold text-primary hover:text-primary-active transition-colors bg-transparent border-none cursor-pointer whitespace-nowrap"
+          aria-label={show ? "비밀번호 숨기기" : "비밀번호 보기"}
+          className="text-text-muted hover:text-text transition-colors cursor-pointer"
         >
-          {show ? "숨기기" : "보기"}
+          {show ? <EyeOff size={18} strokeWidth={2} /> : <Eye size={18} strokeWidth={2} />}
         </button>
       }
     />
