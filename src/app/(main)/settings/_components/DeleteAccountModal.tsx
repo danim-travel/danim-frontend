@@ -5,16 +5,22 @@ import { Button, Checkbox, Modal, PasswordField, TextField } from "@/components/
 import { deleteUser } from "@/lib/api/users"
 import { getApiErrorMessage, isApiError } from "@/lib/apiError"
 import { useAuthStore } from "@/store/authStore"
+import { isSocialLoginToken } from "@/lib/loginType"
 import { toast } from "@/store/toastStore"
 
 interface DeleteAccountModalProps {
   open: boolean
   onClose: () => void
+  /** prop으로 전달된 값보다 access_token 기반 파싱이 우선 적용됩니다. */
+  isSocial?: boolean
 }
 
 export function DeleteAccountModal({ open, onClose }: DeleteAccountModalProps) {
   const router = useRouter()
   const clearAuth = useAuthStore(s => s.clearAuth)
+  // prop 대신 토큰에서 직접 파생 — prop 전달 오류나 타이밍 문제로 인한 오분류 방지
+  const accessToken = useAuthStore(s => s.accessToken)
+  const isSocial = isSocialLoginToken(accessToken)
 
   const [agreed, setAgreed] = useState(false)
   const [password, setPassword] = useState("")
@@ -22,7 +28,10 @@ export function DeleteAccountModal({ open, onClose }: DeleteAccountModalProps) {
   const [confirmPhrase, setConfirmPhrase] = useState("")
   const [confirmPhraseError, setConfirmPhraseError] = useState<string | undefined>()
   const [isPending, setIsPending] = useState(false)
-  const canDelete = agreed && password.trim().length > 0 && confirmPhrase === "삭제하겠습니다"
+  const canDelete =
+    agreed &&
+    confirmPhrase === "삭제하겠습니다" &&
+    (isSocial || password.trim().length > 0)
 
   function handleClose() {
     onClose()
@@ -34,7 +43,7 @@ export function DeleteAccountModal({ open, onClose }: DeleteAccountModalProps) {
   }
 
   async function handleDelete() {
-    if (password.trim().length === 0) {
+    if (!isSocial && password.trim().length === 0) {
       setPasswordError("비밀번호를 입력해주세요")
       return
     }
@@ -49,12 +58,12 @@ export function DeleteAccountModal({ open, onClose }: DeleteAccountModalProps) {
 
     setIsPending(true)
     try {
-      await deleteUser({ password })
+      await deleteUser(isSocial ? undefined : password)
       onClose()
       clearAuth()
       router.push("/login")
     } catch (err) {
-      if (isApiError(err) && err.status === 400) {
+      if (!isSocial && isApiError(err) && err.status === 400) {
         setPasswordError(getApiErrorMessage(err, { client: "현재 비밀번호가 일치하지 않습니다." }))
       } else {
         toast.error(getApiErrorMessage(err, { client: "회원 탈퇴에 실패했습니다." }))
@@ -99,15 +108,17 @@ export function DeleteAccountModal({ open, onClose }: DeleteAccountModalProps) {
           }
         />
 
-        <PasswordField
-          label="비밀번호 입력"
-          required
-          placeholder="비밀번호를 입력해 주세요"
-          value={password}
-          onChange={e => { setPassword(e.target.value); setPasswordError(undefined) }}
-          error={passwordError}
-          autoComplete="current-password"
-        />
+        {!isSocial && (
+          <PasswordField
+            label="비밀번호 입력"
+            required
+            placeholder="비밀번호를 입력해 주세요"
+            value={password}
+            onChange={e => { setPassword(e.target.value); setPasswordError(undefined) }}
+            error={passwordError}
+            autoComplete="current-password"
+          />
+        )}
 
         <div className="flex flex-col gap-1.5">
           <p className="text-caption text-text-muted">

@@ -76,6 +76,9 @@ export interface UpdateUserRequest {
   nickname?: string
   intro?: string
   key?: string
+  name?: string
+  /** YYYY-MM-DD */
+  birth_day?: string
 }
 
 export interface ChangePasswordRequest {
@@ -84,7 +87,7 @@ export interface ChangePasswordRequest {
 }
 
 export interface DeleteUserRequest {
-  password: string
+  password?: string
 }
 
 export interface ProfileImagePresignedResponse {
