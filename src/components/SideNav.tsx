@@ -68,7 +68,9 @@ function NavLink({ href, label, Icon, active, onClick }: NavLinkProps) {
 export default function SideNav() {
   const pathname = usePathname()
   const router = useRouter()
-  const { activePanel, setActivePanel, closePanel } = useUIStore()
+  const activePanel = useUIStore((s) => s.activePanel)
+  const setActivePanel = useUIStore((s) => s.setActivePanel)
+  const closePanel = useUIStore((s) => s.closePanel)
   const user = useAuthStore((s) => s.user)
   const unreadCount = useNotificationBadgeStore((s) => s.unreadCount)
 
@@ -104,7 +106,8 @@ export default function SideNav() {
     <nav className="w-(--sidebar-width) bg-bg-card border-r border-border flex flex-col items-center shrink-0 h-full py-4">
       {/* 메인 로고, 클릭하면 홈으로 이동 */}
       <button type="button" onClick={goHome} className="mb-5 cursor-pointer">
-        <img src="/favicon.svg" alt="Danim" className="w-10 h-10 rounded-lg shadow-md hover:shadow-lg transition-shadow" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/favicon.svg" alt="Danim" width={40} height={40} decoding="async" className="w-10 h-10 rounded-lg shadow-md hover:shadow-lg transition-shadow" />
       </button>
 
       {/* 메인 네비게이션 링크 */}
@@ -172,9 +175,12 @@ export default function SideNav() {
 
         <Link href="/mypage" onClick={closePanel}>
           {user?.profileImg ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
             <img
               src={user.profileImg}
               alt="프로필"
+              loading="lazy"
+              decoding="async"
               className="w-9 h-9 rounded-full object-cover shadow-md hover:shadow-lg transition-shadow"
             />
           ) : (

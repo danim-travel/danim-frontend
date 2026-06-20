@@ -19,7 +19,7 @@ type MyPageTab = "posts" | "bookmarks";
 
 function MyPageContent({ userId }: { userId: string }) {
   const router = useRouter();
-  const { closePanel } = useUIStore();
+  const closePanel = useUIStore((s) => s.closePanel);
   const { data: profile, isLoading } = useMyProfile(userId);
   const [tab, setTab] = useState<MyPageTab>("posts");
   const [modalPostId, setModalPostId] = useState<string | null>(null);
@@ -49,11 +49,15 @@ function MyPageContent({ userId }: { userId: string }) {
     );
   }, [bookmarksData]);
 
-  const postsItems = (profile?.posts ?? []).map((p) => ({
-    post_id: p.post_id,
-    thumbnail: p.thumbnail,
-    alt: p.title,
-  }));
+  const postsItems = useMemo(
+    () =>
+      (profile?.posts ?? []).map((p) => ({
+        post_id: p.post_id,
+        thumbnail: p.thumbnail,
+        alt: p.title,
+      })),
+    [profile?.posts],
+  );
 
   // solo 모드에서 돌아왔을 때 해당 게시글로 스크롤 복원
   useEffect(() => {
@@ -112,6 +116,7 @@ function MyPageContent({ userId }: { userId: string }) {
         {tab === "posts" ? (
           <PostGrid
             posts={postsItems}
+            isLoading={isLoading}
             onPostClick={(id) => { closePanel(); setModalPostId(id); }}
           />
         ) : (

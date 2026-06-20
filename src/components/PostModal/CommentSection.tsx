@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import type { Comment } from "@/types";
 import { EmptyState } from "@/components/common";
@@ -14,7 +14,7 @@ interface Props {
 
 const AT_BOTTOM_TOLERANCE_PX = 4;
 
-export default function CommentSection({ comments, commentCount }: Props) {
+function CommentSection({ comments, commentCount }: Props) {
   const {
     currentUserId,
     toggleCommentLike,
@@ -74,3 +74,5 @@ export default function CommentSection({ comments, commentCount }: Props) {
     </div>
   );
 }
+
+export default memo(CommentSection);

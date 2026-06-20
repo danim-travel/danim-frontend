@@ -16,13 +16,19 @@ export function updateFeedItem(
   updater: (item: MainFeedItem) => MainFeedItem,
 ): FeedCache | undefined {
   if (!old) return old
-  return {
-    ...old,
-    pages: old.pages.map((page) => ({
-      ...page,
-      results: page.results.map((item) =>
-        item.post.post_id === postId ? updater(item) : item
-      ),
-    })),
+  // postId가 포함된 페이지만 찾아 갱신 — 나머지 페이지는 참조 유지로 리렌더 절감
+  const targetPageIdx = old.pages.findIndex((page) =>
+    page.results.some((item) => item.post.post_id === postId),
+  )
+  if (targetPageIdx === -1) return old
+  const targetPage = old.pages[targetPageIdx]
+  const updatedPage = {
+    ...targetPage,
+    results: targetPage.results.map((item) =>
+      item.post.post_id === postId ? updater(item) : item,
+    ),
   }
+  const pages = old.pages.slice()
+  pages[targetPageIdx] = updatedPage
+  return { ...old, pages }
 }

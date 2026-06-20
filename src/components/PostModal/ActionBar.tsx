@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { Bookmark, Heart } from "lucide-react";
 import { useDebouncedToggle } from "@/hooks/useDebouncedToggle";
 import type { PostDetail } from "@/types";
@@ -9,7 +10,7 @@ interface Props {
   data: Pick<PostDetail, "is_liked" | "like_count" | "is_bookmarked">;
 }
 
-export default function ActionBar({ data }: Props) {
+function ActionBar({ data }: Props) {
   const { postLikeMutation, postBookmarkMutation } = usePostModalContext();
 
   // 좋아요: localState로 즉시 토글, 400ms 후 net-zero 검사 후 mutate
@@ -61,3 +62,5 @@ export default function ActionBar({ data }: Props) {
     </div>
   );
 }
+
+export default memo(ActionBar);

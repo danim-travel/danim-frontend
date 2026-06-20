@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useUIStore } from "@/store/uiStore";
 import { useRouter } from "next/navigation";
 import { AnimatePresence } from "motion/react";
@@ -37,7 +37,7 @@ export default function HomePage() {
   const [sheetExpanded, setSheetExpanded] = useState(false);
   const [sheetY, setSheetY] = useState<number | null>(null);
 
-  const { closePanel } = useUIStore();
+  const closePanel = useUIStore((s) => s.closePanel);
   const [postId, setPostId] = useQueryState("post", parseAsString);
   const [soloPostId] = useQueryState("solo", parseAsString);
 
@@ -53,7 +53,15 @@ export default function HomePage() {
   });
 
   const soloFeedItem = useMemo(() => (soloDetail ? toFeedItem(soloDetail) : null), [soloDetail]);
-  const posts = soloFeedItem ? [soloFeedItem] : (data?.pages.flatMap((p) => p.results) ?? []);
+  const posts = useMemo(
+    () => (soloFeedItem ? [soloFeedItem] : (data?.pages.flatMap((p) => p.results) ?? [])),
+    [soloFeedItem, data],
+  );
+
+  // 모바일 환경에서 KakaoMap 마운트 지연 — 데스크탑이거나 시트가 한 번이라도 펼쳐지면 마운트
+  const [mapMounted, setMapMounted] = useState(
+    typeof window !== "undefined" && window.innerWidth >= 768
+  );
 
   // solo 모드일 때는 해당 게시글이 항상 지도 포커스 대상
   const activeFocusedPost = soloFeedItem ?? focusedPost;
@@ -106,7 +114,7 @@ export default function HomePage() {
   return (
     <div className="h-full md:flex md:flex-row md:gap-4 md:p-4 md:bg-bg">
       {/* 데스크탑: 좌측 피드 패널 */}
-      <div className="hidden md:block md:w-(--panel-width) md:shrink-0 md:h-full">
+      <div className="hidden md:block md:w-[45%] md:shrink-0 md:h-full">
         <FeedPanel {...feedPanelProps} variant="panel" />
       </div>
 
@@ -115,19 +123,21 @@ export default function HomePage() {
         className="md:flex-1 md:min-h-0 md:h-full!"
         style={sheetY != null ? { height: `${sheetY}px` } : { height: "100%" }}
       >
-        <MapPanel
-          focusedPost={activeFocusedPost}
-          focusedPostIndex={activeFocusedPostIndex}
-          onPinClick={handlePinClick}
-          onResetFocus={() => { setFocusedPost(null); setSheetExpanded(false); }}
-        />
+        {mapMounted && (
+          <MapPanel
+            focusedPost={activeFocusedPost}
+            focusedPostIndex={activeFocusedPostIndex}
+            onPinClick={handlePinClick}
+            onResetFocus={() => { setFocusedPost(null); setSheetExpanded(false); }}
+          />
+        )}
       </div>
 
       {/* 모바일: 피드 바텀시트 */}
       <div className="md:hidden">
         <MobileBottomSheet
           expanded={sheetExpanded}
-          onExpandedChange={setSheetExpanded}
+          onExpandedChange={(v) => { setSheetExpanded(v); if (v) setMapMounted(true); }}
           onYChange={setSheetY}
         >
           <FeedPanel {...feedPanelProps} variant="sheet" />

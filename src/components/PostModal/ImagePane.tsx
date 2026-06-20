@@ -13,15 +13,28 @@ interface Props {
 }
 
 export default function PostModalImagePane({ spots, activeSpotIdx, activeSpot, onSelectSpot }: Props) {
-  // 모달 열릴 때 모든 스팟 이미지를 브라우저에 preload
+  // 모달 열림 시 각 스팟의 대표 이미지(첫 장)만 저우선순위로 preload.
+  // 모든 이미지를 한꺼번에 fetch하면 대역폭이 활성 스팟 이미지 로드를 가로채
+  // LCP가 늘어진다. 활성 스팟의 나머지 이미지는 SpotImages가 슬라이드 인접 슬롯
+  // 기준으로 lazy / eager 를 결정한다.
   useEffect(() => {
-    spots.forEach(spot => {
-      spot.images.forEach(img => {
-        const image = new window.Image()
-        image.src = img.img_url
-      })
-    })
-  }, [spots])
+    if (typeof window === "undefined") return;
+    const imgs: HTMLImageElement[] = [];
+    spots.forEach((spot) => {
+      const first = spot.images[0];
+      if (!first) return;
+      const image = new window.Image();
+      // 일부 브라우저(Chromium 계열)만 지원 — typed cast 사용
+      (image as HTMLImageElement & { fetchPriority?: string }).fetchPriority = "low";
+      image.decoding = "async";
+      image.src = first.img_url;
+      imgs.push(image);
+    });
+    return () => {
+      // 메모리 해제 힌트 (브라우저가 결국 GC하지만 명시)
+      imgs.length = 0;
+    };
+  }, [spots]);
   const steps = useMemo(
     () => spots.map((s) => ({ label: s.location.place_name })),
     [spots]

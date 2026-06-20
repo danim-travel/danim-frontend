@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { Plus, X } from "lucide-react";
 import { Button } from "@/components/common";
 import { getApiErrorMessage } from "@/lib/apiError";
@@ -11,7 +11,7 @@ import { usePostModalContext } from "./PostModalContext";
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 
-export default function CommentInputBar() {
+function CommentInputBar() {
   const [comment, setComment] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -142,3 +142,5 @@ export default function CommentInputBar() {
     </div>
   );
 }
+
+export default memo(CommentInputBar);
