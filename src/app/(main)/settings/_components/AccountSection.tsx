@@ -36,7 +36,7 @@ export function AccountSection() {
       {!isSocial && (
         <PasswordChangeModal open={passwordModal} onClose={() => setPasswordModal(false)} />
       )}
-      <DeleteAccountModal open={deleteModal} onClose={() => setDeleteModal(false)} isSocial={isSocial} />
+      <DeleteAccountModal open={deleteModal} onClose={() => setDeleteModal(false)} />
     </section>
   )
 }

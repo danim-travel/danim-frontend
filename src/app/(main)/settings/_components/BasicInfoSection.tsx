@@ -63,15 +63,19 @@ export function BasicInfoSection({
   const [birthModalOpen, setBirthModalOpen] = useState(false)
   const [isSavingName, setIsSavingName] = useState(false)
   const [isSavingBirth, setIsSavingBirth] = useState(false)
+  // 이번 세션에서 저장 성공 여부 — 서버가 빈 문자열을 반환해도 1회성 불변식 유지
+  const [nameSavedThisSession, setNameSavedThisSession] = useState(false)
+  const [birthSavedThisSession, setBirthSavedThisSession] = useState(false)
 
-  // me.name / me.birth_day 값이 있으면 이미 저장된 것으로 간주해 수정 불가
-  const nameLocked = (me.name ?? "") !== ""
-  const birthLocked = (me.birth_day ?? "") !== ""
+  // me.name / me.birth_day 값이 있거나 이번 세션에서 저장한 경우 수정 불가
+  const nameLocked = (me.name ?? "") !== "" || nameSavedThisSession
+  const birthLocked = (me.birth_day ?? "") !== "" || birthSavedThisSession
 
   async function handleConfirmSaveName() {
     setIsSavingName(true)
     try {
       await onSaveName?.()
+      setNameSavedThisSession(true)
       setNameModalOpen(false)
     } catch {
       // 에러 토스트는 부모(page.tsx)에서 처리
@@ -84,6 +88,7 @@ export function BasicInfoSection({
     setIsSavingBirth(true)
     try {
       await onSaveBirthDay?.()
+      setBirthSavedThisSession(true)
       setBirthModalOpen(false)
     } catch {
       // 에러 토스트는 부모(page.tsx)에서 처리

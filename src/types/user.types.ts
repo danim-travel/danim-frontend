@@ -86,9 +86,6 @@ export interface ChangePasswordRequest {
   new_password: string
 }
 
-export interface DeleteUserRequest {
-  password?: string
-}
 
 export interface ProfileImagePresignedResponse {
   presigned_url: string

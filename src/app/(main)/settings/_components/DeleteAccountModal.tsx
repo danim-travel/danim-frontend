@@ -11,8 +11,6 @@ import { toast } from "@/store/toastStore"
 interface DeleteAccountModalProps {
   open: boolean
   onClose: () => void
-  /** prop으로 전달된 값보다 access_token 기반 파싱이 우선 적용됩니다. */
-  isSocial?: boolean
 }
 
 export function DeleteAccountModal({ open, onClose }: DeleteAccountModalProps) {

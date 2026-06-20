@@ -130,7 +130,7 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
 
   async function handleSaveName() {
     try {
-      await updateUser({ name })
+      await updateUser({ name: name.trim() })
       await queryClient.invalidateQueries({ queryKey: queryKeys.users.me })
     } catch (err) {
       toast.error(getApiErrorMessage(err, { client: "이름 저장에 실패했습니다." }))
@@ -252,7 +252,7 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
               >
                 계정 삭제
               </Button>
-              <DeleteAccountModal open={deleteModal} onClose={() => setDeleteModal(false)} isSocial />
+              <DeleteAccountModal open={deleteModal} onClose={() => setDeleteModal(false)} />
             </>
           )}
           <div className="flex items-center gap-3 ml-auto">
