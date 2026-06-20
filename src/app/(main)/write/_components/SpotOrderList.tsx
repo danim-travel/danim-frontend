@@ -46,6 +46,9 @@ interface SpotOrderItemProps {
   onDragOver: (e: React.DragEvent) => void
   onDrop: (e: React.DragEvent) => void
   onDragEnd: () => void
+  onTouchStart: (e: React.TouchEvent) => void
+  onTouchMove: (e: React.TouchEvent) => void
+  onTouchEnd: () => void
 }
 
 function SpotOrderItem({
@@ -66,6 +69,9 @@ function SpotOrderItem({
   onDragOver,
   onDrop,
   onDragEnd,
+  onTouchStart,
+  onTouchMove,
+  onTouchEnd,
 }: SpotOrderItemProps) {
   // 코스 순서 항목은 펼친 상태로 진입 — 본문 입력을 한 번 더 펼쳐야 하는 불편 제거
   const [textareaOpen, setTextareaOpen] = useState(true)
@@ -81,6 +87,7 @@ function SpotOrderItem({
   return (
     <div
       draggable
+      data-drag-index={index}
       onDragStart={(e) => {
         const held = gripHeld.current
         gripHeld.current = false
@@ -149,10 +156,15 @@ function SpotOrderItem({
           <ChevronDown className={cn('w-4 h-4 transition-transform duration-200', isTextareaVisible && 'rotate-180')} />
         </button>
         <div
-          className="text-primary hover:text-primary/80 cursor-grab active:cursor-grabbing shrink-0"
+          className="text-primary hover:text-primary/80 cursor-grab active:cursor-grabbing shrink-0 touch-none"
           onMouseDown={(e) => { e.stopPropagation(); gripHeld.current = true }}
+          onTouchStart={(e) => { e.stopPropagation(); onTouchStart(e) }}
+          onTouchMove={onTouchMove}
+          onTouchEnd={(e) => { e.stopPropagation(); onTouchEnd() }}
+          onTouchCancel={onTouchEnd}
         >
-          <GripVertical className="w-4 h-4" />
+          {/* pointer-events-none: elementFromPoint hit-test 시 핸들 자신이 잡히지 않도록 */}
+          <GripVertical className="w-4 h-4 pointer-events-none" />
         </div>
       </div>
 
@@ -227,7 +239,15 @@ export default function SpotOrderList({
 }: SpotOrderListProps) {
   const {
     state: { dragSrc, dragOver },
-    handlers: { handleDragStart, handleDragOver, handleDrop, handleDragEnd },
+    handlers: {
+      handleDragStart,
+      handleDragOver,
+      handleDrop,
+      handleDragEnd,
+      handleTouchStart,
+      handleTouchMove,
+      handleTouchEnd,
+    },
   } = useDragReorder(onReorderSpots)
 
   return (
@@ -252,6 +272,9 @@ export default function SpotOrderList({
           onDragOver={(e) => handleDragOver(e, i)}
           onDrop={(e) => handleDrop(e, i)}
           onDragEnd={handleDragEnd}
+          onTouchStart={(e) => handleTouchStart(e, i)}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         />
       ))}
     </div>
