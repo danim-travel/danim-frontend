@@ -33,9 +33,13 @@ export function BookmarksTabPanel({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <Spinner size="lg" />
-      </div>
+      <PostGrid
+        posts={[]}
+        isLoading={true}
+        onPostClick={onPostClick}
+        emptyTitle="저장된 게시글이 없어요"
+        emptyDescription="마음에 드는 게시글을 북마크해보세요."
+      />
     );
   }
 

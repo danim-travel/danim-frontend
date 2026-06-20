@@ -34,7 +34,16 @@ export function Avatar({ src, initial, size = "md", ring, colorClass = "bg-prima
       )}
     >
       {src
-        ? <img src={src} alt="" className="absolute inset-0 w-full h-full object-cover" />
+        ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src={src}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        )
         : initial
       }
     </div>

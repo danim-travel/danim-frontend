@@ -1,10 +1,12 @@
 "use client"
 import Image from "next/image"
 import { Heart, MessageCircle } from "lucide-react"
-import { EmptyState, Skeleton } from "@/components/common"
+import { EmptyState, GridSkeleton } from "@/components/common"
+
 import { Spinner } from "@/components/ui/spinner"
 import { useInfiniteScrollSentinel } from "@/hooks/useInfiniteScrollSentinel"
 import { usePrefetchPostDetail } from "@/app/(main)/_hooks/usePrefetchPostDetail"
+import { GRID_ASPECT_RATIOS } from "@/lib/imageUtils"
 import type { ExplorePost } from "@/types"
 
 interface ExploreGridProps {
@@ -32,17 +34,7 @@ export function ExploreGrid({
     rootMargin: '300px',
   })
 
-  if (isLoading) {
-    return (
-      <div data-testid="explore-skeleton" className="columns-2 md:columns-4 gap-3">
-        {Array.from({ length: 12 }).map((_, i) => (
-          <div key={i} className="mb-3 break-inside-avoid">
-            <Skeleton height={[460, 360, 540, 580, 320, 380, 340, 420, 522, 400, 480, 362][i]} radius="card" />
-          </div>
-        ))}
-      </div>
-    )
-  }
+  if (isLoading) return <GridSkeleton />
 
   if (posts.length === 0) {
     return (
@@ -55,8 +47,8 @@ export function ExploreGrid({
 
   return (
     <>
-      <div data-testid="explore-grid" className="columns-2 md:columns-4 gap-3">
-        {posts.map((post) => (
+      <div data-testid="explore-grid" className="columns-2 md:columns-3 lg:columns-4 gap-3">
+        {posts.map((post, i) => (
           <div
             key={post.post_id}
             data-testid="explore-post-card"
@@ -64,15 +56,13 @@ export function ExploreGrid({
             onClick={() => onPostClick(post.post_id)}
             onMouseEnter={() => prefetchPostDetail(post.post_id)}
           >
-            <div className="relative rounded-xl overflow-hidden">
+            <div className={`relative rounded-xl overflow-hidden bg-bg-subtle ${GRID_ASPECT_RATIOS[i % GRID_ASPECT_RATIOS.length]}`}>
               <Image
                 src={post.thumbnail}
                 alt=""
-                width={400}
-                height={300}
-                sizes="(max-width: 768px) 50vw, 25vw"
-                className="w-full h-auto block"
-
+                fill
+                sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
+                className="object-cover"
               />
               <div className="absolute inset-0 bg-(--color-overlay) opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                 <span className="flex items-center gap-1 text-(color:--color-text-inverse) text-body-sm font-medium">
@@ -91,15 +81,7 @@ export function ExploreGrid({
 
       <div ref={sentinelRef} className="h-1" />
 
-      {isFetchingNextPage && (
-        <div data-testid="explore-loading-more" className="columns-2 md:columns-4 gap-3 mt-0">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="mb-3 break-inside-avoid">
-              <Skeleton height={180} radius="card" />
-            </div>
-          ))}
-        </div>
-      )}
+      {isFetchingNextPage && <GridSkeleton count={4} />}
     </>
   )
 }

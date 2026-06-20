@@ -1,16 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import localFont from "next/font/local";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Providers } from "@/providers";
 import "./globals.css";
-
-const pretendard = localFont({
-  src: "../../node_modules/pretendard/dist/web/variable/woff2/PretendardVariable.woff2",
-  variable: "--font-pretendard",
-  display: "swap",
-  weight: "100 900",
-  preload: false,
-});
 
 export const metadata: Metadata = {
   title: "Danim · 여행자들의 이야기",
@@ -30,8 +21,16 @@ export default function RootLayout({
   return (
     <html
       lang="ko"
-      className={`${pretendard.variable} h-full antialiased`}
+      className="h-full antialiased"
     >
+      <head>
+        {/* 외부 이미지 호스트와 TLS·DNS 핸드셰이크를 미리 시작해 첫 이미지의 LCP 단축 */}
+        <link rel="preconnect" href="https://s3.ap-northeast-2.amazonaws.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://s3.ap-northeast-2.amazonaws.com" />
+        {/* 카카오맵 SDK 호스트 — Script가 afterInteractive 인 만큼 미리 연결 */}
+        <link rel="preconnect" href="https://dapi.kakao.com" />
+        <link rel="dns-prefetch" href="https://dapi.kakao.com" />
+      </head>
       <body className="h-full">
         <Providers>
           <NuqsAdapter>{children}</NuqsAdapter>
