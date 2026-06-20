@@ -9,7 +9,6 @@ import { useAuthStore } from "@/store/authStore"
 import { toast } from "@/store/toastStore"
 import { Button } from "@/components/common"
 import { Spinner } from "@/components/ui/spinner"
-import { isSocialLoginToken } from "@/lib/loginType"
 import { AccountSection } from "./_components/AccountSection"
 import { BasicInfoSection } from "./_components/BasicInfoSection"
 import { DeleteAccountModal } from "./_components/DeleteAccountModal"
@@ -47,8 +46,10 @@ export default function SettingsPage() {
 function SettingsForm({ me }: { me: MeDetailResponse }) {
   const queryClient = useQueryClient()
   const updateAuthUser = useAuthStore(s => s.updateAuthUser)
-  const accessToken = useAuthStore(s => s.accessToken)
-  const isSocial = isSocialLoginToken(accessToken)
+  const loginType = useAuthStore(s => s.user?.loginType)
+  const isHydrated = useAuthStore(s => s.isHydrated)
+  // isHydrated 전에는 false로 평가 — silent refresh 중 소셜 사용자가 이메일 UI를 보는 것 방지
+  const isSocial = isHydrated && (loginType === 'kakao' || loginType === 'google')
 
   const [nickname, setNickname] = useState(me.nickname)
   const [intro, setIntro] = useState(me.intro ?? "")
@@ -130,23 +131,25 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
     }
   }
 
-  async function handleSaveName() {
+  async function handleSaveName(): Promise<boolean> {
     try {
       await updateUser({ name: name.trim() })
       await queryClient.invalidateQueries({ queryKey: queryKeys.users.me })
+      return true
     } catch (err) {
       toast.error(getApiErrorMessage(err, { client: "이름 저장에 실패했습니다." }))
-      throw err
+      return false
     }
   }
 
-  async function handleSaveBirthDay() {
+  async function handleSaveBirthDay(): Promise<boolean> {
     try {
       await updateUser({ birth_day: composedBirthDay })
       await queryClient.invalidateQueries({ queryKey: queryKeys.users.me })
+      return true
     } catch (err) {
       toast.error(getApiErrorMessage(err, { client: "생년월일 저장에 실패했습니다." }))
-      throw err
+      return false
     }
   }
 

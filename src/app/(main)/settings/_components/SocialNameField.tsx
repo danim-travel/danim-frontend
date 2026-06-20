@@ -9,7 +9,8 @@ interface SocialNameFieldProps {
   isNameValid: boolean
   nameError?: string
   onNameChange: (v: string) => void
-  onSave: () => Promise<void>
+  /** true = 저장 성공, false = 실패(에러 토스트는 부모에서 처리) */
+  onSave: () => Promise<boolean>
 }
 
 export function SocialNameField({ me, name, isNameValid, nameError, onNameChange, onSave }: SocialNameFieldProps) {
@@ -22,11 +23,11 @@ export function SocialNameField({ me, name, isNameValid, nameError, onNameChange
   async function handleConfirm() {
     setIsSaving(true)
     try {
-      await onSave()
-      setSavedThisSession(true)
-      setModalOpen(false)
-    } catch {
-      // 에러 토스트는 부모(page.tsx)에서 처리
+      const ok = await onSave()
+      if (ok) {
+        setSavedThisSession(true)
+        setModalOpen(false)
+      }
     } finally {
       setIsSaving(false)
     }

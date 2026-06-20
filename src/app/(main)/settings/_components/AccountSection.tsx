@@ -1,14 +1,13 @@
 "use client"
 import { useState } from "react"
 import { useAuthStore } from "@/store/authStore"
-import { isSocialLoginToken } from "@/lib/loginType"
 import { PasswordChangeModal } from "./PasswordChangeModal"
 import { DeleteAccountModal } from "./DeleteAccountModal"
 import { SettingsRow } from "@/components/common"
 
 export function AccountSection() {
-  const accessToken = useAuthStore(s => s.accessToken)
-  const isSocial = isSocialLoginToken(accessToken)
+  const loginType = useAuthStore(s => s.user?.loginType)
+  const isSocial = loginType === 'kakao' || loginType === 'google'
 
   const [passwordModal, setPasswordModal] = useState(false)
   const [deleteModal, setDeleteModal] = useState(false)

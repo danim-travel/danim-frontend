@@ -13,7 +13,8 @@ interface SocialBirthDayFieldProps {
   onBirthYearChange: (v: string) => void
   onBirthMonthChange: (v: string) => void
   onBirthDayChange: (v: string) => void
-  onSave: () => Promise<void>
+  /** true = 저장 성공, false = 실패(에러 토스트는 부모에서 처리) */
+  onSave: () => Promise<boolean>
 }
 
 const BIRTH_INPUT_CLASS = "h-12 text-center px-2"
@@ -39,11 +40,11 @@ export function SocialBirthDayField({
   async function handleConfirm() {
     setIsSaving(true)
     try {
-      await onSave()
-      setSavedThisSession(true)
-      setModalOpen(false)
-    } catch {
-      // 에러 토스트는 부모(page.tsx)에서 처리
+      const ok = await onSave()
+      if (ok) {
+        setSavedThisSession(true)
+        setModalOpen(false)
+      }
     } finally {
       setIsSaving(false)
     }

@@ -5,7 +5,6 @@ import { Button, Checkbox, Modal, PasswordField, TextField } from "@/components/
 import { deleteUser } from "@/lib/api/users"
 import { getApiErrorMessage, isApiError } from "@/lib/apiError"
 import { useAuthStore } from "@/store/authStore"
-import { isSocialLoginToken } from "@/lib/loginType"
 import { toast } from "@/store/toastStore"
 
 interface DeleteAccountModalProps {
@@ -16,9 +15,9 @@ interface DeleteAccountModalProps {
 export function DeleteAccountModal({ open, onClose }: DeleteAccountModalProps) {
   const router = useRouter()
   const clearAuth = useAuthStore(s => s.clearAuth)
-  // prop 대신 토큰에서 직접 파생 — prop 전달 오류나 타이밍 문제로 인한 오분류 방지
-  const accessToken = useAuthStore(s => s.accessToken)
-  const isSocial = isSocialLoginToken(accessToken)
+  // authStore에 저장된 서버 기반 loginType 사용 — 렌더마다 JWT 파싱하지 않음
+  const loginType = useAuthStore(s => s.user?.loginType)
+  const isSocial = loginType === 'kakao' || loginType === 'google'
 
   const [agreed, setAgreed] = useState(false)
   const [password, setPassword] = useState("")
