@@ -63,7 +63,7 @@ const EXPLORE_ITEMS = ALL_FEED_ITEMS.map((item, i) => ({
 }))
 
 export const exploreHandlers = [
-  http.get('*/posts/explore', ({ request }) => {
+  http.get('*/explore', ({ request }) => {
     if (!request.headers.get('Authorization')) {
       return HttpResponse.json(
         { error_detail: '인증되지 않은 사용자입니다.' },
@@ -97,7 +97,7 @@ export const exploreHandlers = [
     const hasNext = offset + pageSize < filtered.length
 
     const nextUrl = hasNext && lastItem
-      ? `${url.origin}/posts/explore?cursor=${lastItem.post_id}&seed=${seed}${search ? `&search=${encodeURIComponent(search)}` : ''}${category ? `&category=${encodeURIComponent(category)}` : ''}`
+      ? `${url.origin}/explore?cursor=${lastItem.post_id}&seed=${seed}${search ? `&search=${encodeURIComponent(search)}` : ''}${category ? `&category=${encodeURIComponent(category)}` : ''}`
       : null
 
     const results: ExplorePost[] = sliced.map(({ post_id, thumbnail, like_count, comment_count }) => ({
