@@ -15,7 +15,7 @@ import {
   deleteMessage,
 } from '@/lib/api/dm'
 import { queryKeys } from '@/lib/queryKeys'
-import { getApiErrorMessage } from '@/lib/apiError'
+import { getApiErrorMessage, type ApiError } from '@/lib/apiError'
 import { toast } from '@/store/toastStore'
 import type { MessageListResponse, CreateConversationResponse } from '@/types'
 
@@ -79,11 +79,19 @@ export function useDeleteMessage(conversationId: string) {
   const queryClient = useQueryClient()
   const messagesKey = queryKeys.dm.messages(conversationId)
 
-  return useMutation<void, Error, string, { previous: InfiniteData<MessageListResponse> | undefined }>({
+  return useMutation<void, ApiError, string, { originalIsDeleted: boolean } | undefined>({
     mutationFn: (messageId) => deleteMessage(conversationId, messageId),
     onMutate: async (messageId) => {
       await queryClient.cancelQueries({ queryKey: messagesKey })
-      const previous = queryClient.getQueryData<InfiniteData<MessageListResponse>>(messagesKey)
+
+      // 삭제 대상 메시지의 is_deleted 값만 저장 — 다른 캐시 변경은 보존
+      const cache = queryClient.getQueryData<InfiniteData<MessageListResponse>>(messagesKey)
+      let originalIsDeleted: boolean | undefined
+      for (const page of cache?.pages ?? []) {
+        const msg = page.results.find(m => m.message_id === messageId)
+        if (msg) { originalIsDeleted = msg.is_deleted; break }
+      }
+
       queryClient.setQueryData<InfiniteData<MessageListResponse>>(messagesKey, (old) => {
         if (!old) return old
         return {
@@ -96,16 +104,29 @@ export function useDeleteMessage(conversationId: string) {
           })),
         }
       })
-      return { previous }
+
+      return originalIsDeleted !== undefined ? { originalIsDeleted } : undefined
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: messagesKey })
       // 삭제된 메시지가 last_message였을 경우 대화방 목록도 갱신
       queryClient.invalidateQueries({ queryKey: queryKeys.dm.conversations, exact: true })
     },
-    onError: (err, _messageId, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(messagesKey, context.previous)
+    onError: (err, messageId, context) => {
+      if (context !== undefined) {
+        // 해당 메시지 하나만 원래 is_deleted 상태로 복구 — WebSocket으로 온 다른 변경은 보존
+        queryClient.setQueryData<InfiniteData<MessageListResponse>>(messagesKey, (old) => {
+          if (!old) return old
+          return {
+            ...old,
+            pages: old.pages.map(page => ({
+              ...page,
+              results: page.results.map(m =>
+                m.message_id === messageId ? { ...m, is_deleted: context.originalIsDeleted } : m
+              ),
+            })),
+          }
+        })
       }
       toast.error(getApiErrorMessage(err, { client: '메시지를 삭제할 수 없습니다.' }))
     },
