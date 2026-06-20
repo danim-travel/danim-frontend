@@ -10,7 +10,10 @@ function getLoginType(accessToken: string): string | null {
   try {
     const [, payloadB64] = accessToken.split('.')
     if (!payloadB64) return null
-    const json = atob(payloadB64.replace(/-/g, '+').replace(/_/g, '/'))
+    // base64url → base64: 문자 치환 후 누락된 패딩(=) 복원
+    const base64 = payloadB64.replace(/-/g, '+').replace(/_/g, '/')
+    const padded = base64.padEnd(base64.length + (4 - base64.length % 4) % 4, '=')
+    const json = atob(padded)
     const payload = JSON.parse(json) as { login_type?: string }
     return payload.login_type ?? null
   } catch {

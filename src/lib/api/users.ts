@@ -16,7 +16,7 @@ export async function updateUser(data: UpdateUserRequest): Promise<MeDetailRespo
  *  - 소셜 로그인: password 없이 body 없는 DELETE 요청
  */
 export async function deleteUser(password?: string): Promise<void> {
-  if (password) {
+  if (password !== undefined) {
     await apiClient.delete('users/me', { json: { password } })
   } else {
     await apiClient.delete('users/me')
