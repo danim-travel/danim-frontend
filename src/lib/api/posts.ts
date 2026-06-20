@@ -16,7 +16,7 @@ export async function getExplorePosts(params: ExploreParams = {}): Promise<Explo
   if (params.cursor) searchParams.cursor = params.cursor
   if (params.seed !== undefined) searchParams.seed = String(params.seed)
   if (params.page_size) searchParams.page_size = String(params.page_size)
-  return apiClient.get('posts/explore', { searchParams }).json<ExploreResponse>()
+  return apiClient.get('explore', { searchParams }).json<ExploreResponse>()
 }
 
 export interface GetBookmarksParams {
