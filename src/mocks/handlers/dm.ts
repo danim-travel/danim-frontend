@@ -8,7 +8,7 @@
  * - GET    *\/direct-messages/conversations/:conversation_id/messages        메시지 목록 (cursor 페이지네이션, 최신순)
  * - WS     *\/ws/conversations/:conversation_id                              실시간 메시지 송수신
  */
-import { http, HttpResponse, ws } from 'msw'
+import { http, HttpResponse, passthrough, ws } from 'msw'
 import type { RequestHandler, WebSocketHandler } from 'msw'
 import { SHOWCASE_MOCK_USER_ID, MOCK_USER } from '../constants'
 import type {
@@ -113,6 +113,12 @@ const unauthorized = () =>
 const isAuthed = (request: Request): boolean =>
   !!request.headers.get('Authorization')
 
+/**
+ * mock 데이터가 존재하는 대화방인지 확인한다.
+ * mock 대화방 ID만 MSW가 처리하고, 실제 API 대화방 ID는 passthrough한다.
+ */
+const isMockConv = (convId: string): boolean => messageStore.has(convId)
+
 // ---------- REST 핸들러 ----------
 
 export const dmHandlers: RequestHandler[] = [
@@ -184,8 +190,10 @@ export const dmHandlers: RequestHandler[] = [
   // 대화방 나가기
   http.delete('*/direct-messages/conversations/:conversation_id', ({ request, params }) => {
     if (!isAuthed(request)) return unauthorized()
-
     const convId = params.conversation_id as string
+    // 실제 API 대화방은 실제 서버로 통과
+    if (!isMockConv(convId)) return passthrough()
+
     const idx = conversations.findIndex((c) => c.conversation_id === convId)
     if (idx === -1) {
       return HttpResponse.json({ error_detail: '존재하지 않는 대화방입니다.' }, { status: 404 })
@@ -198,27 +206,31 @@ export const dmHandlers: RequestHandler[] = [
   // 이미지 presigned URL 발급 — 동적 :message_id 보다 먼저 매칭되도록 위에 둔다
   http.post('*/direct-messages/conversations/:conversation_id/messages/presigned-url', ({ request, params }) => {
     if (!isAuthed(request)) return unauthorized()
-
     const convId = params.conversation_id as string
-    if (!messageStore.has(convId)) {
-      return HttpResponse.json({ error_detail: '존재하지 않는 대화방입니다.' }, { status: 404 })
-    }
+    // 실제 API 대화방은 실제 서버로 통과
+    if (!isMockConv(convId)) return passthrough()
 
     const mockKey = `dm/${convId}/${Date.now()}.jpg`
     const res: DmPresignedUrlResponse = {
-      presigned_url: `https://mock-s3.example.com/${mockKey}?X-Amz-Signature=mock`,
-      img_url: `https://mock-cdn.example.com/${mockKey}`,
+      presigned_url: `https://oz-externship.s3.ap-northeast-2.amazonaws.com/${mockKey}?X-Amz-Signature=mock`,
+      img_url: `https://picsum.photos/seed/${Date.now()}/300/300`,
       key: mockKey,
     }
     return HttpResponse.json(res, { status: 201 })
   }),
 
+  // S3 presigned URL PUT 요청 — mock 대화방 이미지 업로드 시 실제 S3 요청을 막고 200 반환
+  // *.amazonaws.com 은 URLPattern 에서 단일 레벨 서브도메인만 매칭하므로 실제 버킷 호스트를 명시한다
+  http.put('https://oz-externship.s3.ap-northeast-2.amazonaws.com/*', () => new HttpResponse(null, { status: 200 })),
+
   // 메시지 삭제
   http.delete('*/direct-messages/conversations/:conversation_id/messages/:message_id', ({ request, params }) => {
     if (!isAuthed(request)) return unauthorized()
-
     const convId = params.conversation_id as string
     const msgId = params.message_id as string
+    // 실제 API 대화방은 실제 서버로 통과
+    if (!isMockConv(convId)) return passthrough()
+
     const messages = messageStore.get(convId)
     if (!messages) {
       return HttpResponse.json({ error_detail: '존재하지 않는 대화방입니다.' }, { status: 404 })
@@ -244,8 +256,10 @@ export const dmHandlers: RequestHandler[] = [
   // 메시지 목록 (cursor 페이지네이션, 최신순)
   http.get('*/direct-messages/conversations/:conversation_id/messages', ({ request, params }) => {
     if (!isAuthed(request)) return unauthorized()
-
     const convId = params.conversation_id as string
+    // 실제 API 대화방은 실제 서버로 통과
+    if (!isMockConv(convId)) return passthrough()
+
     const messages = messageStore.get(convId)
     if (!messages) {
       return HttpResponse.json({ error_detail: '존재하지 않는 대화방입니다.' }, { status: 404 })
@@ -277,6 +291,13 @@ const clientConversations = new Map<WsClient, Set<string>>()
 
 export const dmWsHandlers: WebSocketHandler[] = [
   dmWs.addEventListener('connection', ({ client }) => {
+    // 비mock 대화방은 실제 WS 서버로 통과
+    const convId = client.url.pathname.split('/').pop() ?? ''
+    if (!isMockConv(convId)) {
+      client.passthrough()
+      return
+    }
+
     // socket_key URL 파라미터 검증 (mock: 존재 여부만 확인)
     const socketKey = client.url.searchParams.get('socket_key')
     if (!socketKey) {
@@ -300,18 +321,28 @@ export const dmWsHandlers: WebSocketHandler[] = [
         return
       }
 
-      const msg = parsed as { type?: unknown; conversation_id?: unknown; content?: unknown; img_url?: unknown }
+      const msg = parsed as {
+        type?: unknown
+        conversation_id?: unknown
+        content?: unknown
+        img_url?: unknown
+        original_img?: unknown
+      }
 
       if (msg.type === 'send_message') {
         const content = typeof msg.content === 'string' ? msg.content.trim() : null
-        const imgUrl = typeof msg.img_url === 'string' && msg.img_url ? msg.img_url : null
+        const originalImg = typeof msg.original_img === 'string' && msg.original_img ? msg.original_img : null
+        // original_img(key)가 있으면 mock CDN URL 생성 — 서버가 key로 CDN URL을 만드는 것과 동일
+        const imgUrl = originalImg
+          ? `https://picsum.photos/seed/${originalImg}/300/300`
+          : (typeof msg.img_url === 'string' && msg.img_url ? msg.img_url : null)
         if (typeof msg.conversation_id !== 'string' || (!content && !imgUrl)) {
           client.send(JSON.stringify({ type: 'error', detail: '올바르지 않은 메시지 형식입니다.' } satisfies DmWsServerMessage))
           return
         }
 
-        const convId = msg.conversation_id
-        const messages = messageStore.get(convId)
+        const msgConvId = msg.conversation_id
+        const messages = messageStore.get(msgConvId)
         if (!messages) {
           client.send(JSON.stringify({ type: 'error', detail: '존재하지 않는 대화방입니다.' } satisfies DmWsServerMessage))
           return
@@ -323,25 +354,25 @@ export const dmWsHandlers: WebSocketHandler[] = [
           sender: ME,
           content,
           img_url: imgUrl,
-          original_img: null,
+          original_img: originalImg,
           is_deleted: false,
           created_at: now,
         }
         messages.unshift(newMessage)
 
-        const conv = conversations.find((c) => c.conversation_id === convId)
+        const conv = conversations.find((c) => c.conversation_id === msgConvId)
         if (conv) {
           conv.last_message = { content: newMessage.content, img_url: newMessage.img_url ?? '', created_at: now } satisfies LastMessage
         }
 
         // C3: 해당 대화방을 구독 중인 클라이언트에게만 브로드캐스트
         const subs = clientConversations.get(client) ?? new Set<string>()
-        subs.add(convId)
+        subs.add(msgConvId)
         clientConversations.set(client, subs)
 
         const payload = JSON.stringify({ type: 'receive_message', message: newMessage } satisfies DmWsServerMessage)
         for (const [c, convIds] of clientConversations) {
-          if (convIds.has(convId)) c.send(payload)
+          if (convIds.has(msgConvId)) c.send(payload)
         }
         return
       }
