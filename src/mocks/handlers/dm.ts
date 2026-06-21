@@ -291,12 +291,9 @@ const clientConversations = new Map<WsClient, Set<string>>()
 
 export const dmWsHandlers: WebSocketHandler[] = [
   dmWs.addEventListener('connection', ({ client }) => {
-    // 비mock 대화방은 실제 WS 서버로 통과
+    // 비mock 대화방은 핸들러 연결 없이 반환 — MSW WebSocket client에는 passthrough()가 없음
     const convId = client.url.pathname.split('/').pop() ?? ''
-    if (!isMockConv(convId)) {
-      client.passthrough()
-      return
-    }
+    if (!isMockConv(convId)) return
 
     // socket_key URL 파라미터 검증 (mock: 존재 여부만 확인)
     const socketKey = client.url.searchParams.get('socket_key')
