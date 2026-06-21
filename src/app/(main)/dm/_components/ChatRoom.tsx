@@ -24,8 +24,9 @@ export function ChatRoom({ conversationId }: Props) {
 
   const handleSendImage = async (file: File) => {
     try {
-      const { img_url } = await uploadDmImage(conversationId, file)
-      sendMessage("", img_url)
+      const { img_url, key } = await uploadDmImage(conversationId, file)
+      // 댓글 이미지와 동일하게 key(original_img)를 전달 — 서버가 key로 CDN URL을 생성한다
+      sendMessage("", img_url, key)
     } catch {
       toast.error("이미지를 전송할 수 없습니다.")
     }

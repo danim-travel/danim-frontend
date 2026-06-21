@@ -114,6 +114,7 @@ interface PendingEntry {
   tempId: string
   content: string | null
   imgUrl: string | null
+  originalImg: string | null  // S3 key — echo 매칭에 사용 (img_url은 서버가 변환 후 달라질 수 있음)
   sentAt: number
 }
 
@@ -268,11 +269,15 @@ export function useDmSocket(
           const now = Date.now()
 
           // FIX 6: null content는 매칭 제외 — 이미지 메시지에서 null===null 오탐 방지
+          // original_img(key) 매칭 우선 — 서버가 img_url을 CDN URL로 변환하면 img_url이 달라질 수 있음
           const pendingIdx = pendingRef.current.findIndex(
             p =>
               now - p.sentAt < PENDING_TTL_MS &&
-              ((message.content !== null && p.content === message.content) ||
-                (message.img_url !== null && p.imgUrl === message.img_url))
+              (
+                (message.content !== null && p.content === message.content) ||
+                (message.original_img !== null && p.originalImg === message.original_img) ||
+                (message.img_url !== null && p.imgUrl === message.img_url)
+              )
           )
 
           if (pendingIdx !== -1) {
@@ -358,12 +363,13 @@ export function useDmSocket(
   }, [accessToken, conversationId, queryClient])
 
   const sendMessage = useCallback(
-    (content: string, imgUrl?: string) => {
+    (content: string, imgUrl?: string, originalImg?: string) => {
       if (!myUserId) return false
 
       const trimmed = content.trim()
       const normalizedContent = trimmed || null
       const normalizedImgUrl = imgUrl ?? null
+      const normalizedOriginalImg = originalImg ?? null
       if (!normalizedContent && !normalizedImgUrl) return false
 
       // mock 모드: 소켓 없이 낙관적 삽입만 수행
@@ -374,7 +380,7 @@ export function useDmSocket(
           sender: { user_id: myUserId, nickname: '', profile_img: null },
           content: normalizedContent,
           img_url: normalizedImgUrl,
-          original_img: null,
+          original_img: normalizedOriginalImg,
           is_deleted: false,
           created_at: new Date().toISOString(),
         })
@@ -397,13 +403,19 @@ export function useDmSocket(
         sender: { user_id: myUserId, nickname: '', profile_img: null },
         content: normalizedContent,
         img_url: normalizedImgUrl,
-        original_img: null,
+        original_img: normalizedOriginalImg,
         is_deleted: false,
         created_at: new Date().toISOString(),
       }
 
       prependToCache(queryClient, conversationId, optimistic)
-      pendingRef.current.push({ tempId, content: normalizedContent, imgUrl: normalizedImgUrl, sentAt: Date.now() })
+      pendingRef.current.push({
+        tempId,
+        content: normalizedContent,
+        imgUrl: normalizedImgUrl,
+        originalImg: normalizedOriginalImg,
+        sentAt: Date.now(),
+      })
 
       // FIX 4: send 실패 시 낙관적 메시지 롤백
       try {
@@ -413,6 +425,7 @@ export function useDmSocket(
               conversation_id: conversationId,
               content: normalizedContent,
               img_url: normalizedImgUrl,
+              original_img: normalizedOriginalImg,
             }
           : {
               type: 'send_message',
