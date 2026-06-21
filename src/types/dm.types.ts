@@ -68,7 +68,14 @@ export interface DmPresignedUrlResponse {
  * 서버 → 클라이언트: receive_message / read_receipt / message_deleted / error.
  */
 export type DmWsClientMessage =
-  | { type: 'send_message'; conversation_id: string; content: string | null; img_url?: string | null }
+  | {
+      type: 'send_message'
+      conversation_id: string
+      content: string | null
+      img_url?: string | null
+      /** S3 object key — 댓글 이미지와 동일하게 서버가 이 key로 CDN URL을 생성한다 */
+      original_img?: string | null
+    }
 
 export type DmWsServerMessage =
   | { type: 'receive_message'; message: Message }
