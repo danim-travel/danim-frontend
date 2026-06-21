@@ -1,5 +1,5 @@
 "use client"
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import type { UserSearchResult } from "@/types/user.types"
 
 const STORAGE_KEY = "danim_recent_searches"
@@ -38,7 +38,12 @@ function writeStorage(items: UserSearchResult[]) {
  * 최신순으로 정렬되며 최대 20개까지 유지한다.
  */
 export function useRecentSearches() {
-  const [recentSearches, setRecentSearches] = useState<UserSearchResult[]>(readStorage)
+  const [recentSearches, setRecentSearches] = useState<UserSearchResult[]>([])
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setRecentSearches(readStorage())
+  }, [])
 
   const addRecentSearch = useCallback((user: UserSearchResult) => {
     setRecentSearches((prev) => {
