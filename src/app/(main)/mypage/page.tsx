@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { parseAsString, useQueryState } from "nuqs";
 import { AnimatePresence } from "motion/react";
 import { LayoutGrid, Bookmark } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
@@ -22,7 +23,7 @@ function MyPageContent({ userId }: { userId: string }) {
   const closePanel = useUIStore((s) => s.closePanel);
   const { data: profile, isLoading } = useMyProfile(userId);
   const [tab, setTab] = useState<MyPageTab>("posts");
-  const [modalPostId, setModalPostId] = useState<string | null>(null);
+  const [modalPostId, setModalPostId] = useQueryState("post", parseAsString);
 
   // 마이페이지 진입 시 즉시 북마크를 fetch — 탭 카운트가 처음부터 정확히 보이도록.
   // 탭 클릭 시점에 처음 fetch하면 카운트가 0으로 잠깐 보이는 문제가 있음.
@@ -117,7 +118,7 @@ function MyPageContent({ userId }: { userId: string }) {
           <PostGrid
             posts={postsItems}
             isLoading={isLoading}
-            onPostClick={(id) => { closePanel(); setModalPostId(id); }}
+            onPostClick={(id) => { closePanel(); void setModalPostId(id); }}
           />
         ) : (
           <BookmarksTabPanel
@@ -128,7 +129,7 @@ function MyPageContent({ userId }: { userId: string }) {
             hasNextPage={!!hasMoreBookmarks}
             isFetchingNextPage={isFetchingMoreBookmarks}
             onLoadMore={() => fetchMoreBookmarks()}
-            onPostClick={(id) => { closePanel(); setModalPostId(id); }}
+            onPostClick={(id) => { closePanel(); void setModalPostId(id); }}
           />
         )}
       </div>
@@ -136,10 +137,11 @@ function MyPageContent({ userId }: { userId: string }) {
         {modalPostId && (
           <PostModal
             postId={modalPostId}
-            onClose={() => setModalPostId(null)}
+            onClose={() => void setModalPostId(null)}
             showGoToMain
             onGoToMain={() => {
-              sessionStorage.setItem("scrollToPostId", modalPostId);
+              sessionStorage.setItem("scrollToPostId", modalPostId!);
+              void setModalPostId(null);
               router.push(`/?solo=${modalPostId}`);
             }}
           />

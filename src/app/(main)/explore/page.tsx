@@ -1,5 +1,6 @@
 "use client"
 import { useState, useCallback } from "react"
+import { parseAsString } from "nuqs"
 import { useRouter } from "next/navigation"
 import { AnimatePresence } from "motion/react"
 import { useQueryState } from "nuqs"
@@ -16,7 +17,7 @@ export default function ExplorePage() {
   const [search, setSearch] = useQueryState("search", { defaultValue: "" })
   const [inputValue, setInputValue] = useState(search)
   const [category, setCategory] = useState<Category>("전체")
-  const [postModalId, setPostModalId] = useState<string | null>(null)
+  const [postModalId, setPostModalId] = useQueryState("post", parseAsString)
 
   const { posts, isLoading, hasNextPage, isFetchingNextPage, fetchNextPage } =
     useExplorePageState(inputValue, category)
@@ -60,17 +61,18 @@ export default function ExplorePage() {
         hasNextPage={!!hasNextPage}
         isFetchingNextPage={isFetchingNextPage}
         onLoadMore={handleLoadMore}
-        onPostClick={setPostModalId}
+        onPostClick={(id) => void setPostModalId(id)}
       />
 
       <AnimatePresence>
         {postModalId && (
           <PostModal
             postId={postModalId}
-            onClose={() => setPostModalId(null)}
+            onClose={() => void setPostModalId(null)}
             showGoToMain
             onGoToMain={() => {
-              sessionStorage.setItem("scrollToPostId", postModalId)
+              sessionStorage.setItem("scrollToPostId", postModalId!)
+              void setPostModalId(null)
               router.push(`/?solo=${postModalId}`)
             }}
           />
