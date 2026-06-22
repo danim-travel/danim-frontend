@@ -34,16 +34,22 @@ interface Props {
   inline?: boolean;
   // 진입한 페이지에서 이미 캐시된 썸네일 URL — 데이터 로딩 중 회색 깜빡임 방지용 placeholder
   placeholderThumbnail?: string;
+  // 수정 페이지 이동 처리 — 인터셉트 모달은 popstate 기반 처리가 필요해 외부에서 주입
+  onEdit?: () => void;
+  // 모달 내부에서 다른 페이지로 이동할 때 사용. 인터셉트 모달은 popstate 패턴이 필요해 외부 주입.
+  onNavigate?: (href: string) => void;
+  // 게시글 삭제 성공 직후 호출 (onClose 이후). 인터셉트 모달이 진입 페이지로 안전하게 이동시킬 때 사용.
+  onAfterDelete?: () => void;
 }
 
 const urlPathname = (url: string) => { try { return new URL(url).pathname } catch { return url } }
 
-export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, className, initialSpotIdx, inline = false, placeholderThumbnail }: Props) {
+export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, className, initialSpotIdx, inline = false, placeholderThumbnail, onEdit, onNavigate, onAfterDelete }: Props) {
   const router = useRouter();
   const [userSelectedIdx, setUserSelectedIdx] = useState<number | null>(null);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
-  const { deletePost, isDeleting } = usePostDelete(postId, { onClose });
+  const { deletePost, isDeleting } = usePostDelete(postId, { onClose, onAfterDelete });
 
   const { data, isLoading, isError, likeMutation, bookmarkMutation } = usePostDetail(postId);
   const { data: commentsData } = useCommentsQuery(postId);
@@ -98,10 +104,10 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
       buildPostContextMenu({
         isOwner: data?.is_owner ?? false,
         postId,
-        onEdit: () => router.push(`/write/${postId}/edit`),
+        onEdit: onEdit ?? (() => router.push(`/write/${postId}/edit`)),
         onDelete: () => setConfirmDeleteOpen(true),
       }),
-    [data?.is_owner, postId, router]
+    [data?.is_owner, postId, router, onEdit]
   );
 
   // activeSpotIdx 변경 시 Context consumers가 불필요하게 리렌더되지 않도록 메모이즈.
@@ -117,6 +123,7 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
       onDeleteComment,
       toggleCommentLike,
       onClose,
+      navigate: onNavigate ?? ((href: string) => router.push(href)),
     }),
     [
       postId,
@@ -128,6 +135,8 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
       onDeleteComment,
       toggleCommentLike,
       onClose,
+      onNavigate,
+      router,
     ]
   );
 

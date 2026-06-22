@@ -46,7 +46,7 @@ export default function HomePage() {
 
   // soloPostId가 없을 때 queryKeys.posts.detail("")로 빈 캐시 항목이 생기지 않도록 키를 조건부 구성
   const { data: soloDetail } = useQuery({
-    queryKey: soloPostId ? queryKeys.posts.detail(soloPostId) : ["_disabled"],
+    queryKey: soloPostId ? queryKeys.posts.detail(soloPostId) : queryKeys.disabled,
     queryFn: () => apiClient.get(`posts/${soloPostId}`).json<PostDetail>(),
     enabled: !!soloPostId,
     refetchOnWindowFocus: false,

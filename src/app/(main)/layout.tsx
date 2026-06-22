@@ -9,6 +9,7 @@ import { AuthGuard } from './_components/AuthGuard'
 import { SearchDrawer } from './_components/SearchDrawer'
 import { NotificationDrawer } from './_components/NotificationDrawer'
 import { NotificationBadgeSocket } from './_components/NotificationBadgeSocket'
+import { MainScrollRestoration } from './_components/MainScrollRestoration'
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -24,9 +25,9 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         <MobileHeader />
 
         {/* 콘텐츠 영역 — 모바일: 상단/하단 fixed UI 높이만큼 padding */}
-        <main className="flex-1 min-w-0 h-full overflow-y-auto overscroll-contain pt-16 md:pt-0 pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">
+        <MainScrollRestoration>
           {children}
-        </main>
+        </MainScrollRestoration>
 
         {/* 모바일 전용 하단 탭바 */}
         <MobileBottomNav />

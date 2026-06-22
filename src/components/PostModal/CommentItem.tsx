@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { Heart, Pencil, Trash2, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
@@ -27,21 +26,19 @@ interface Props {
 }
 
 export default function CommentItem({ comment, isOwn, onLike, onEdit, onDelete }: Props) {
-  const router = useRouter();
-  const { currentUserId } = usePostModalContext();
+  const { currentUserId, navigate } = usePostModalContext();
   // 삭제된 유저(id null) 또는 익명은 프로필 링크 불가
   const canLinkProfile = !!comment.user.id && !comment.user.is_deleted;
   const profileHref = comment.user.id
     ? (currentUserId && currentUserId === comment.user.id ? "/mypage" : `/users/${comment.user.id}`)
     : null;
 
-  // 부모의 onClose(예: HomePage의 nuqs setQueryState)가 같은 tick에 URL을 또 갱신해
-  // router.push와 충돌하는 케이스가 있어 명시적으로 호출하지 않는다.
-  // 라우트가 바뀌면 nuqs가 ?post= 쿼리 해제 → AnimatePresence가 모달 unmount.
+  // 메인 모달: navigate=router.push → nuqs가 ?post= 해제 → AnimatePresence가 모달 unmount
+  // 인터셉트 모달: navigate=backThenPush → @modal 슬롯 default 리셋 후 다른 페이지로 push
   const handleProfileClick = (e: React.MouseEvent) => {
     if (!profileHref) return;
     e.preventDefault();
-    router.push(profileHref);
+    navigate(profileHref);
   };
   // null = 수정 중 아님, string = 수정 중인 임시 텍스트
   const [editDraft, setEditDraft] = useState<string | null>(null);

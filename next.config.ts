@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 // eslint-disable-next-line no-restricted-syntax
 if (process.env.NODE_ENV === 'production') {
-  const required = ['NEXT_PUBLIC_API_URL', 'NEXT_PUBLIC_KAKAO_MAP_KEY']
+  const required = ['NEXT_PUBLIC_API_URL', 'NEXT_PUBLIC_KAKAO_MAP_KEY', 'NEXT_PUBLIC_SITE_URL']
   // eslint-disable-next-line no-restricted-syntax
   const missing = required.filter((key) => !process.env[key])
   if (missing.length > 0) {

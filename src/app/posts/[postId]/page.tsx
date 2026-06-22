@@ -74,18 +74,24 @@ export default async function PostPublicRoute({ params }: Props) {
   let initialData: PostDetail | null = null;
   let notFoundMessage: string | null = null;
 
+  let notFoundDescription = "삭제되었거나 존재하지 않는 게시글입니다.";
+
   try {
     initialData = await getPostDetail(postId);
   } catch (err) {
     if (isApiError(err) && err.status === 404) {
       notFoundMessage = getApiErrorMessage(err, { client: "게시글을 찾을 수 없습니다." });
+    } else if (isApiError(err) && (err.status === 401 || err.status === 403)) {
+      // selective auth 미구현 시 publicClient 호출이 401/403으로 떨어지는 케이스도 같이 흡수
+      notFoundMessage = "접근할 수 없는 게시글입니다.";
+      notFoundDescription = "비공개 게시글이거나 권한이 없습니다.";
     } else {
       notFound();
     }
   }
 
   if (notFoundMessage) {
-    return <NotFoundView title={notFoundMessage} description="삭제되었거나 존재하지 않는 게시글입니다." />;
+    return <NotFoundView title={notFoundMessage} description={notFoundDescription} />;
   }
   return <PostPublicPage postId={postId} initialData={initialData!} />;
 }
