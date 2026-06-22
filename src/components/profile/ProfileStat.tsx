@@ -16,8 +16,8 @@ export function ProfileStat({ label, value, href, variant = "inline" }: ProfileS
   const base = isDivider
     ? "flex flex-col items-center px-6"
     : "flex flex-1 flex-col items-center px-3";
-  const valueCls = `${isDivider ? "text-section-title" : "text-card-title"} font-bold text-text leading-none`;
-  const labelCls = `${isDivider ? "text-body-sm mt-1.5" : "text-nav mt-1"} text-text-muted`;
+  const valueCls = `${isDivider ? "text-section-title" : "text-title-lg"} font-bold text-text leading-none`;
+  const labelCls = `${isDivider ? "text-body-sm mt-1.5" : "text-body-sm mt-1"} text-text-muted`;
 
   const content = (
     <>
