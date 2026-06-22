@@ -17,8 +17,10 @@ export const viewport: Viewport = {
 
 export default function RootLayout({
   children,
+  modal,
 }: Readonly<{
   children: React.ReactNode;
+  modal: React.ReactNode;
 }>) {
   return (
     <html
@@ -35,7 +37,10 @@ export default function RootLayout({
       </head>
       <body className="h-full">
         <Providers>
-          <NuqsAdapter>{children}</NuqsAdapter>
+          <NuqsAdapter>
+            {children}
+            {modal}
+          </NuqsAdapter>
         </Providers>
       </body>
     </html>

@@ -149,6 +149,8 @@ export default function HomePage() {
           <PostModal
             postId={postId}
             initialSpotIdx={spotIdx}
+            // 활성 카드의 썸네일을 placeholder로 즉시 표시해 로딩 중 회색 깜빡임 방지
+            placeholderThumbnail={activeFocusedPost?.post.thumbnail}
             onClose={handleCloseModal}
           />
         )}
