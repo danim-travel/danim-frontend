@@ -3,7 +3,7 @@ import Image from "next/image";
 import { Heart, MessageCircle } from "lucide-react";
 import { EmptyState, GridSkeleton } from "@/components/common";
 import { usePrefetchPostDetail } from "@/app/(main)/_hooks/usePrefetchPostDetail";
-import { GRID_ASPECT_RATIOS } from "@/lib/imageUtils";
+import { GRID_ASPECT_RATIOS } from "@/lib/media/imageUtils";
 
 /**
  * 마소너리 그리드에 필요한 최소 공약수 형태.

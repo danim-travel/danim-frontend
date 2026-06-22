@@ -1,7 +1,7 @@
 'use client'
 
 import { apiClient } from '@/lib/apiClient'
-import { compressImage } from '@/lib/imageCompression'
+import { compressImage } from '@/lib/media/imageCompression'
 
 export type PresignedUrlResponse = {
   presigned_url: string

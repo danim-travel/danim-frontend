@@ -1,6 +1,6 @@
 'use client'
 
-import { uploadImage } from '@/lib/uploadImage'
+import { uploadImage } from '@/lib/media/uploadImage'
 import type { DmPresignedUrlResponse } from '@/types'
 
 /**

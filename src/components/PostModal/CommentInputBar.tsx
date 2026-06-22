@@ -4,7 +4,7 @@ import { memo, useEffect, useRef, useState } from "react";
 import { Plus, X } from "lucide-react";
 import { Button } from "@/components/common";
 import { getApiErrorMessage } from "@/lib/apiError";
-import { uploadImage } from "@/lib/uploadImage";
+import { uploadImage } from "@/lib/media/uploadImage";
 import { toast } from "@/store/toastStore";
 import { usePostModalContext } from "./PostModalContext";
 

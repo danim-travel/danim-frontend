@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react"
 import { Camera, Trash2 } from "lucide-react"
 import { Avatar, Button, Modal, TextField } from "@/components/common"
 import { getApiErrorMessage } from "@/lib/apiError"
-import { uploadImage } from "@/lib/uploadImage"
+import { uploadImage } from "@/lib/media/uploadImage"
 import { toast } from "@/store/toastStore"
 import type { MeDetailResponse } from "@/types"
 
