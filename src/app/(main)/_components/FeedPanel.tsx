@@ -4,7 +4,7 @@ import { memo } from "react";
 import { ChevronLeft } from "lucide-react";
 import { EmptyState } from "@/components/common";
 import { Spinner } from "@/components/ui/spinner";
-import { useInfiniteScrollSentinel } from "@/hooks/useInfiniteScrollSentinel";
+import { useInfiniteScrollSentinel } from "@/hooks/async/useInfiniteScrollSentinel";
 import type { MainFeedItem } from "@/types";
 import FeedCard from "./FeedCard";
 

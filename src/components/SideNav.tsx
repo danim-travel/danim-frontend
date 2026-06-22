@@ -7,7 +7,7 @@ import { Home, Compass, PenLine, Search, MessageCircle, Bell, Settings, type Luc
 import { useUIStore } from '@/store/uiStore'
 import { useAuthStore } from '@/store/authStore'
 import { useNotificationBadgeStore } from '@/store/notificationBadgeStore'
-import { useOnClickOutside } from '@/hooks/useOnClickOutside'
+import { useOnClickOutside } from '@/hooks/ui/useOnClickOutside'
 import { LogoutModal } from '@/components/common'
 
 const NAV_LINKS = [

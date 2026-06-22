@@ -3,7 +3,7 @@ import { useState, useRef, useCallback } from "react"
 import Link from "next/link"
 import { Avatar, Button, Modal } from "@/components/common"
 import { cn } from "@/lib/utils"
-import { useOnClickOutside } from "@/hooks/useOnClickOutside"
+import { useOnClickOutside } from "@/hooks/ui/useOnClickOutside"
 import type { Message, UserBrief } from "@/types"
 
 interface Props {

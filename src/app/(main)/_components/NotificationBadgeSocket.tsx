@@ -4,7 +4,7 @@
  */
 'use client'
 
-import { useNotificationBadge } from '@/hooks/useNotificationBadge'
+import { useNotificationBadge } from '@/app/(main)/_hooks/useNotificationBadge'
 
 export function NotificationBadgeSocket() {
   useNotificationBadge()

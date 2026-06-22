@@ -3,7 +3,7 @@ import React, { useEffect, useId } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
-import { useScrollLock } from "@/hooks/useScrollLock";
+import { useScrollLock } from "@/hooks/ui/useScrollLock";
 
 export type ModalFooterAlign = "start" | "end" | "stretch";
 

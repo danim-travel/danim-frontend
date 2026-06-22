@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { uploadImage } from '@/lib/uploadImage'
+import { uploadImage } from '@/lib/media/uploadImage'
 import { getApiErrorMessage } from '@/lib/apiError'
 import { toast } from '@/store/toastStore'
 import type { CreatePostSpotImage } from '@/types'

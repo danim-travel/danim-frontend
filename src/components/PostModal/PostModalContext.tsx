@@ -1,8 +1,8 @@
 "use client";
 
 import { createContext, useContext } from "react";
-import type { useCommentMutations } from "@/hooks/useCommentMutations";
-import type { usePostDetail } from "@/hooks/usePostDetail";
+import type { useCommentMutations } from "./_hooks/comment/useCommentMutations";
+import type { usePostDetail } from "./_hooks/post/usePostDetail";
 
 type CommentsApi = ReturnType<typeof useCommentMutations>;
 type PostDetailApi = ReturnType<typeof usePostDetail>;

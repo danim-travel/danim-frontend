@@ -14,7 +14,7 @@ import { useBookmarksQuery } from "./_hooks/useBookmarksQuery";
 import ProfileHeader from "./_components/ProfileHeader";
 import PostGrid, { type PostGridItem } from "./_components/PostGrid";
 import BookmarksTabPanel from "./_components/BookmarksTabPanel";
-import { useAuthHydrationFallback } from "@/hooks/useAuthHydrationFallback";
+import { useAuthHydrationFallback } from "@/app/(main)/_hooks/useAuthHydrationFallback";
 
 type MyPageTab = "posts" | "bookmarks";
 

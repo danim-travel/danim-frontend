@@ -1,8 +1,8 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/lib/apiClient'
 import { queryKeys } from '@/lib/queryKeys'
-import { useLikeMutation } from '@/hooks/useLikeMutation'
-import { useBookmarkMutation } from '@/hooks/useBookmarkMutation'
+import { useLikeMutation } from '@/hooks/interactions/useLikeMutation'
+import { useBookmarkMutation } from '@/hooks/interactions/useBookmarkMutation'
 import { updateFeedItem, type FeedCache } from '@/lib/feedCache'
 import type { PostDetail } from '@/types'
 
