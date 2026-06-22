@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { Home, Compass, PenLine, Search, MessageCircle, Bell, Settings, type LucideIcon } from 'lucide-react'
@@ -8,7 +9,7 @@ import { useUIStore } from '@/store/uiStore'
 import { useAuthStore } from '@/store/authStore'
 import { useNotificationBadgeStore } from '@/store/notificationBadgeStore'
 import { useOnClickOutside } from '@/hooks/ui/useOnClickOutside'
-import { LogoutModal } from '@/components/common'
+import { Avatar, LogoutModal } from '@/components/common'
 
 const NAV_LINKS = [
   { href: '/', label: '홈', Icon: Home },
@@ -106,8 +107,7 @@ export default function SideNav() {
     <nav className="w-(--sidebar-width) bg-bg-card border-r border-border flex flex-col items-center shrink-0 h-full py-4">
       {/* 메인 로고, 클릭하면 홈으로 이동 */}
       <button type="button" onClick={goHome} className="mb-5 cursor-pointer">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/favicon.svg" alt="Danim" width={40} height={40} decoding="async" className="w-10 h-10 rounded-lg shadow-md hover:shadow-lg transition-shadow" />
+        <Image src="/favicon.svg" alt="Danim" width={40} height={40} priority className="w-10 h-10 rounded-lg shadow-md hover:shadow-lg transition-shadow" />
       </button>
 
       {/* 메인 네비게이션 링크 */}
@@ -174,18 +174,12 @@ export default function SideNav() {
         </div>
 
         <Link href="/mypage" onClick={closePanel}>
-          {user?.profileImg ? (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img
-              src={user.profileImg}
-              alt="프로필"
-              loading="lazy"
-              decoding="async"
-              className="w-9 h-9 rounded-full object-cover shadow-md hover:shadow-lg transition-shadow"
-            />
-          ) : (
-            <div className="w-9 h-9 rounded-full bg-border shadow-md hover:shadow-lg transition-shadow" />
-          )}
+          <Avatar
+            src={user?.profileImg ?? undefined}
+            initial={user?.nickname?.[0]?.toUpperCase()}
+            size="sm"
+            className="shadow-md hover:shadow-lg transition-shadow"
+          />
         </Link>
       </div>
 
