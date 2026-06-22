@@ -20,6 +20,9 @@ interface PostModalContextValue {
   toggleCommentLike: CommentsApi["toggleCommentLike"];
   // 프로필 클릭 등 내부에서 모달을 닫아야 하는 경우에 사용
   onClose: () => void;
+  // 모달 내부에서 다른 페이지로 이동. 인터셉트 모달은 @modal 슬롯 닫기 + push가 필요해
+  // 외부에서 주입받아 처리한다. 기본값은 router.push.
+  navigate: (href: string) => void;
 }
 
 // 실제 보관함(Context 객체). 초기값은 null

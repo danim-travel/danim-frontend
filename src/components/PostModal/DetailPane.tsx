@@ -1,7 +1,6 @@
 "use client";
 
 import { memo } from "react";
-import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import type { Comment, PostDetail, Spot } from "@/types";
 import { Avatar, Button } from "@/components/common";
@@ -28,17 +27,15 @@ function PostModalDetailPane({
   showGoToMain,
   onGoToMain,
 }: Props) {
-  const router = useRouter();
-  const { currentUserId } = usePostModalContext();
+  const { currentUserId, navigate } = usePostModalContext();
   const isOwn = !!currentUserId && currentUserId === data.user.user_id;
   const profileHref = isOwn ? "/mypage" : `/users/${data.user.user_id}`;
 
-  // 부모의 onClose(예: HomePage의 nuqs setQueryState)가 같은 tick에 URL을 또 갱신해
-  // router.push와 충돌하는 케이스가 있어 명시적으로 호출하지 않는다.
-  // 라우트가 바뀌면 nuqs가 ?post= 쿼리 해제 → AnimatePresence가 모달 unmount.
+  // 메인 모달: navigate=router.push → nuqs가 ?post= 해제 → AnimatePresence가 모달 unmount
+  // 인터셉트 모달: navigate=backThenPush → @modal 슬롯 default 리셋 후 다른 페이지로 push
   const handleProfileClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    router.push(profileHref);
+    navigate(profileHref);
   };
 
   return (
