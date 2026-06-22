@@ -1,6 +1,14 @@
 import { Link, Pencil, Share2, Trash2 } from "lucide-react";
 import { config } from "@/lib/config";
 import { sharePost } from "@/lib/api/posts";
+import { toast } from "@/store/toastStore";
+
+const copyToClipboard = async (text: string): Promise<boolean> => {
+  if (typeof navigator !== "undefined" && navigator.clipboard) {
+    try { await navigator.clipboard.writeText(text); return true; } catch { return false; }
+  }
+  return false;
+};
 
 interface BuildPostMenuArgs {
   isOwner: boolean;
@@ -26,15 +34,17 @@ export function buildPostContextMenu({ isOwner, postId, onEdit, onDelete }: Buil
     {
       label: "링크 복사",
       icon: <Link className="w-[15px] h-[15px]" />,
-      onClick: () => {
+      onClick: async () => {
         triggerShareCount();
-        navigator.clipboard?.writeText(shareUrl);
+        const ok = await copyToClipboard(shareUrl);
+        if (ok) toast.success("링크가 복사되었습니다.");
+        else toast.error("링크 복사에 실패했습니다.");
       },
     },
     {
       label: "공유하기",
       icon: <Share2 className="w-[15px] h-[15px]" />,
-      onClick: () => {
+      onClick: async () => {
         triggerShareCount();
         if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
           navigator.share({ url: shareUrl }).catch(() => {
@@ -42,7 +52,9 @@ export function buildPostContextMenu({ isOwner, postId, onEdit, onDelete }: Buil
           });
           return;
         }
-        navigator.clipboard?.writeText(shareUrl);
+        const ok = await copyToClipboard(shareUrl);
+        if (ok) toast.success("링크가 복사되었습니다.");
+        else toast.error("공유에 실패했습니다.");
       },
     },
   ];
