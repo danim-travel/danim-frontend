@@ -15,7 +15,12 @@ const ARC_PEAK_SVG = 30;
 
 const KakaoMap = dynamic(() => import("@/components/KakaoMap"), {
   ssr: false,
-  loading: () => <div className="w-full h-full bg-bg-subtle animate-pulse" />,
+  loading: () => (
+    <div className="w-full h-full bg-bg flex flex-col items-center justify-center gap-3">
+      <div className="w-8 h-8 rounded-full border-4 border-warning border-t-transparent animate-spin" />
+      <p className="text-base text-text-muted">지도를 불러오는 중...</p>
+    </div>
+  ),
 });
 
 interface MapPanelProps {

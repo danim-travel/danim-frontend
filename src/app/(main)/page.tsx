@@ -50,6 +50,10 @@ export default function HomePage() {
     queryFn: () => apiClient.get(`posts/${soloPostId}`).json<PostDetail>(),
     enabled: !!soloPostId,
     refetchOnWindowFocus: false,
+    // 모달에서 이미 fetch한 데이터가 캐시에 있으므로 30초간 fresh로 유지
+    // staleTime=0(기본)이면 캐시 히트여도 즉시 백그라운드 재요청이 나가
+    // 첫 렌더에서 soloFeedItem=null이 되는 타이밍이 생겨 마커가 안 찍히는 경우가 있음
+    staleTime: 30_000,
   });
 
   const soloFeedItem = useMemo(() => (soloDetail ? toFeedItem(soloDetail) : null), [soloDetail]);
@@ -58,10 +62,6 @@ export default function HomePage() {
     [soloFeedItem, data],
   );
 
-  // 모바일 환경에서 KakaoMap 마운트 지연 — 데스크탑이거나 시트가 한 번이라도 펼쳐지면 마운트
-  const [mapMounted, setMapMounted] = useState(
-    typeof window !== "undefined" && window.innerWidth >= 768
-  );
 
   // solo 모드일 때는 해당 게시글이 항상 지도 포커스 대상
   const activeFocusedPost = soloFeedItem ?? focusedPost;
@@ -123,21 +123,19 @@ export default function HomePage() {
         className="md:flex-1 md:min-h-0 md:h-full!"
         style={sheetY != null ? { height: `${sheetY}px` } : { height: "100%" }}
       >
-        {mapMounted && (
-          <MapPanel
-            focusedPost={activeFocusedPost}
-            focusedPostIndex={activeFocusedPostIndex}
-            onPinClick={handlePinClick}
-            onResetFocus={() => { setFocusedPost(null); setSheetExpanded(false); }}
-          />
-        )}
+        <MapPanel
+          focusedPost={activeFocusedPost}
+          focusedPostIndex={activeFocusedPostIndex}
+          onPinClick={handlePinClick}
+          onResetFocus={() => { setFocusedPost(null); setSheetExpanded(false); }}
+        />
       </div>
 
       {/* 모바일: 피드 바텀시트 */}
       <div className="md:hidden">
         <MobileBottomSheet
           expanded={sheetExpanded}
-          onExpandedChange={(v) => { setSheetExpanded(v); if (v) setMapMounted(true); }}
+          onExpandedChange={setSheetExpanded}
           onYChange={setSheetY}
         >
           <FeedPanel {...feedPanelProps} variant="sheet" />
