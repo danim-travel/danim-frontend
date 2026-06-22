@@ -3,6 +3,7 @@
  */
 import { http, HttpResponse, type HttpResponseResolver } from 'msw'
 import type { UserProfilePost, UserProfileResponse, FollowUser, UserSearchResult } from '@/types'
+import { SHOWCASE_MOCK_USER_ID } from '../constants'
 
 const mockHeights = [320, 480, 260, 560, 400, 300, 520, 380, 440, 280, 500, 360, 420, 600, 340, 460, 240, 540, 390, 470]
 
@@ -123,6 +124,20 @@ export const usersHandlers = [
     if (!search) return HttpResponse.json({ results: [] })
     const results = mockSearchUsers.filter((u) => u.nickname.toLowerCase().includes(search))
     return HttpResponse.json({ results })
+  }),
+
+  http.get('*/users/:userId/profile', ({ request, params }) => {
+    const authError = requireAuth(request)
+    if (authError) return authError
+    const userId = params.userId as string
+    if (userId === SHOWCASE_MOCK_USER_ID || userId === 'me') {
+      return HttpResponse.json(mockUserProfile)
+    }
+    const other = mockOtherProfiles[userId]
+    if (!other) {
+      return HttpResponse.json({ error_detail: '존재하지 않는 유저입니다.' }, { status: 404 })
+    }
+    return HttpResponse.json(other)
   }),
 ]
 
