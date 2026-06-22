@@ -62,6 +62,9 @@ function KakaoMap({ selectedPost, onBoundsChange, onPinClick, onCurrentLocation 
     polylinesRef.current = [];
   };
 
+  // 활성 게시글의 path를 ref로 보관 — 컨테이너 리사이즈 시 setBounds 재호출용
+  const activeBoundsRef = useRef<kakao.maps.LatLngBounds | null>(null);
+
   const applyPost = (post: Post) => {
     const map = mapRef.current;
     if (!map) return;
@@ -100,6 +103,7 @@ function KakaoMap({ selectedPost, onBoundsChange, onPinClick, onCurrentLocation 
     }
 
     // 오버레이가 덮고 있는 동안 즉시 이동 — 줌 애니메이션 없음
+    activeBoundsRef.current = bounds;
     map.setBounds(bounds, 80, 80, 80, 80);
   };
 
@@ -195,14 +199,18 @@ function KakaoMap({ selectedPost, onBoundsChange, onPinClick, onCurrentLocation 
     const ro = new ResizeObserver(() => {
       const map = mapRef.current;
       if (!map) return;
-      const center = map.getCenter();
       // 연속 리사이즈를 한 프레임으로 모음
       cancelAnimationFrame(rafId);
       rafId = requestAnimationFrame(() => {
         // 카카오맵 타입 정의에 relayout이 빠져있어 캐스팅 — 공식 SDK는 지원
         (map as kakao.maps.Map & { relayout: () => void }).relayout();
-        // relayout 후 중심이 어긋날 수 있어 보정
-        map.setCenter(center);
+        // 활성 게시글이 있으면 컨테이너 크기에 맞춰 다시 fit (모바일 첫 마운트 시
+        // 컨테이너 크기가 안정되기 전 호출된 setBounds로 마커가 화면 밖에 있는 문제 보정)
+        if (activeBoundsRef.current) {
+          map.setBounds(activeBoundsRef.current, 80, 80, 80, 80);
+        } else {
+          map.setCenter(map.getCenter());
+        }
       });
     });
     ro.observe(el);

@@ -1,5 +1,6 @@
 "use client"
 import { useState, useRef, useCallback } from "react"
+import Image from "next/image"
 import Link from "next/link"
 import { Avatar, Button, Modal } from "@/components/common"
 import { cn } from "@/lib/utils"
@@ -73,11 +74,12 @@ export function ChatBubble({ message, isMine, showAvatar, opponent, onDelete, is
           >
             {message.img_url && (
               <div className="rounded-card overflow-hidden bg-bg-subtle">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src={message.img_url}
                   alt="이미지"
-                  className="max-w-[240px] max-h-[240px] w-full object-cover block"
+                  width={240}
+                  height={240}
+                  className="max-w-[240px] max-h-[240px] w-full h-auto object-cover block"
                 />
               </div>
             )}
