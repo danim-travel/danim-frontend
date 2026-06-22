@@ -27,6 +27,27 @@ export default function PostModalInterceptor({ params }: Props) {
   // 클릭 측에서 sessionStorage에 저장한 썸네일을 1회만 꺼내 placeholder로 사용
   const [placeholderThumbnail] = useState(() => consumeModalThumbnail(postId));
 
+  // @modal 슬롯을 history pop으로 닫은 뒤 다음 경로로 이동.
+  // router.replace/push 단독으로는 같은 layout 내에서 슬롯이 유지되는 케이스가 있어
+  // popstate 완료 시점에 push 한다.
+  // 다른 원인(BottomSheet/Drawer 닫기, 브라우저 뒤로가기)의 popstate를 가로채지 않도록
+  // history.state에 marker를 심어 우리가 발생시킨 back()만 식별한다.
+  const backThenPush = (nextPath: string) => {
+    const marker = `nav-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const prevState = (window.history.state ?? {}) as Record<string, unknown>;
+    window.history.replaceState({ ...prevState, __navMarker: marker }, "");
+    const onPop = () => {
+      const currentState = window.history.state as { __navMarker?: string } | null;
+      if (currentState?.__navMarker === marker) return; // 다른 원인의 popstate — 무시
+      window.removeEventListener("popstate", onPop);
+      clearTimeout(timeoutId);
+      router.push(nextPath);
+    };
+    window.addEventListener("popstate", onPop);
+    const timeoutId = setTimeout(() => window.removeEventListener("popstate", onPop), 2000);
+    router.back();
+  };
+
   return (
     <PostModal
       postId={postId}
@@ -35,16 +56,10 @@ export default function PostModalInterceptor({ params }: Props) {
       showGoToMain
       onGoToMain={() => {
         try { sessionStorage.setItem("scrollToPostId", postId); } catch {}
-        // back()으로 @modal 슬롯을 닫은 뒤 popstate 시점에 메인으로 push.
-        // AbortController + 2초 타임아웃으로 리스너 영구 누수 방지.
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 2000);
-        window.addEventListener("popstate", () => {
-          clearTimeout(timeout);
-          router.push(`/?solo=${postId}`);
-        }, { once: true, signal: controller.signal });
-        router.back();
+        backThenPush(`/?solo=${postId}`);
       }}
+      onEdit={() => backThenPush(`/write/${postId}/edit`)}
+      onNavigate={backThenPush}
     />
   );
 }
