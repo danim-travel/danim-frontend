@@ -159,8 +159,7 @@ export function SearchDrawer() {
               key="mobile-search"
               initial={{ y: "-100%" }} animate={{ y: 0 }} exit={{ y: "-100%" }}
               transition={{ type: "tween", duration: 0.25, ease: "easeInOut" }}
-              className="fixed top-16 inset-x-0 bg-bg-card border-b border-border shadow-overlay flex flex-col md:hidden z-(--z-drawer)"
-              style={{ maxHeight: "calc(100dvh - 4rem)" }}
+              className="fixed top-16 inset-x-0 bg-bg-card border-b border-border shadow-overlay flex flex-col md:hidden z-(--z-drawer) max-h-[calc(100dvh-4rem)]"
             >
               <div className="px-4 pt-3 pb-4 shrink-0">
                 <SearchBar value={query} onChange={(e) => setQuery(e.target.value)} onClear={() => setQuery("")} placeholder="닉네임으로 검색..." autoFocus variant="panel" />
