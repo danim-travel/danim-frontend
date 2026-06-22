@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useCallback, type ChangeEvent, type KeyboardEvent } from "react"
-import { useOnClickOutside } from "@/hooks/useOnClickOutside"
+import { useOnClickOutside } from "@/hooks/ui/useOnClickOutside"
 import { Send, ImagePlus, Smile } from "lucide-react"
 import { IconButton } from "@/components/common"
 

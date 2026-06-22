@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "motion/react"
 import { X } from "lucide-react"
 import { SideDrawer, UserRowSkeleton, EmptyState } from "@/components/common"
 import { useUIStore } from "@/store/uiStore"
-import { useInfiniteScrollSentinel } from "@/hooks/useInfiniteScrollSentinel"
+import { useInfiniteScrollSentinel } from "@/hooks/async/useInfiniteScrollSentinel"
 import {
   useDeleteAllNotifications,
   useMarkAllNotificationsRead,

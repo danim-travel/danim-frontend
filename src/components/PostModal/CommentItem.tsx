@@ -9,7 +9,7 @@ import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
 import type { Comment } from "@/types";
 import { Avatar, Button, Modal } from "@/components/common";
-import { useDebouncedToggle } from "@/hooks/useDebouncedToggle";
+import { useDebouncedToggle } from "@/hooks/async/useDebouncedToggle";
 import { KebabMenu } from "./KebabMenu";
 import { usePostModalContext } from "./PostModalContext";
 

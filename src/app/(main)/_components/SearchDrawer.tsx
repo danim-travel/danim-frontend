@@ -9,8 +9,8 @@ import { useUIStore } from "@/store/uiStore"
 import { useAuthStore } from "@/store/authStore"
 import { searchUsers } from "@/lib/api/users"
 import { queryKeys } from "@/lib/queryKeys"
-import { useDebouncedValue } from "@/hooks/useDebouncedValue"
-import { useRecentSearches } from "@/hooks/useRecentSearches"
+import { useDebouncedValue } from "@/hooks/async/useDebouncedValue"
+import { useRecentSearches } from "@/app/(main)/_hooks/useRecentSearches"
 import type { UserSearchResult } from "@/types/user.types"
 
 export function SearchDrawer() {

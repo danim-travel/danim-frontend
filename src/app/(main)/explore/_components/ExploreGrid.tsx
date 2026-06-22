@@ -4,9 +4,9 @@ import { Heart, MessageCircle } from "lucide-react"
 import { EmptyState, GridSkeleton } from "@/components/common"
 
 import { Spinner } from "@/components/ui/spinner"
-import { useInfiniteScrollSentinel } from "@/hooks/useInfiniteScrollSentinel"
+import { useInfiniteScrollSentinel } from "@/hooks/async/useInfiniteScrollSentinel"
 import { usePrefetchPostDetail } from "@/app/(main)/_hooks/usePrefetchPostDetail"
-import { GRID_ASPECT_RATIOS } from "@/lib/imageUtils"
+import { GRID_ASPECT_RATIOS } from "@/lib/media/imageUtils"
 import type { ExplorePost } from "@/types"
 
 interface ExploreGridProps {

@@ -1,7 +1,7 @@
 "use client";
 import { Spinner } from "@/components/ui/spinner";
 import { getApiErrorMessage } from "@/lib/apiError";
-import { useInfiniteScrollSentinel } from "@/hooks/useInfiniteScrollSentinel";
+import { useInfiniteScrollSentinel } from "@/hooks/async/useInfiniteScrollSentinel";
 import PostGrid, { type PostGridItem } from "./PostGrid";
 
 interface BookmarksTabPanelProps {

@@ -8,7 +8,7 @@ import { followUser, unfollowUser } from "@/lib/api/users";
 import { queryKeys } from "@/lib/queryKeys";
 import { getApiErrorMessage } from "@/lib/apiError";
 import { toast } from "@/store/toastStore";
-import { useDelayedPending } from "@/hooks/useDelayedPending";
+import { useDelayedPending } from "@/hooks/ui/useDelayedPending";
 import { useAuthStore } from "@/store/authStore";
 import type { UserProfileResponse } from "@/types";
 

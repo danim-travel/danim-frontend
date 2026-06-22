@@ -2,7 +2,7 @@
 
 import { memo } from "react";
 import { Bookmark, Heart } from "lucide-react";
-import { useDebouncedToggle } from "@/hooks/useDebouncedToggle";
+import { useDebouncedToggle } from "@/hooks/async/useDebouncedToggle";
 import type { PostDetail } from "@/types";
 import { usePostModalContext } from "./PostModalContext";
 
