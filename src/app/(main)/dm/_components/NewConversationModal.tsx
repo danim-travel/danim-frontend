@@ -8,7 +8,7 @@ import { Modal, Avatar, UserRow, UserRowSkeleton, EmptyState, SearchBar } from "
 import { useAuthStore } from "@/store/authStore"
 import { getFollowing } from "@/lib/api/users"
 import { queryKeys } from "@/lib/queryKeys"
-import { useCreateConversation } from "@/hooks/useDmQueries"
+import { useCreateConversation } from "@/app/(main)/dm/_hooks/useDmQueries"
 
 interface Props {
   open: boolean

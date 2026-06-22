@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { MessageSquare } from "lucide-react"
 import { EmptyState, SearchBar, UserRowSkeleton } from "@/components/common"
-import { useConversations } from "@/hooks/useDmQueries"
+import { useConversations } from "@/app/(main)/dm/_hooks/useDmQueries"
 import { ConversationItem } from "./ConversationItem"
 
 interface Props {
