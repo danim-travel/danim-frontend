@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Providers } from "@/providers";
+import { config } from "@/lib/config";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(config.siteUrl),
   title: "Danim · 여행자들의 이야기",
   description: "여행의 모든 순간을 기록하세요",
 };
@@ -15,8 +17,10 @@ export const viewport: Viewport = {
 
 export default function RootLayout({
   children,
+  modal,
 }: Readonly<{
   children: React.ReactNode;
+  modal: React.ReactNode;
 }>) {
   return (
     <html
@@ -33,7 +37,10 @@ export default function RootLayout({
       </head>
       <body className="h-full">
         <Providers>
-          <NuqsAdapter>{children}</NuqsAdapter>
+          <NuqsAdapter>
+            {children}
+            {modal}
+          </NuqsAdapter>
         </Providers>
       </body>
     </html>

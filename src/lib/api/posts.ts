@@ -1,5 +1,14 @@
-import { apiClient } from '@/lib/apiClient'
+import { apiClient, publicClient } from '@/lib/apiClient'
 import type { BookmarkListResponse, ExploreResponse } from '@/types'
+
+export interface SharePostResponse {
+  redirect_url: string
+}
+
+// 인증 불필요 엔드포인트이므로 publicClient 사용 — apiClient 사용 시 토큰 만료 직후 강제 로그아웃 위험 있음
+export async function sharePost(postId: string): Promise<SharePostResponse> {
+  return publicClient.get(`posts/${postId}/share`).json<SharePostResponse>()
+}
 
 export interface ExploreParams {
   search?: string
