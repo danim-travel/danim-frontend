@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(config.siteUrl),
   title: "Danim · 여행자들의 이야기",
   description: "여행의 모든 순간을 기록하세요",
+  icons: { icon: "/logo.svg" },
 };
 
 export const viewport: Viewport = {

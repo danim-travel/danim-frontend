@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { Home, Compass, PenLine, Search, MessageCircle, Bell, Settings, type LucideIcon } from 'lucide-react'
@@ -107,7 +106,8 @@ export default function SideNav() {
     <nav className="w-(--sidebar-width) bg-bg-card border-r border-border flex flex-col items-center shrink-0 h-full py-4">
       {/* 메인 로고, 클릭하면 홈으로 이동 */}
       <button type="button" onClick={goHome} className="mb-5 cursor-pointer">
-        <Image src="/favicon.svg" alt="Danim" width={40} height={40} priority className="w-10 h-10 rounded-lg shadow-md hover:shadow-lg transition-shadow" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo.svg" alt="Danim" width={40} height={40} decoding="async" className="w-10 h-10 shadow-md hover:shadow-lg transition-shadow" />
       </button>
 
       {/* 메인 네비게이션 링크 */}
