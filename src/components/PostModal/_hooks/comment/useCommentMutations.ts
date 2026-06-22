@@ -4,7 +4,7 @@ import { apiClient } from '@/lib/apiClient'
 import { getApiErrorMessage } from '@/lib/apiError'
 import { queryKeys } from '@/lib/queryKeys'
 import { toast } from '@/store/toastStore'
-import { useLikeMutation } from '@/hooks/useLikeMutation'
+import { useLikeMutation } from '@/hooks/interactions/useLikeMutation'
 import type {
   CommentsListResponse,
   CommentCreateRequest,
