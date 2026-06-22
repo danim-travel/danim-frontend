@@ -20,7 +20,7 @@ export default function PostPublicPage({ postId, initialData }: Props) {
           </Link>
           {/* C4: 인터셉트가 아닌 풀페이지 진입 시에도 닫기/홈/탐색 동선 제공 */}
           <nav className="flex items-center gap-3 text-body-sm">
-            <Link href="/explore" className="text-text-muted hover:text-text transition-colors">탐색</Link>
+            <Link href="/explore" className="px-3 py-1.5 rounded-pill bg-bg-subtle border border-border text-text-muted font-medium hover:bg-bg-card transition-colors">탐색</Link>
             <Link href="/" className="px-3 py-1.5 rounded-pill bg-primary text-white font-medium hover:opacity-90 transition-opacity">홈으로</Link>
           </nav>
         </header>
