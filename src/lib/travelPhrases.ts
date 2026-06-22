@@ -4,9 +4,9 @@ export interface TravelPhrase {
 }
 
 export const TRAVEL_PHRASES: TravelPhrase[] = [
-  { phrase: "오늘은 어디로 떠나볼까요?", characterSrc: "/characters/char-map.png" },
-  { phrase: "새로운 여행이 기다리고 있어요 ✈", characterSrc: "/characters/char-sit.png" },
-  { phrase: "오늘의 여정은 어떤가요?", characterSrc: "/characters/char-fly.png" },
-  { phrase: "함께 떠나면 더 특별한 여행이에요", characterSrc: "/characters/char-bag.png" },
-  { phrase: "오늘도 멋진 여행을 기록해봐요 📸", characterSrc: "/characters/char-wave.png" },
+  { phrase: "오늘은 어떤 여행을 떠나셨나요?", characterSrc: "/characters/char-wave.png" },
+  { phrase: "오늘의 여정을 함께 나눠볼까요?", characterSrc: "/characters/char-heart.png" },
+  { phrase: "오늘 발견한 곳은 어디인가요?", characterSrc: "/characters/char-map.png" },
+  { phrase: "나만의 여행 기록을 공유해보세요 ✈", characterSrc: "/characters/char-sit.png" },
+  { phrase: "오늘의 발걸음을 이야기로 남겨보세요", characterSrc: "/characters/char-bag.png" },
 ];
