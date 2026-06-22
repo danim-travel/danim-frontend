@@ -23,3 +23,4 @@ export * from "./PageContainer";
 export * from "./SettingsRow/SettingsRow";
 export * from "./SideDrawer/SideDrawer";
 export * from "./LogoutModal/LogoutModal";
+export * from "./NotFoundView/NotFoundView";
