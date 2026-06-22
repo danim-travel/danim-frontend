@@ -139,7 +139,7 @@ export type ExplorePost = {
 
 export type ExploreResponse = {
   next: string | null
-  seed: number
+  seed?: number
   results: ExplorePost[]
 }
 

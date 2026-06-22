@@ -10,7 +10,7 @@ export function NotFoundView({ title, description }: Props) {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-6 px-6 bg-bg">
       <div className="flex flex-col items-center gap-4 text-center">
-        <Image src="/favicon.svg" alt="Danim" width={64} height={64} priority className="w-16 h-16 rounded-2xl shadow-md" />
+        <Image src="/logo.svg" alt="Danim" width={64} height={64} priority className="w-16 h-16 rounded-2xl shadow-md" />
 
         <p className="text-display font-bold text-text-disabled">404</p>
 

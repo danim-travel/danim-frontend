@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { AuthCard, AuthFooterLink } from "../_components";
 import { RegisterForm } from "./_components/RegisterForm";
 
@@ -9,7 +8,8 @@ export default function RegisterPage() {
       <div className="flex justify-center items-start">
       <AuthCard size="lg">
         <div className="flex items-center gap-2 mb-5">
-          <Image src="/favicon.svg" alt="Danim" width={36} height={36} priority className="w-9 h-9 rounded-lg shadow-md shrink-0" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.svg" alt="Danim" width={36} height={36} decoding="async" className="w-9 h-9 shadow-md shrink-0" />
           <span className="text-card-title font-bold text-text tracking-tight">danim</span>
         </div>
 
