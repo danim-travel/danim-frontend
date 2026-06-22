@@ -3,6 +3,9 @@
  * 쿼리 키를 컴포넌트/훅에서 하드코딩하지 않고 반드시 이 파일을 통해 참조한다.
  */
 export const queryKeys = {
+  // enabled:false 인 useQuery에서 의미 없는 key 캐시 생성을 막기 위한 공용 placeholder.
+  // (실제 fetch는 일어나지 않으나 key 자체는 캐시 디렉터리에 등록됨)
+  disabled: ['_disabled'] as const,
   posts: {
     all: ['posts'] as const,
     detail: (postId: string) => ['posts', postId] as const,
