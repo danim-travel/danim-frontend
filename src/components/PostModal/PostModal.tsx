@@ -30,11 +30,15 @@ interface Props {
   // undefined = 데이터 로드 후 썸네일이 있는 spot으로 자동 이동 (댓글 클릭)
   // number  = 해당 spot 바로 오픈 (마커 클릭)
   initialSpotIdx?: number;
+  // true = 배경 오버레이 없이 페이지에 인라인으로 표시 (공개 URL 페이지 등)
+  inline?: boolean;
+  // 진입한 페이지에서 이미 캐시된 썸네일 URL — 데이터 로딩 중 회색 깜빡임 방지용 placeholder
+  placeholderThumbnail?: string;
 }
 
 const urlPathname = (url: string) => { try { return new URL(url).pathname } catch { return url } }
 
-export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, className, initialSpotIdx }: Props) {
+export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, className, initialSpotIdx, inline = false, placeholderThumbnail }: Props) {
   const router = useRouter();
   const [userSelectedIdx, setUserSelectedIdx] = useState<number | null>(null);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
@@ -52,7 +56,7 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
 
   const currentUserId = useAuthStore((s) => s.user?.userId) ?? (config.isDev ? SHOWCASE_MOCK_USER_ID : null);
 
-  useScrollLock(true);
+  useScrollLock(!inline);
 
   useEffect(() => {
     if (isError) {
@@ -61,12 +65,13 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
   }, [isError]);
 
   useEffect(() => {
+    if (inline) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
+  }, [onClose, inline]);
 
   const spots = useMemo(
     () => (data?.spots ? [...data.spots].sort((a, b) => a.order - b.order) : []),
@@ -126,11 +131,18 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
     ]
   );
 
+  const backdropClass = inline
+    ? `relative flex items-center justify-center ${className ?? ""}`
+    : `fixed inset-0 z-(--z-page-modal) flex items-center justify-center bg-black/50 backdrop-blur-[2px] ${className ?? ""}`;
+  const cardClass = inline
+    ? "bg-bg-card rounded-3xl overflow-hidden flex flex-col md:flex-row shadow-[0_32px_80px_-12px_rgba(0,0,0,0.15)] w-full md:w-[1000px] md:max-w-[96vw] md:max-h-[calc(100vh-7rem)] relative"
+    : "bg-bg-card rounded-none md:rounded-3xl overflow-hidden flex flex-col md:flex-row shadow-[0_32px_80px_-12px_rgba(0,0,0,0.35)] w-full h-full md:w-[1000px] md:max-w-[96vw] md:h-auto md:max-h-[92vh] relative";
+
   return (
     <motion.div
       data-testid="post-modal-backdrop"
-      className={`fixed inset-0 z-(--z-page-modal) flex items-center justify-center bg-black/50 backdrop-blur-[2px] ${className ?? ""}`}
-      onClick={onClose}
+      className={backdropClass}
+      onClick={inline ? undefined : onClose}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -138,14 +150,14 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
     >
       <motion.div
         data-testid="post-modal"
-        className="bg-bg-card rounded-none md:rounded-3xl overflow-hidden flex flex-col md:flex-row shadow-[0_32px_80px_-12px_rgba(0,0,0,0.35)] w-full h-full md:w-[1000px] md:max-w-[96vw] md:h-auto md:max-h-[92vh] relative"
+        className={cardClass}
         onClick={(e) => e.stopPropagation()}
         initial={{ opacity: 0, scale: 0.95, y: 8 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 8 }}
         transition={{ duration: 0.2 }}
       >
-        {!data && isLoading && <PostModalSkeleton />}
+        {!data && isLoading && <PostModalSkeleton placeholderThumbnail={placeholderThumbnail} />}
 
         {isError && !data && (
           <div className="w-full h-[600px] flex flex-col items-center justify-center gap-3 text-text-muted">
@@ -160,17 +172,19 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
           </div>
         )}
 
-        {/* 항상 표시되는 닫기 버튼 */}
+        {/* 항상 표시되는 닫기 버튼 — inline 모드에서는 X 숨김(독립 페이지) */}
         <div className="absolute top-[max(1rem,env(safe-area-inset-top))] right-4 z-20 flex items-center gap-2">
           {data && <KebabMenu items={menuItems} />}
-          <IconButton
-            icon={<X size={14} />}
-            variant="filled"
-            size="sm"
-            aria-label="닫기"
-            onClick={onClose}
-            className="bg-white/90 backdrop-blur-sm border border-border hover:bg-bg-card"
-          />
+          {!inline && (
+            <IconButton
+              icon={<X size={14} />}
+              variant="filled"
+              size="sm"
+              aria-label="닫기"
+              onClick={onClose}
+              className="bg-white/90 backdrop-blur-sm border border-border hover:bg-bg-card"
+            />
+          )}
         </div>
 
         {data && (

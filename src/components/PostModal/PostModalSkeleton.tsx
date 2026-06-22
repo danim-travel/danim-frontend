@@ -1,11 +1,27 @@
 import { Spinner } from "@/components/ui/spinner"
 
-export function PostModalSkeleton() {
+interface Props {
+  /** 데이터 로딩 중 ImagePane 자리에 흐릿하게 깔 placeholder 이미지 URL */
+  placeholderThumbnail?: string
+}
+
+export function PostModalSkeleton({ placeholderThumbnail }: Props = {}) {
   return (
     <>
       {/* ImagePane skeleton */}
       <div className="w-1/2 shrink-0 flex flex-col overflow-hidden">
-        <div className="flex-1 bg-bg-subtle flex items-center justify-center min-h-[520px]">
+        <div className="flex-1 bg-bg-subtle flex items-center justify-center min-h-[520px] relative overflow-hidden">
+          {placeholderThumbnail && (
+            // 진입한 페이지(피드/그리드)에서 이미 캐시된 썸네일을 즉시 깔아 회색 깜빡임 방지
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={placeholderThumbnail}
+              alt=""
+              aria-hidden
+              decoding="async"
+              className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-60"
+            />
+          )}
           <Spinner size="lg" />
         </div>
         <div className="px-6 py-5 bg-bg-card border-t border-border-subtle">
