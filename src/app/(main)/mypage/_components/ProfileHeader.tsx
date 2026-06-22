@@ -59,30 +59,31 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
         </div>
 
         {/* 닉네임 / 여행 멘트 / 캐릭터 / 소개 */}
-        <div className="flex flex-1 items-start gap-2 min-w-0">
-          <div className="flex-1 min-w-0">
-            <p className="text-card-title font-bold text-text truncate">
-              {profile.nickname} 님,
-            </p>
-            <p className="mt-1 text-card-title font-bold text-primary">
-              {phrase.phrase}
-            </p>
-            {intro && (
-              <p className="mt-2 text-body-sm text-text-secondary whitespace-pre-wrap">
-                {intro}{" "}
-                <button
-                  onClick={() => router.push("/settings")}
-                  className="inline-flex items-center align-text-bottom hover:opacity-60 transition-opacity"
-                  aria-label="소개 편집"
-                >
-                  <Pencil size={12} className="text-text-muted" />
-                </button>
+        <div className="flex-1 min-w-0">
+          {/* 닉네임 + 여행 멘트 + 캐릭터 — 하나의 그룹 */}
+          <div className="flex items-center gap-3">
+            <div className="min-w-0">
+              <p className="text-card-title font-bold text-text truncate">
+                {profile.nickname} 님,
               </p>
-            )}
+              <p className="mt-1 text-card-title font-bold text-primary">
+                {phrase.phrase}
+              </p>
+            </div>
+            {characterImage(68)}
           </div>
-
-          {/* 캐릭터 이미지 */}
-          {characterImage(68)}
+          {intro && (
+            <p className="mt-2 text-body-sm text-text-secondary whitespace-pre-wrap">
+              {intro}{" "}
+              <button
+                onClick={() => router.push("/settings")}
+                className="inline-flex items-center align-text-bottom hover:opacity-60 transition-opacity"
+                aria-label="소개 편집"
+              >
+                <Pencil size={12} className="text-text-muted" />
+              </button>
+            </p>
+          )}
         </div>
 
         {/* 통계 */}
@@ -133,9 +134,9 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
           </div>
         </div>
 
-        {/* 닉네임 + 캐릭터 이미지 */}
-        <div className="mt-2 flex items-end gap-2">
-          <div className="flex-1 min-w-0">
+        {/* 닉네임 + 캐릭터 이미지 — 하나의 그룹 */}
+        <div className="mt-2 flex items-end gap-3">
+          <div className="min-w-0">
             <p className="text-card-title font-bold text-text">
               {profile.nickname} 님,
             </p>
