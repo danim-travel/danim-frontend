@@ -52,10 +52,12 @@ function addressToRegion(address: string): string {
   if (address.startsWith('서울')) return '서울'
   if (address.startsWith('경기') || address.startsWith('인천')) return '경기'
   if (address.startsWith('강원')) return '강원'
-  if (address.startsWith('충청') || address.startsWith('대전') || address.startsWith('세종')) return '충청'
-  if (address.startsWith('전라') || address.startsWith('전북') || address.startsWith('광주')) return '전라'
+  if (address.startsWith('충청') || address.startsWith('충북') || address.startsWith('충남') || address.startsWith('대전') || address.startsWith('세종')) return '충청'
+  if (address.startsWith('전라') || address.startsWith('전북') || address.startsWith('전남') || address.startsWith('광주')) return '전라'
   if (
     address.startsWith('경상') ||
+    address.startsWith('경북') ||
+    address.startsWith('경남') ||
     address.startsWith('부산') ||
     address.startsWith('대구') ||
     address.startsWith('울산')
