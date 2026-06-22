@@ -6,9 +6,15 @@ import { Button } from '@/components/common'
 
 interface WriteHeaderProps {
   onCancel: () => void
+  title?: string
+  subtitle?: string
 }
 
-const WriteHeader = memo(function WriteHeader({ onCancel }: WriteHeaderProps) {
+const WriteHeader = memo(function WriteHeader({
+  onCancel,
+  title = '여행 기록하기',
+  subtitle = '당신의 소중한 순간을 기록해보세요',
+}: WriteHeaderProps) {
   return (
     <div className="flex items-center justify-between px-7 py-4 border-b border-border-subtle shrink-0">
       <div className="flex items-center gap-3">
@@ -16,8 +22,8 @@ const WriteHeader = memo(function WriteHeader({ onCancel }: WriteHeaderProps) {
           <PenLine className="w-4 h-4 text-white" strokeWidth={2.5} />
         </div>
         <div>
-          <h1 className="text-base font-bold text-text">여행 기록하기</h1>
-          <p className="text-nav text-text-disabled mt-0.5">당신의 소중한 순간을 기록해보세요</p>
+          <h1 className="text-base font-bold text-text">{title}</h1>
+          <p className="text-nav text-text-disabled mt-0.5">{subtitle}</p>
         </div>
       </div>
       <Button variant="outline" size="sm" onClick={onCancel}>

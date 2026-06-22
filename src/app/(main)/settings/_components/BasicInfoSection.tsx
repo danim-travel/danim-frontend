@@ -1,69 +1,57 @@
 "use client"
-import { Button, TextField } from "@/components/common"
+import { VerificationField } from "@/components/common"
 import type { MeDetailResponse } from "@/types"
 
 interface BasicInfoSectionProps {
   me: MeDetailResponse
   nickname: string
+  nicknameChecked: boolean
+  isCheckingNickname: boolean
   onNicknameChange: (v: string) => void
+  onNicknameCheck: () => void
 }
 
-function formatBirthDate(date: string) {
+function formatBirthDate(date: string | null) {
+  if (!date) return "-"
   const [y, m, d] = date.split("-")
   return `${y}년  ${m}월  ${d}일`
 }
 
-export function BasicInfoSection({ me, nickname, onNicknameChange }: BasicInfoSectionProps) {
+export function BasicInfoSection({ me, nickname, nicknameChecked, isCheckingNickname, onNicknameChange, onNicknameCheck }: BasicInfoSectionProps) {
   return (
     <section>
       <h2 className="text-body-lg font-bold text-text mb-4">기본 정보</h2>
-      <div className="bg-bg-card border border-border rounded-card shadow-sm p-8 flex flex-col gap-7">
-        {/* 읽기 전용 정보 */}
-        <div className="flex gap-16">
+      <div className="bg-bg-card border border-border rounded-card shadow-sm p-5 md:p-8 flex flex-col gap-7">
+        {/* 이름·이메일·생년월일 읽기 전용 */}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-16">
           <div className="flex flex-col gap-2 min-w-0">
             <span className="text-caption font-bold text-text-muted">이름</span>
-            <span className="text-body-sm text-text">{me.name}</span>
+            <span className="text-body-sm text-text break-all">{me.name}</span>
           </div>
           <div className="flex flex-col gap-2 min-w-0">
             <span className="text-caption font-bold text-text-muted">이메일</span>
-            <span className="text-body-sm text-text">{me.email}</span>
+            <span className="text-body-sm text-text break-all">{me.email}</span>
           </div>
           <div className="flex flex-col gap-2 min-w-0">
             <span className="text-caption font-bold text-text-muted">생년월일</span>
-            <span className="text-body-sm text-text">{formatBirthDate(me.birth_date)}</span>
+            <span className="text-body-sm text-text break-all">{formatBirthDate(me.birth_day)}</span>
           </div>
         </div>
 
         {/* 닉네임 */}
-        <TextField
+        <VerificationField
           label="닉네임"
           required
           value={nickname}
           onChange={e => onNicknameChange(e.target.value)}
           maxLength={20}
-          helperText="다른 사용자에게 보이는 이름이에요."
+          actionLabel="중복확인"
+          onAction={onNicknameCheck}
+          actionDisabled={!nickname.trim() || isCheckingNickname}
+          actionLoading={isCheckingNickname}
+          helperText={nicknameChecked ? "사용 가능한 닉네임입니다." : "다른 사용자에게 보이는 이름이에요."}
+          helperTone={nicknameChecked ? "primary" : "muted"}
         />
-
-        {/* 휴대폰 인증 — 준비 중 */}
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <label className="text-caption font-bold text-text-muted">휴대폰 인증</label>
-            <span className="text-caption text-text-muted bg-bg-muted px-1.5 py-0.5 rounded">준비 중</span>
-          </div>
-          <div className="flex gap-2">
-            <div className="flex-1">
-              <TextField
-                type="tel"
-                placeholder="010-0000-0000"
-                disabled
-              />
-            </div>
-            <Button type="button" variant="primary" disabled>
-              인증 요청
-            </Button>
-          </div>
-          <p className="text-caption text-text-muted">안전한 계정 보호를 위해 인증해주세요.</p>
-        </div>
       </div>
     </section>
   )

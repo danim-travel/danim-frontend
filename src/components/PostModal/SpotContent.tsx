@@ -1,32 +1,37 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { SPOT_CONTENT_CLAMP_LINES } from "./constants";
 
 interface Props {
   content: string;
 }
 
-// scrollHeight vs clampedHeight 비교 시 floating-point 오차 허용폭(px).
 const OVERFLOW_TOLERANCE_PX = 1;
 
 export default function SpotContent({ content }: Props) {
   const ref = useRef<HTMLParagraphElement>(null);
-  // 더보기 - 펼쳐진 상태인지
   const [expanded, setExpanded] = useState(false);
-  // 텍스트가 6줄 초과했는지
   const [isOverflowing, setIsOverflowing] = useState(false);
-  // 텍스트 6줄의 높이값
   const [maxHeight, setMaxHeight] = useState<number | null>(null);
-
-  useEffect(() => {
+  const [isAtBottom, setIsAtBottom] = useState(false);
+  // content 변경 시 render 중 setState로 상태 초기화 — effect 내 setState 패턴 회피
+  const [prevContent, setPrevContent] = useState(content);
+  if (prevContent !== content) {
+    setPrevContent(content);
     setExpanded(false);
-  }, [content]);
+    setIsAtBottom(false);
+  }
 
-  // 6줄 높이를 line-height × SPOT_CONTENT_CLAMP_LINES 로 실측. CSS line-clamp 대신 max/min-height 고정
-  // 방식을 쓰는 이유: spot 전환 시 모달 전체 높이를 일정하게 유지하기 위해 본문 박스 높이를
-  // 항상 6줄로 잡아야 함(짧은 본문도 같은 자리 차지). ResizeObserver는 폰트 swap·창 리사이즈·줌 등
-  // line-height가 바뀌는 모든 케이스에 재측정 보장.
+  // expanded 상태가 바뀔 때 스크롤 위치 초기화 및 바닥 여부 재측정
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.scrollTop = 0;
+    setIsAtBottom(el.scrollHeight <= el.clientHeight + OVERFLOW_TOLERANCE_PX);
+  }, [expanded]);
+
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -42,11 +47,16 @@ export default function SpotContent({ content }: Props) {
     return () => ro.disconnect();
   }, [content]);
 
+  const handleScroll = (e: React.UIEvent<HTMLParagraphElement>) => {
+    const el = e.currentTarget;
+    setIsAtBottom(el.scrollTop + el.clientHeight >= el.scrollHeight - OVERFLOW_TOLERANCE_PX);
+  };
+
   return (
     <div className="mb-5 relative">
-      {/* max height 동적 값 계산 스타일 예외 */}
       <p
         ref={ref}
+        onScroll={handleScroll}
         style={maxHeight ? { maxHeight, minHeight: maxHeight } : undefined}
         className={`text-body-sm text-text-body leading-[1.75] whitespace-pre-line ${
           expanded ? "overflow-y-auto scrollbar-none" : "overflow-hidden"
@@ -54,13 +64,22 @@ export default function SpotContent({ content }: Props) {
       >
         {content}
       </p>
+
+      {/* 접힌 상태 — 더 보기 버튼 */}
       {isOverflowing && !expanded && (
         <button
           onClick={() => setExpanded(true)}
-          className="absolute bottom-0 right-0 pl-10 text-caption font-medium text-text-disabled hover:text-text-body transition-colors bg-gradient-to-l from-bg-card from-50% to-transparent"
+          className="absolute bottom-0 right-0 pl-10 text-caption font-medium text-primary hover:text-primary/70 transition-colors bg-gradient-to-l from-bg-card from-50% to-transparent"
         >
           더 보기
         </button>
+      )}
+
+      {/* 펼친 상태 — 스크롤 가능 표시 */}
+      {expanded && !isAtBottom && (
+        <div className="absolute bottom-0 left-0 right-0 h-7 flex items-end justify-center pb-0.5 bg-gradient-to-t from-bg-card to-transparent pointer-events-none">
+          <ChevronDown size={14} className="text-text-muted" />
+        </div>
       )}
     </div>
   );

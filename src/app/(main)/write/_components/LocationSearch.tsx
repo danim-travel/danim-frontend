@@ -10,9 +10,10 @@ interface Props {
   value: CreatePostSpotLocation[]
   onChange: (places: CreatePostSpotLocation[]) => void
   singleMode?: boolean
+  hasError?: boolean
 }
 
-export default function LocationSearch({ value, onChange, singleMode = false }: Props) {
+export default function LocationSearch({ value, onChange, singleMode = false, hasError = false }: Props) {
   const [input, setInput] = useState('')
   const [results, setResults] = useState<kakao.maps.services.PlaceItem[]>([])
   const [isOpen, setIsOpen] = useState(false)
@@ -21,6 +22,12 @@ export default function LocationSearch({ value, onChange, singleMode = false }: 
   const containerRef = useRef<HTMLDivElement>(null)
 
   const sdkReady = useKakaoMapSDK()
+
+  const clearDebounce = () => {
+    if (!debounceRef.current) return
+    clearTimeout(debounceRef.current)
+    debounceRef.current = null
+  }
 
   useEffect(() => {
     if (sdkReady) {
@@ -39,6 +46,8 @@ export default function LocationSearch({ value, onChange, singleMode = false }: 
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [])
+
+  useEffect(() => clearDebounce, [])
 
   const search = (keyword: string) => {
     if (!sdkReady || !placesRef.current || !keyword.trim()) {
@@ -74,36 +83,37 @@ export default function LocationSearch({ value, onChange, singleMode = false }: 
     const newPlace: CreatePostSpotLocation = {
       place_name: place.place_name,
       address_name: place.address_name,
-      road_address_name: place.road_address_name,
+      road_address_name: place.road_address_name || place.address_name,
       x: place.x,
       y: place.y,
     }
     onChange(singleMode ? [newPlace] : [...value, newPlace])
+    clearDebounce()
     setInput('')
     setResults([])
     setIsOpen(false)
   }
 
-  const remove = (idx: number) => {
-    onChange(value.filter((_, i) => i !== idx))
-  }
-
   return (
     <div ref={containerRef} className="relative">
-      <SearchBar
-        value={input}
-        onChange={handleChange}
-        onKeyDown={handleKeyDown}
-        onFocus={() => results.length > 0 && setIsOpen(true)}
-        placeholder="목적지 검색 (예: 광안리 해수욕장, 성산일출봉)"
-        disabled={!sdkReady}
-        onClear={() => {
-          setInput('')
-          setResults([])
-          setIsOpen(false)
-        }}
-        variant="panel"
-      />
+      {/* SearchBar에 직접 보더 prop이 없어, 에러 상태에서는 ring으로 붉은 보더를 입힘 — 다른 입력의 border 패턴과 시각적으로 동일 */}
+      <div className={hasError ? 'rounded-input ring-1 ring-(--input-border-error)' : undefined}>
+        <SearchBar
+          value={input}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          onFocus={() => results.length > 0 && setIsOpen(true)}
+          placeholder="목적지 검색 (예: 광안리 해수욕장, 성산일출봉)"
+          disabled={!sdkReady}
+          onClear={() => {
+            clearDebounce()
+            setInput('')
+            setResults([])
+            setIsOpen(false)
+          }}
+          variant="panel"
+        />
+      </div>
 
       {isOpen && results.length > 0 && (
         <div className="absolute top-full left-0 right-0 mt-1 bg-bg-card rounded-xl border border-border shadow-xl z-50 overflow-hidden max-h-60 overflow-y-auto">
@@ -127,25 +137,6 @@ export default function LocationSearch({ value, onChange, singleMode = false }: 
         </div>
       )}
 
-      {value.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-2">
-          {value.map((place, i) => (
-            <span
-              key={place.place_name + place.x + place.y}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/15 text-primary text-base font-medium"
-            >
-              <span className="text-caption">📍</span>
-              {place.place_name}
-              <button
-                onClick={() => remove(i)}
-                className="text-primary hover:text-primary/80 font-bold leading-none ml-0.5"
-              >
-                ×
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
     </div>
   )
 }

@@ -1,17 +1,21 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useScrollLock } from "@/hooks/useScrollLock";
+import { useRouter } from "next/navigation";
+import { motion } from "motion/react";
+import { useScrollLock } from "@/hooks/ui/useScrollLock";
 import { X } from "lucide-react";
-import { IconButton, UserRowSkeleton } from "@/components/common";
+import { Button, IconButton, Modal } from "@/components/common";
 import { toast } from "@/store/toastStore";
-import { usePostDetail } from "@/hooks/usePostDetail";
-import { useCommentsQuery } from "@/hooks/useCommentsQuery";
-import { useCommentMutations } from "@/hooks/useCommentMutations";
+import { usePostDelete } from "./_hooks/post/usePostDelete";
+import { usePostDetail } from "./_hooks/post/usePostDetail";
+import { useCommentsQuery } from "./_hooks/comment/useCommentsQuery";
+import { useCommentMutations } from "./_hooks/comment/useCommentMutations";
 import { useAuthStore } from "@/store/authStore";
 import { config } from "@/lib/config";
 import { buildPostContextMenu } from "./menuBuilder";
 import { PostModalProvider } from "./PostModalContext";
+import { PostModalSkeleton } from "./PostModalSkeleton";
 import { SHOWCASE_MOCK_USER_ID } from "./constants";
 import KebabMenu from "./KebabMenu";
 import ImagePane from "./ImagePane";
@@ -26,12 +30,26 @@ interface Props {
   // undefined = 데이터 로드 후 썸네일이 있는 spot으로 자동 이동 (댓글 클릭)
   // number  = 해당 spot 바로 오픈 (마커 클릭)
   initialSpotIdx?: number;
+  // true = 배경 오버레이 없이 페이지에 인라인으로 표시 (공개 URL 페이지 등)
+  inline?: boolean;
+  // 진입한 페이지에서 이미 캐시된 썸네일 URL — 데이터 로딩 중 회색 깜빡임 방지용 placeholder
+  placeholderThumbnail?: string;
+  // 수정 페이지 이동 처리 — 인터셉트 모달은 popstate 기반 처리가 필요해 외부에서 주입
+  onEdit?: () => void;
+  // 모달 내부에서 다른 페이지로 이동할 때 사용. 인터셉트 모달은 popstate 패턴이 필요해 외부 주입.
+  onNavigate?: (href: string) => void;
+  // 게시글 삭제 성공 직후 호출 (onClose 이후). 인터셉트 모달이 진입 페이지로 안전하게 이동시킬 때 사용.
+  onAfterDelete?: () => void;
 }
 
 const urlPathname = (url: string) => { try { return new URL(url).pathname } catch { return url } }
 
-export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, className, initialSpotIdx }: Props) {
+export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, className, initialSpotIdx, inline = false, placeholderThumbnail, onEdit, onNavigate, onAfterDelete }: Props) {
+  const router = useRouter();
   const [userSelectedIdx, setUserSelectedIdx] = useState<number | null>(null);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+
+  const { deletePost, isDeleting } = usePostDelete(postId, { onClose, onAfterDelete });
 
   const { data, isLoading, isError, likeMutation, bookmarkMutation } = usePostDetail(postId);
   const { data: commentsData } = useCommentsQuery(postId);
@@ -44,22 +62,22 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
 
   const currentUserId = useAuthStore((s) => s.user?.userId) ?? (config.isDev ? SHOWCASE_MOCK_USER_ID : null);
 
-  useScrollLock(true);
+  useScrollLock(!inline);
 
   useEffect(() => {
     if (isError) {
       toast.error("게시글을 불러올 수 없습니다.");
-      onClose();
     }
-  }, [isError, onClose]);
+  }, [isError]);
 
   useEffect(() => {
+    if (inline) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
+  }, [onClose, inline]);
 
   const spots = useMemo(
     () => (data?.spots ? [...data.spots].sort((a, b) => a.order - b.order) : []),
@@ -85,11 +103,11 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
     () =>
       buildPostContextMenu({
         isOwner: data?.is_owner ?? false,
-        // TODO: 수정/삭제 라우팅·확인 모달 — 후속 PR
-        onEdit: () => {},
-        onDelete: () => {},
+        postId,
+        onEdit: onEdit ?? (() => router.push(`/write/${postId}/edit`)),
+        onDelete: () => setConfirmDeleteOpen(true),
       }),
-    [data?.is_owner]
+    [data?.is_owner, postId, router, onEdit]
   );
 
   // activeSpotIdx 변경 시 Context consumers가 불필요하게 리렌더되지 않도록 메모이즈.
@@ -104,6 +122,8 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
       onUpdateComment,
       onDeleteComment,
       toggleCommentLike,
+      onClose,
+      navigate: onNavigate ?? ((href: string) => router.push(href)),
     }),
     [
       postId,
@@ -114,41 +134,70 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
       onUpdateComment,
       onDeleteComment,
       toggleCommentLike,
+      onClose,
+      onNavigate,
+      router,
     ]
   );
 
+  const backdropClass = inline
+    ? `relative flex items-center justify-center ${className ?? ""}`
+    : `fixed inset-0 z-(--z-page-modal) flex items-center justify-center bg-black/50 backdrop-blur-[2px] ${className ?? ""}`;
+  const cardClass = inline
+    ? "bg-bg-card rounded-3xl overflow-hidden flex flex-col md:flex-row shadow-[0_32px_80px_-12px_rgba(0,0,0,0.15)] w-full md:w-[1000px] md:max-w-[96vw] md:max-h-[calc(100vh-7rem)] relative"
+    : "bg-bg-card rounded-none md:rounded-3xl overflow-hidden flex flex-col md:flex-row shadow-[0_32px_80px_-12px_rgba(0,0,0,0.35)] w-full h-full md:w-[1000px] md:max-w-[96vw] md:h-auto md:max-h-[92vh] relative";
+
   return (
-    <div
+    <motion.div
       data-testid="post-modal-backdrop"
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[2px] ${className ?? ""}`}
-      onClick={onClose}
+      className={backdropClass}
+      onClick={inline ? undefined : onClose}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
     >
-      <div
+      <motion.div
         data-testid="post-modal"
-        className="bg-bg-card rounded-3xl overflow-hidden flex shadow-[0_32px_80px_-12px_rgba(0,0,0,0.35)] w-[1000px] max-w-[96vw] max-h-[92vh] relative"
+        className={cardClass}
         onClick={(e) => e.stopPropagation()}
+        initial={{ opacity: 0, scale: 0.95, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 8 }}
+        transition={{ duration: 0.2 }}
       >
-        {!data && isLoading && (
-          <div className="w-full h-[500px] flex items-center justify-center">
-            <UserRowSkeleton rows={3} />
+        {!data && isLoading && <PostModalSkeleton placeholderThumbnail={placeholderThumbnail} />}
+
+        {isError && !data && (
+          <div className="w-full h-[600px] flex flex-col items-center justify-center gap-3 text-text-muted">
+            <p className="text-body-sm">게시글을 불러올 수 없습니다.</p>
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-primary text-body-sm underline underline-offset-2"
+            >
+              닫기
+            </button>
           </div>
         )}
 
+        {/* 항상 표시되는 닫기 버튼 — inline 모드에서는 X 숨김(독립 페이지) */}
+        <div className="absolute top-[max(1rem,env(safe-area-inset-top))] right-4 z-20 flex items-center gap-2">
+          {data && <KebabMenu items={menuItems} />}
+          {!inline && (
+            <IconButton
+              icon={<X size={14} />}
+              variant="filled"
+              size="sm"
+              aria-label="닫기"
+              onClick={onClose}
+              className="bg-white/90 backdrop-blur-sm border border-border hover:bg-bg-card"
+            />
+          )}
+        </div>
+
         {data && (
           <PostModalProvider value={contextValue}>
-            {/* Floating controls */}
-            <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
-              <KebabMenu items={menuItems} />
-              <IconButton
-                icon={<X size={14} />}
-                variant="filled"
-                size="sm"
-                aria-label="닫기"
-                onClick={onClose}
-                className="bg-white/90 backdrop-blur-sm border border-border hover:bg-bg-card"
-              />
-            </div>
-
             <ImagePane
               spots={spots}
               activeSpotIdx={activeSpotIdx}
@@ -165,7 +214,41 @@ export default function PostModal({ postId, onClose, onGoToMain, showGoToMain, c
             />
           </PostModalProvider>
         )}
-      </div>
-    </div>
+
+      </motion.div>
+
+      <Modal
+        open={confirmDeleteOpen}
+        onClose={() => setConfirmDeleteOpen(false)}
+        title="게시글 삭제"
+        className="max-w-sm"
+        footer={
+          <>
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => setConfirmDeleteOpen(false)}
+              disabled={isDeleting}
+            >
+              취소
+            </Button>
+            <Button
+              variant="outline"
+              size="md"
+              className="text-error border-error hover:bg-error/5"
+              onClick={() => deletePost()}
+              loading={isDeleting}
+              disabled={isDeleting}
+            >
+              삭제
+            </Button>
+          </>
+        }
+      >
+        <p className="text-body-sm text-text-body">
+          이 게시글을 정말 삭제하시겠습니까? 삭제하면 복구할 수 없습니다.
+        </p>
+      </Modal>
+    </motion.div>
   );
 }

@@ -1,6 +1,9 @@
 "use client";
+import { useRef, useState } from "react";
 import Link from "next/link";
-import { Avatar } from "@/components/common";
+import { Settings } from "lucide-react";
+import { Avatar, LogoutModal } from "@/components/common";
+import { useOnClickOutside } from "@/hooks/ui/useOnClickOutside";
 import type { UserProfileResponse } from "@/types";
 
 export interface ProfileHeaderProps {
@@ -27,21 +30,26 @@ function formatCount(n: number): string {
 function StatItem({ label, value, href }: StatItemProps) {
   const content = (
     <>
-      <div className="text-xl font-bold text-text">{formatCount(value)}</div>
-      <div className="text-xs text-text-muted mt-1">{label}</div>
+      <div className="text-sm font-bold text-text leading-tight sm:text-lg md:text-xl">{formatCount(value)}</div>
+      <div className="text-[10px] text-text-muted sm:text-xs sm:mt-2 md:text-xs md:mt-1">{label}</div>
     </>
   );
 
+  // <640px(모바일): 가변(flex-1) — 폰 뷰포트 차이 대응
+  // 640~768px(태블릿): w-36 (144px) — 충분히 큰 고정 너비
+  // ≥768px(데스크탑): w-[160px]
+  const cls = "flex flex-col items-center bg-bg rounded-md px-2 py-1.5 flex-1 min-w-0 sm:rounded-lg sm:px-4 sm:py-2.5 sm:flex-none sm:w-36 md:rounded-xl md:px-4 md:py-3 md:w-[160px]";
+
   if (href) {
     return (
-      <Link href={href} className="flex flex-col items-center bg-bg rounded-xl px-4 py-3 w-[160px] hover:bg-bg-subtle transition-colors">
+      <Link href={href} className={`${cls} hover:bg-bg-subtle transition-colors`}>
         {content}
       </Link>
     );
   }
 
   return (
-    <div className="flex flex-col items-center bg-bg rounded-xl px-4 py-3 w-[160px]">
+    <div className={cls}>
       {content}
     </div>
   );
@@ -49,34 +57,82 @@ function StatItem({ label, value, href }: StatItemProps) {
 
 export function ProfileHeader({ profile }: ProfileHeaderProps) {
   const initial = profile.nickname?.slice(0, 1).toUpperCase() ?? "?";
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [logoutModal, setLogoutModal] = useState(false);
+  const settingsRef = useRef<HTMLDivElement>(null);
+
+  useOnClickOutside(settingsRef, () => setSettingsOpen(false), settingsOpen);
 
   return (
-    <section className="flex items-start gap-6 bg-bg-card rounded-2xl p-6">
-      <Avatar
-        size="xl"
-        src={profile.profile_img || undefined}
-        initial={initial}
-      />
+    <section className="relative bg-bg-card rounded-2xl p-5 md:flex md:items-start md:gap-6 md:p-6">
+      {/* 모바일: 아바타 옆에 스탯을 배치 */}
+      <div className="flex items-center gap-4 md:contents">
+        {/* 아바타 + 우하단 설정 버튼 */}
+        <div className="relative shrink-0">
+          <Avatar size="xl" src={profile.profile_img || undefined} initial={initial} />
+          {/* 모바일 전용 설정 드롭다운 */}
+          <div ref={settingsRef} className="absolute bottom-0 right-0 md:hidden">
+            <button
+              type="button"
+              onClick={() => setSettingsOpen(o => !o)}
+              className="w-7 h-7 rounded-full bg-bg-card border border-border flex items-center justify-center shadow-sm hover:bg-bg-subtle transition-colors"
+              aria-label="설정"
+            >
+              <Settings className="w-3.5 h-3.5 text-text-muted" strokeWidth={2} />
+            </button>
+            {settingsOpen && (
+              <div className="absolute bottom-full right-0 mb-1 bg-bg-card border border-border rounded-card shadow-modal min-w-[140px] py-1 z-(--z-drawer)">
+                <Link
+                  href="/settings"
+                  onClick={() => setSettingsOpen(false)}
+                  className="flex px-4 py-2.5 text-body-sm text-text hover:bg-bg-subtle transition-colors"
+                >
+                  내 정보 수정
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => { setSettingsOpen(false); setLogoutModal(true) }}
+                  className="w-full text-left px-4 py-2.5 text-body-sm text-error hover:bg-bg-subtle transition-colors"
+                >
+                  로그아웃
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
 
-      <div className="flex-1 min-w-0">
-        <h2 className="text-lg font-bold text-text">{profile.nickname}</h2>
-        {profile.name && (
-          <p className="text-xs text-text-muted mt-0.5">{profile.name}</p>
-        )}
-        {profile.intro && (
-          <p className="text-sm text-text-muted mt-1 whitespace-pre-wrap">
-            {profile.intro}
-          </p>
-        )}
+        <LogoutModal open={logoutModal} onClose={() => setLogoutModal(false)} />
+
+        <div className="flex-1 min-w-0">
+          {/* 데스크톱: 수정 전 웹 레이아웃처럼 소개 영역과 스탯을 분리 */}
+          <div className="hidden md:block">
+            <h2 className="text-lg font-bold text-text">{profile.nickname}</h2>
+            {profile.name && <p className="text-xs text-text-muted mt-2">{profile.name}</p>}
+            {profile.intro && (
+              <p className="text-sm text-text-muted mt-1 whitespace-pre-wrap">{profile.intro}</p>
+            )}
+          </div>
+          <div className="flex gap-2 sm:justify-end md:hidden">
+            <StatItem label="팔로워" value={profile.follower} href="/followers?tab=followers" />
+            <StatItem label="팔로잉" value={profile.following} href="/followers?tab=following" />
+          </div>
+        </div>
       </div>
 
-      <div className="flex flex-col items-end gap-3 shrink-0">
+      <div className="hidden md:flex md:flex-col md:items-end md:gap-3 md:shrink-0">
         <div className="flex gap-6">
-          <StatItem label="게시글" value={profile.posts_count} />
           <StatItem label="팔로워" value={profile.follower} href="/followers?tab=followers" />
           <StatItem label="팔로잉" value={profile.following} href="/followers?tab=following" />
         </div>
+      </div>
 
+      {/* 모바일: 닉네임/소개 */}
+      <div className="mt-3 md:hidden">
+        <h2 className="text-lg font-bold text-text truncate">{profile.nickname}</h2>
+        {profile.name && <p className="text-xs text-text-muted mt-2 truncate">{profile.name}</p>}
+        {profile.intro && (
+          <p className="text-sm text-text-muted mt-1 whitespace-pre-wrap">{profile.intro}</p>
+        )}
       </div>
     </section>
   );

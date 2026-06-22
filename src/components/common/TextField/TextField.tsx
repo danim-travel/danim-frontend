@@ -38,7 +38,7 @@ export const TextField = React.forwardRef<HTMLInputElement, TextFieldProps>(
             {...rest}
           />
           {rightSlot && (
-            <span className="absolute right-2 top-1/2 -translate-y-1/2">{rightSlot}</span>
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">{rightSlot}</span>
           )}
         </span>
         {(helperText || error) && (

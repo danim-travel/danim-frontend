@@ -60,7 +60,7 @@ dm/layout.tsx
 
 | 드로어 | 트리거 | 상태 |
 |--------|--------|------|
-| `SearchDrawer` | SideNav 검색 아이콘 | `uiStore.isSearchOpen` |
-| `NotificationDrawer` | SideNav 알림 아이콘 | `uiStore.isNotificationOpen` |
+| `SearchDrawer` | SideNav 검색 아이콘 | `uiStore.activePanel === 'search'` |
+| `NotificationDrawer` | SideNav 알림 아이콘 | `uiStore.activePanel === 'notification'` |
 
 두 드로어 모두 `(main)/layout.tsx`에 마운트됩니다.

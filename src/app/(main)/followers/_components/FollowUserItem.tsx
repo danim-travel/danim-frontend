@@ -1,9 +1,12 @@
 "use client"
 import { Check } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Avatar, Button, UserRow } from "@/components/common"
 import { followUser, unfollowUser } from "@/lib/api/users"
 import { getApiErrorMessage } from "@/lib/apiError"
+import { queryKeys } from "@/lib/queryKeys"
+import { useAuthStore } from "@/store/authStore"
 import { toast } from "@/store/toastStore"
 import type { FollowUser } from "@/types"
 
@@ -18,6 +21,7 @@ const AVATAR_COLORS = [
   "bg-(--color-gray-700)",
 ]
 
+/** userId 해시값 기반으로 아바타 배경색을 결정한다. */
 function getAvatarColor(userId: string) {
   let hash = 0
   for (const c of userId) hash = (hash * 31 + c.charCodeAt(0)) & 0xffff
@@ -33,13 +37,19 @@ interface FollowUserItemProps {
 
 type FollowCache = FollowUser[] | undefined
 
+/** 캐시 배열에서 targetId에 해당하는 유저의 is_following만 교체한 새 배열을 반환한다. */
 function applyIsFollowing(cache: FollowCache, targetId: string, isFollowing: boolean): FollowUser[] {
   return (cache ?? []).map(u => u.user_id === targetId ? { ...u, is_following: isFollowing } : u)
 }
 
+/** 팔로워/팔로잉 목록의 유저 행 컴포넌트. 팔로우·언팔로우 토글과 낙관적 업데이트를 담당한다. */
 export function FollowUserItem({ user, followersQueryKey, followingQueryKey, isMutualFollow }: FollowUserItemProps) {
+  const router = useRouter()
   const queryClient = useQueryClient()
+  const myUserId = useAuthStore(s => s.user?.userId)
+  const isMe = !!myUserId && myUserId === user.user_id
 
+  /** 진행 중인 쿼리를 취소하고 이전 캐시를 스냅샷한 뒤 낙관적 업데이트를 적용한다. */
   async function prepareOptimistic(isFollowing: boolean) {
     await queryClient.cancelQueries({ queryKey: followersQueryKey })
     await queryClient.cancelQueries({ queryKey: followingQueryKey })
@@ -53,37 +63,31 @@ export function FollowUserItem({ user, followersQueryKey, followingQueryKey, isM
     return { prevFollowers, prevFollowing }
   }
 
+  /** API 실패 시 스냅샷으로 캐시를 복원한다. */
   function rollback(context: { prevFollowers: FollowCache; prevFollowing: FollowCache } | undefined) {
     queryClient.setQueryData(followersQueryKey, context?.prevFollowers)
     queryClient.setQueryData(followingQueryKey, context?.prevFollowing)
   }
 
+  /** 팔로워·팔로잉 쿼리와 대상 유저 프로필을 무효화해 서버 데이터와 동기화한다. */
   function invalidateBoth() {
     queryClient.invalidateQueries({ queryKey: followersQueryKey })
     queryClient.invalidateQueries({ queryKey: followingQueryKey })
+    queryClient.invalidateQueries({ queryKey: queryKeys.users.profile(user.user_id) })
   }
 
-  const followMutation = useMutation({
-    mutationFn: () => followUser(user.user_id),
-    onMutate: () => prepareOptimistic(true),
+  const toggleMutation = useMutation({
+    mutationFn: (shouldFollow: boolean) =>
+      shouldFollow ? followUser(user.user_id) : unfollowUser(user.user_id),
+    onMutate: (shouldFollow) => prepareOptimistic(shouldFollow),
     onError: (err, _, context) => {
       rollback(context)
-      toast.error(getApiErrorMessage(err, { client: "팔로우에 실패했습니다." }))
+      toast.error(getApiErrorMessage(err, { client: "팔로우 변경에 실패했습니다." }))
     },
     onSettled: invalidateBoth,
   })
 
-  const unfollowMutation = useMutation({
-    mutationFn: () => unfollowUser(user.user_id),
-    onMutate: () => prepareOptimistic(false),
-    onError: (err, _, context) => {
-      rollback(context)
-      toast.error(getApiErrorMessage(err, { client: "팔로우 취소에 실패했습니다." }))
-    },
-    onSettled: invalidateBoth,
-  })
-
-  const isPending = followMutation.isPending || unfollowMutation.isPending
+  const isPending = toggleMutation.isPending
 
   const mutualBadge = isMutualFollow ? (
     <span className="shrink-0 px-2 py-0.5 rounded-full text-[11px] font-medium text-primary bg-(--color-primary-soft)">
@@ -103,15 +107,20 @@ export function FollowUserItem({ user, followersQueryKey, followingQueryKey, isM
       }
       title={user.nickname}
       titleSuffix={mutualBadge}
+      onClick={() => router.push(`/users/${user.user_id}`)}
+      className="px-3 py-3 rounded-xl hover:bg-bg-subtle transition-colors"
       trailing={
-        user.is_following ? (
+        isMe ? null : user.is_following ? (
           <Button
             variant="primary"
             size="sm"
             leftIcon={<Check size={14} />}
             loading={isPending}
             disabled={isPending}
-            onClick={() => unfollowMutation.mutate()}
+            onClick={(e) => {
+              e.stopPropagation()
+              toggleMutation.mutate(false)
+            }}
           >
             팔로잉
           </Button>
@@ -121,7 +130,10 @@ export function FollowUserItem({ user, followersQueryKey, followingQueryKey, isM
             size="sm"
             loading={isPending}
             disabled={isPending}
-            onClick={() => followMutation.mutate()}
+            onClick={(e) => {
+              e.stopPropagation()
+              toggleMutation.mutate(true)
+            }}
           >
             팔로우
           </Button>

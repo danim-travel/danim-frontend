@@ -1,10 +1,14 @@
 "use client";
 
+import { useRef, useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { Home, Compass, PenLine, Search, MessageCircle, Bell, Settings, type LucideIcon } from 'lucide-react'
 import { useUIStore } from '@/store/uiStore'
 import { useAuthStore } from '@/store/authStore'
+import { useNotificationBadgeStore } from '@/store/notificationBadgeStore'
+import { useOnClickOutside } from '@/hooks/ui/useOnClickOutside'
+import { Avatar, LogoutModal } from '@/components/common'
 
 const NAV_LINKS = [
   { href: '/', label: '홈', Icon: Home },
@@ -17,16 +21,25 @@ type NavButtonProps = {
   label: string
   Icon: LucideIcon
   onClick: () => void
+  badge?: number
 }
 
-function NavButton({ label, Icon, onClick }: NavButtonProps) {
+function NavButton({ label, Icon, onClick, badge }: NavButtonProps) {
+  const badgeLabel = badge && badge > 99 ? '99+' : badge
   return (
     <button
       onClick={onClick}
       className="flex flex-col items-center justify-center gap-1 w-full py-3 rounded-xl transition-all hover:bg-bg-subtle"
     >
-      <Icon className="w-[22px] h-[22px] text-text-disabled" strokeWidth={2} />
-      <span className="text-[9px] font-semibold tracking-wide text-text-disabled">{label}</span>
+      <span className="relative">
+        <Icon className="w-(--icon-size-lg) h-(--icon-size-lg) text-text-disabled" strokeWidth={2} />
+        {!!badge && (
+          <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-0.5 flex items-center justify-center rounded-full bg-error text-white text-[10px] font-bold leading-none">
+            {badgeLabel}
+          </span>
+        )}
+      </span>
+      <span className="text-nav font-semibold tracking-wide text-text-disabled whitespace-nowrap">{label}</span>
     </button>
   )
 }
@@ -36,37 +49,69 @@ type NavLinkProps = {
   label?: string
   Icon: LucideIcon
   active: boolean
+  onClick?: () => void
 }
 
-function NavLink({ href, label, Icon, active }: NavLinkProps) {
+function NavLink({ href, label, Icon, active, onClick }: NavLinkProps) {
   return (
     <Link
       href={href}
+      onClick={onClick}
       className={`flex flex-col items-center justify-center gap-1 w-full py-3 rounded-xl transition-all ${active ? 'bg-primary/10' : 'hover:bg-bg-subtle'}`}
     >
-      <Icon className={`w-[22px] h-[22px] ${active ? 'text-primary' : 'text-text-disabled'}`} strokeWidth={active ? 2.5 : 2} />
-      {label && <span className={`text-[9px] font-semibold tracking-wide ${active ? 'text-primary' : 'text-text-disabled'}`}>{label}</span>}
+      <Icon className={`w-(--icon-size-lg) h-(--icon-size-lg) ${active ? 'text-primary' : 'text-text-disabled'}`} strokeWidth={active ? 2.5 : 2} />
+      {label && <span className={`text-nav font-semibold tracking-wide whitespace-nowrap ${active ? 'text-primary' : 'text-text-disabled'}`}>{label}</span>}
     </Link>
   )
 }
 
 export default function SideNav() {
   const pathname = usePathname()
-  const { setActivePanel } = useUIStore()
+  const router = useRouter()
+  const activePanel = useUIStore((s) => s.activePanel)
+  const setActivePanel = useUIStore((s) => s.setActivePanel)
+  const closePanel = useUIStore((s) => s.closePanel)
   const user = useAuthStore((s) => s.user)
+  const unreadCount = useNotificationBadgeStore((s) => s.unreadCount)
+
+  const goHome = () => {
+    router.push('/')
+    closePanel()
+  }
+
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [settingsHovered, setSettingsHovered] = useState(false)
+  const [logoutModal, setLogoutModal] = useState(false)
+  const settingsRef = useRef<HTMLDivElement>(null)
+  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleSettingsMouseEnter = () => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
+    setSettingsHovered(true)
+  }
+
+  const handleSettingsMouseLeave = () => {
+    hoverTimeoutRef.current = setTimeout(() => {
+      setSettingsHovered(false)
+    }, 150)
+  }
+
+  useOnClickOutside(settingsRef, () => setSettingsOpen(false), settingsOpen)
+
+  const isSettingsDropdownVisible = settingsOpen || settingsHovered
+
+  const isSettingsActive = pathname === '/settings'
 
   return (
-    <nav className="w-[68px] bg-bg-card border-r border-border flex flex-col items-center shrink-0 h-full py-4">
+    <nav className="w-(--sidebar-width) bg-bg-card border-r border-border flex flex-col items-center shrink-0 h-full py-4">
       {/* 메인 로고, 클릭하면 홈으로 이동 */}
-      <Link href="/" className="mb-5">
-        <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-md hover:shadow-lg transition-shadow">
-          <span className="text-text-inverse text-card-title">✈️</span>
-        </div>
-      </Link>
+      <button type="button" onClick={goHome} className="mb-5 cursor-pointer">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo.svg" alt="Danim" width={40} height={40} decoding="async" className="w-10 h-10 shadow-md hover:shadow-lg transition-shadow" />
+      </button>
 
       {/* 메인 네비게이션 링크 */}
       <div className="flex flex-col items-center gap-0.5 flex-1 w-full px-2">
-        {/* 메인 네비게이션 링크 매핑 */}
         {NAV_LINKS.map(({ href, label, Icon }) => (
           <NavLink
             key={href}
@@ -74,30 +119,71 @@ export default function SideNav() {
             label={label}
             Icon={Icon}
             active={pathname === href || pathname.startsWith(href + '/')}
+            onClick={href === '/' ? goHome : closePanel}
           />
         ))}
 
         {/* 검색, 알림 버튼 */}
-        <NavButton label="검색" Icon={Search} onClick={() => setActivePanel('search')} />
-        <NavButton label="알림" Icon={Bell} onClick={() => setActivePanel('notification')} />
+        <NavButton label="검색" Icon={Search} onClick={() => activePanel === 'search' ? closePanel() : setActivePanel('search')} />
+        <NavButton label="알림" Icon={Bell} onClick={() => activePanel === 'notification' ? closePanel() : setActivePanel('notification')} badge={unreadCount} />
       </div>
 
       {/* 하단 설정, 마이페이지 */}
       <div className="flex flex-col items-center gap-3 px-2 w-full">
-        <NavLink href="/settings" Icon={Settings} active={pathname === '/settings'} />
-
-        <Link href="/mypage">
-          {user?.profileImg ? (
-            <img
-              src={user.profileImg}
-              alt="프로필"
-              className="w-9 h-9 rounded-full object-cover shadow-md hover:shadow-lg transition-shadow"
+        {/* 설정 버튼 — 클릭 또는 hover 시 드롭다운 */}
+        <div
+          ref={settingsRef}
+          className="relative w-full"
+          onMouseEnter={handleSettingsMouseEnter}
+          onMouseLeave={handleSettingsMouseLeave}
+        >
+          <button
+            type="button"
+            aria-label="설정"
+            onClick={() => setSettingsOpen(o => !o)}
+            className={`flex flex-col items-center justify-center gap-1 w-full py-3 rounded-xl transition-all ${isSettingsActive ? 'bg-primary/10' : 'hover:bg-bg-subtle'}`}
+          >
+            <Settings
+              className={`w-(--icon-size-lg) h-(--icon-size-lg) ${isSettingsActive ? 'text-primary' : 'text-text-disabled'}`}
+              strokeWidth={isSettingsActive ? 2.5 : 2}
             />
-          ) : (
-            <div className="w-9 h-9 rounded-full bg-border shadow-md hover:shadow-lg transition-shadow" />
+          </button>
+
+          {isSettingsDropdownVisible && (
+            <div
+              onMouseEnter={handleSettingsMouseEnter}
+              onMouseLeave={handleSettingsMouseLeave}
+              className="absolute bottom-0 left-full ml-2 bg-bg-card border border-border rounded-card shadow-modal min-w-[140px] py-1 z-(--z-drawer) overflow-hidden"
+            >
+              <Link
+                href="/settings"
+                onClick={() => { setSettingsOpen(false); closePanel() }}
+                className="flex px-4 py-2.5 text-body-sm text-text hover:bg-bg-subtle transition-colors"
+              >
+                내 정보 수정
+              </Link>
+              <button
+                type="button"
+                onClick={() => { setSettingsOpen(false); setLogoutModal(true) }}
+                className="w-full text-left px-4 py-2.5 text-body-sm text-error hover:bg-bg-subtle transition-colors"
+              >
+                로그아웃
+              </button>
+            </div>
           )}
+        </div>
+
+        <Link href="/mypage" onClick={closePanel}>
+          <Avatar
+            src={user?.profileImg ?? undefined}
+            initial={user?.nickname?.[0]?.toUpperCase()}
+            size="sm"
+            className="shadow-md hover:shadow-lg transition-shadow"
+          />
         </Link>
       </div>
+
+      <LogoutModal open={logoutModal} onClose={() => setLogoutModal(false)} />
     </nav>
   )
 }

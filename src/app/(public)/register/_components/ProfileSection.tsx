@@ -40,11 +40,12 @@ export function ProfileSection() {
           type="text"
           placeholder="실명을 입력해주세요"
           className="h-12"
+          autoComplete="name"
           {...nameField}
           error={errors.name?.message}
         />
         <div>
-          <FieldLabel htmlFor="birthdate-year">생년월일</FieldLabel>
+          <FieldLabel htmlFor="birthdate-year" required>생년월일</FieldLabel>
           <div className="flex gap-2">
             <div className="flex-[1.2]">
               <TextField
@@ -55,8 +56,8 @@ export function ProfileSection() {
                 placeholder="YYYY"
                 aria-label="출생 연도"
                 className={INPUT_CLASS}
+                autoComplete="bday-year"
                 {...birthYearField}
-                // 숫자 외 문자 입력 즉시 제거
                 onChange={(e) => birthYearField.onChange(e.target.value.replace(/\D/g, ""))}
               />
             </div>
@@ -68,6 +69,7 @@ export function ProfileSection() {
                 placeholder="MM"
                 aria-label="출생 월"
                 className={INPUT_CLASS}
+                autoComplete="bday-month"
                 {...birthMonthField}
                 onChange={(e) => birthMonthField.onChange(e.target.value.replace(/\D/g, ""))}
               />
@@ -80,6 +82,7 @@ export function ProfileSection() {
                 placeholder="DD"
                 aria-label="출생 일"
                 className={INPUT_CLASS}
+                autoComplete="bday-day"
                 {...birthDayField}
                 onChange={(e) => birthDayField.onChange(e.target.value.replace(/\D/g, ""))}
               />
@@ -96,6 +99,7 @@ export function ProfileSection() {
         required
         placeholder="영문, 숫자, _, . 사용 가능 (2~10자)"
         className="h-12"
+        autoComplete="nickname"
         {...nicknameField}
         onChange={(e) => {
           // 허용 문자 외 즉시 제거 + 최대 길이 제한

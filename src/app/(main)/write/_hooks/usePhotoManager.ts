@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { uploadImage } from '@/lib/uploadImage'
+import { uploadImage } from '@/lib/media/uploadImage'
 import { getApiErrorMessage } from '@/lib/apiError'
 import { toast } from '@/store/toastStore'
 import type { CreatePostSpotImage } from '@/types'
@@ -13,24 +13,34 @@ type UsePhotoManagerArgs = {
   spots: SpotFormData[]
   active: SpotFormData
   updateSpot: (id: string, updates: Partial<SpotFormData>) => void
+  initialThumbnailKey?: string | null
 }
 
-export function usePhotoManager({ spots, active, updateSpot }: UsePhotoManagerArgs) {
+export function usePhotoManager({ spots, active, updateSpot, initialThumbnailKey }: UsePhotoManagerArgs) {
   // 현재 선택된 썸네일 이미지의 S3 key
-  const [thumbnailKey, setThumbnailKey] = useState<string | null>(null)
+  const [thumbnailKey, setThumbnailKey] = useState<string | null>(() => initialThumbnailKey ?? null)
   // 현재 선택된 사진의 인덱스
   const [selectedPhotoIdx, setSelectedPhotoIdx] = useState(0)
-  // 사진 업로드 중 여부
-  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false)
+  // 스팟별 업로드 상태 — 단일 boolean으로 두면 업로드 중 다른 스팟으로 전환 시 새 스팟에도 스피너가 새서 보이는 버그 발생
+  const [spotUploads, setSpotUploads] = useState<Map<string, { current: number; total: number }>>(new Map())
+  const activeUpload = spotUploads.get(active.id)
+  const isUploadingPhoto = !!activeUpload
+  const uploadProgress = activeUpload ?? { current: 0, total: 0 }
   // 언마운트 후 setState/updateSpot 호출 방지
   const aliveRef = useRef(true)
 
   // handlePhotoAdd는 async 함수라 클로저로 캡처된 spots가 업로드 완료 시점에 낡은 값일 수 있음 — ref로 항상 최신값 참조
   const spotsRef = useRef(spots)
+  // 업로드 시작 후 사용자가 다른 스팟으로 전환할 수 있어 selectedPhotoIdx 갱신 시 현재 활성 스팟과의 일치 여부 확인 용
+  const activeIdRef = useRef(active.id)
 
   useEffect(() => {
     spotsRef.current = spots
   }, [spots])
+
+  useEffect(() => {
+    activeIdRef.current = active.id
+  }, [active.id])
 
   useEffect(() => {
     return () => {
@@ -57,28 +67,39 @@ export function usePhotoManager({ spots, active, updateSpot }: UsePhotoManagerAr
       previewUrl: URL.createObjectURL(file),
     }))
 
-    setIsUploadingPhoto(true)
+    setSpotUploads((prev) => new Map(prev).set(targetSpotId, { current: 0, total: pairs.length }))
     try {
       const uploaded = await Promise.all(
         pairs.map(async ({ file, previewUrl }) => {
           const { img_url, key } = await uploadImage('posts/presigned-url', file)
+          setSpotUploads((prev) => {
+            const next = new Map(prev)
+            const curr = next.get(targetSpotId)
+            if (curr) next.set(targetSpotId, { current: curr.current + 1, total: curr.total })
+            return next
+          })
           const image: CreatePostSpotImage = { original_img: img_url, key }
           return { image, previewUrl }
         })
       )
 
-      if (!aliveRef.current) {
-        uploaded.forEach(({ previewUrl }) => URL.revokeObjectURL(previewUrl))
-        return
-      }
-
       // 업로드는 async라 완료될 때쯤엔 사용자가 다른 spot으로 탭을 전환했을 수 있음 -> 의도한 spot에서만 작동
       const targetSpot = spotsRef.current.find((s) => s.id === targetSpotId)
       if (targetSpot) {
+        const previousCount = targetSpot.images.length
         updateSpot(targetSpotId, {
           images: [...targetSpot.images, ...uploaded.map((u) => u.image)],
           previewUrls: [...targetSpot.previewUrls, ...uploaded.map((u) => u.previewUrl)],
         })
+
+        // 포커스 이동 규칙:
+        // - 최초 업로드(previousCount === 0): 첫 사진부터 보도록 0 유지
+        // - 기존 사진 있음 + 1장 추가: 새로 추가된 그 사진으로 이동
+        // - 기존 사진 있음 + 여러 장 추가: 추가된 사진 중 첫 번째로 이동
+        // - 업로드 중 다른 스팟으로 전환했다면: idx 갱신하지 않음
+        if (previousCount > 0 && activeIdRef.current === targetSpotId) {
+          setSelectedPhotoIdx(previousCount)
+        }
       }
 
       // 첫 번째 사진 업로드 시 썸네일 자동 지정
@@ -92,9 +113,11 @@ export function usePhotoManager({ spots, active, updateSpot }: UsePhotoManagerAr
       toast.error(getApiErrorMessage(err, { client: '사진 업로드에 실패했습니다.' }))
     } finally {
       e.target.value = ''
-      if (aliveRef.current) {
-        setIsUploadingPhoto(false)
-      }
+      setSpotUploads((prev) => {
+        const next = new Map(prev)
+        next.delete(targetSpotId)
+        return next
+      })
     }
   }
 
@@ -129,6 +152,7 @@ export function usePhotoManager({ spots, active, updateSpot }: UsePhotoManagerAr
     selectedPhotoIdx,
     setSelectedPhotoIdx,
     isUploadingPhoto,
+    uploadProgress,
     handlePhotoAdd,
     removePhoto,
     reorderPhotos,

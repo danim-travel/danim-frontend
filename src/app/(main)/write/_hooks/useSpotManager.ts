@@ -12,9 +12,14 @@ const makeSpot = (): SpotFormData => ({
   previewUrls: [],
 })
 
-export function useSpotManager() {
-  // spot 배열. 초기값은 빈 spot 3개
-  const [spots, setSpots] = useState<SpotFormData[]>(() => [makeSpot(), makeSpot(), makeSpot()])
+type UseSpotManagerOptions = {
+  initialSpots?: SpotFormData[]
+}
+
+export function useSpotManager(options: UseSpotManagerOptions = {}) {
+  const [spots, setSpots] = useState<SpotFormData[]>(
+    () => (options.initialSpots && options.initialSpots.length > 0 ? options.initialSpots : [makeSpot()]),
+  )
   // 현재 선택된 spot의 id
   const [activeId, setActiveId] = useState<string>(() => spots[0].id)
 
@@ -28,6 +33,21 @@ export function useSpotManager() {
   const selectSpot = useCallback((id: string) => {
     setActiveId(id)
   }, [])
+
+  const removeSpot = useCallback((id: string) => {
+    setSpots((prev) => {
+      if (prev.length <= 1) return prev
+      if (prev[0].id === id) return prev  // 1번 스팟은 삭제 불가
+      const next = prev.filter((s) => s.id !== id)
+      // 삭제한 스팟이 활성 스팟이면 인접 스팟으로 전환
+      if (id === activeId) {
+        const removedIdx = prev.findIndex((s) => s.id === id)
+        const fallback = next[removedIdx - 1] ?? next[0]
+        setActiveId(fallback.id)
+      }
+      return next
+    })
+  }, [activeId])
 
   const addSpot = () => {
     if (spots.length >= MAX_SPOTS) return
@@ -53,6 +73,7 @@ export function useSpotManager() {
     active,
     selectSpot,
     addSpot,
+    removeSpot,
     updateSpot,
     reorderSpots,
   }

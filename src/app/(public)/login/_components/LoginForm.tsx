@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button, TextField, PasswordField } from "@/components/common";
 import { login, getCurrentUser } from "@/lib/api/auth";
-import { useAuthStore } from "@/store/authStore";
+import { useAuthStore, toAuthUser } from "@/store/authStore";
 import { getApiErrorMessage } from "@/lib/apiError";
 import { toast } from "@/store/toastStore";
 import { config } from "@/lib/config";
@@ -23,6 +23,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export function LoginForm() {
   const router = useRouter();
+
   const {
     register,
     handleSubmit,
@@ -30,7 +31,7 @@ export function LoginForm() {
   } = useForm<LoginFormValues>({ resolver: zodResolver(loginSchema) });
 
   function handleSocialLogin(provider: "kakao" | "google") {
-    window.location.href = `${config.apiUrl}users/social-login/${provider}`;
+    window.location.href = `${config.apiUrl}users/social-login/${provider}/login`;
   }
 
   const onSubmit = handleSubmit(async (data) => {
@@ -40,10 +41,7 @@ export function LoginForm() {
       useAuthStore.getState().setToken(access_token);
       // 2단계: 유저 정보 조회 → 전체 인증 상태 설정
       const me = await getCurrentUser();
-      useAuthStore.getState().setAuth(
-        { userId: me.user_id, nickname: me.nickname, profileImg: me.profile_img },
-        access_token
-      );
+      useAuthStore.getState().setAuth(toAuthUser(me), access_token);
 
       router.push("/");
     } catch (e) {
@@ -85,6 +83,7 @@ export function LoginForm() {
         <TextField
           label="이메일"
           type="email"
+          required
           placeholder="이메일 주소를 입력하세요"
           autoComplete="email"
           {...register("email")}
@@ -93,6 +92,7 @@ export function LoginForm() {
         <div className="flex flex-col gap-2">
           <PasswordField
             label="비밀번호"
+            required
             placeholder="비밀번호를 입력하세요"
             autoComplete="current-password"
             maxLength={PASSWORD_RULES.maxLength}

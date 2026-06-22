@@ -3,12 +3,13 @@ import { RegisterForm } from "./_components/RegisterForm";
 
 export default function RegisterPage() {
   return (
-    <div className="min-h-screen bg-bg flex items-start justify-center p-6 py-16">
+    <div className="min-h-screen bg-bg grid grid-cols-3 py-16 px-4">
+      <div />
+      <div className="flex justify-center items-start">
       <AuthCard size="lg">
         <div className="flex items-center gap-2 mb-5">
-          <div className="w-9 h-9 rounded-sm bg-primary-hover flex items-center justify-center shadow-brand shrink-0">
-            <span className="text-white text-base">✈️</span>
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.svg" alt="Danim" width={36} height={36} decoding="async" className="w-9 h-9 shadow-md shrink-0" />
           <span className="text-card-title font-bold text-text tracking-tight">danim</span>
         </div>
 
@@ -25,6 +26,8 @@ export default function RegisterPage() {
           linkClassName="font-semibold text-primary-active"
         />
       </AuthCard>
+      </div>
+      <div />
     </div>
   );
 }

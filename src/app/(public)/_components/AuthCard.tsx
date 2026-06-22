@@ -10,7 +10,7 @@ export type AuthCardSize = "sm" | "lg";
  */
 const sizeClass: Record<AuthCardSize, string> = {
   sm: "max-w-[460px] pt-12 pb-10 px-10 flex flex-col gap-8",
-  lg: "max-w-[560px] pt-12 pb-12 px-6 sm:px-12",
+  lg: "max-w-[560px] pt-12 pb-12 px-6 md:px-12",
 };
 
 export interface AuthCardProps {

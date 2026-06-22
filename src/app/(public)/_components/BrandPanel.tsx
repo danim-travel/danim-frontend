@@ -1,39 +1,47 @@
-const FEATURES = ["실시간 여행 위치 공유", "감성 여행 사진 피드", "여행자 커뮤니티 연결"];
+import { Pacifico } from 'next/font/google'
+import styles from './AuthVisuals.module.css'
 
-/** 로그인 화면 좌측 브랜드 인트로. lg 이상에서만 노출. */
+const pacifico = Pacifico({ subsets: ['latin'], weight: '400' })
+
+const FEATURES = [
+  '실시간 여행 위치 공유',
+  '감성 여행 사진 피드',
+  '여행자 커뮤니티 연결',
+]
+
 export function BrandPanel() {
   return (
-    <div className="flex flex-col gap-7 max-w-[480px] shrink-0">
+    <div className="flex flex-col justify-center px-12 select-none">
       {/* 로고 */}
-      <div className="flex items-center gap-3">
-        <div className="w-14 h-14 rounded-md bg-primary flex items-center justify-center shadow-brand-strong shrink-0">
-          <span className="text-white text-2xl">✈️</span>
-        </div>
-        <div>
-          <div className="text-section-title font-bold text-text tracking-tight">Danim</div>
-          <div className="text-body-sm text-text-muted">여행자들의 이야기</div>
-        </div>
+      <div className="mb-10">
+        <p className={`text-5xl leading-none ${pacifico.className} ${styles.brandLogoText}`}>
+          Danim
+        </p>
       </div>
 
-      {/* 히어로 */}
-      <h1 className="text-display font-extrabold leading-tight tracking-tight text-text">
+      {/* 메인 헤딩 */}
+      <h1 className="text-5xl font-bold leading-tight text-foreground mb-6">
         여행의<br />
         <span className="text-primary">모든 순간을</span><br />
         기록하세요.
       </h1>
 
-      <p className="text-base leading-relaxed text-text-muted">
+      {/* 설명 */}
+      <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
         제주, 부산, 경주, 여수 … 전국 여행자들과 나누는 진짜 이야기
       </p>
 
-      <ul className="flex flex-col gap-3 pt-3">
-        {FEATURES.map((f) => (
-          <li key={f} className="flex items-center gap-3 text-base text-text-secondary">
-            <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
-            {f}
+      {/* 기능 목록 */}
+      <ul className="space-y-3">
+        {FEATURES.map((feature) => (
+          <li key={feature} className="flex items-center gap-2 text-sm text-foreground/80">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+            {feature}
           </li>
         ))}
       </ul>
     </div>
-  );
+  )
 }
+
+export default BrandPanel

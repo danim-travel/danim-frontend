@@ -1,8 +1,9 @@
 "use client";
 import React, { useEffect, useId } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
-import { useScrollLock } from "@/hooks/useScrollLock";
+import { useScrollLock } from "@/hooks/ui/useScrollLock";
 
 export type ModalFooterAlign = "start" | "end" | "stretch";
 
@@ -40,12 +41,19 @@ export function Modal({
 
   useEffect(() => {
     if (!open) return;
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handler, { capture: true });
+    return () => window.removeEventListener("keydown", handler, { capture: true });
   }, [open, onClose]);
 
-  return (
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <AnimatePresence>
       {open && (
         <motion.div
@@ -53,7 +61,7 @@ export function Modal({
           aria-modal="true"
           aria-labelledby={title ? titleId : undefined}
           className={cn(
-            "fixed inset-0 z-modal bg-overlay flex justify-center",
+            "fixed inset-0 z-[9999] bg-overlay flex justify-center",
             bottom ? "items-end" : "items-center"
           )}
           onClick={onClose}
@@ -63,6 +71,7 @@ export function Modal({
           transition={{ duration: 0.2 }}
         >
           <motion.div
+            onMouseDown={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}
             className={cn(
               "flex flex-col gap-6 max-w-full w-full",
@@ -99,7 +108,8 @@ export function Modal({
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
 

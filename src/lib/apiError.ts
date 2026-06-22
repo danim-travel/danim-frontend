@@ -64,7 +64,7 @@ export function getApiErrorMessage(
 
       // 값이 배열이면 첫 번째 요소 반환
       // 예: { nickname: ["닉네임은 필수 항목입니다."] } → "닉네임은 필수 항목입니다."
-      if (Array.isArray(first) && first.length > 0) return first[0]
+      if (Array.isArray(first) && first.length > 0 && typeof first[0] === 'string') return first[0]
 
       // 값이 문자열이면 그대로 반환
       // 예: { detail: "로그인 세션이 만료되었습니다." } → "로그인 세션이 만료되었습니다."

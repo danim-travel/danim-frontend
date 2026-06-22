@@ -24,6 +24,8 @@
   --tabbar-padding:     var(--space-2);  /* 8px */
   --modal-padding:      var(--space-8);  /* 32px */
   --sheet-padding:      var(--space-6);  /* 24px */
+  --sidebar-width:      68px;
+  --panel-width:        500px;
 
   /* ── Component ───────────────────────────────── */
   --card-padding:     var(--space-6);    /* 24px */
@@ -40,7 +42,13 @@
   --duration-normal: 160ms;
 
   /* ── Z-index ─────────────────────────────────── */
-  --z-modal: 100;
+  /* --z-sidenav > --z-drawer: 사이드바가 드로어 위에 위치해 드로어가 뒤에서 슬라이드됨 */
+  /* page-modal과 drawer는 상호 배타(modal 열 때 drawer 닫음) → 동시 z-index 충돌 없음 */
+  --z-sidenav:    10;
+  --z-drawer:      5;
+  --z-bottom-nav:  30;
+  --z-page-modal: 40;
+  --z-modal:      100;
 
   /* ── Icon size ───────────────────────────────── */
   --icon-size-sm: 14px;

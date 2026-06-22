@@ -78,13 +78,12 @@ export const apiClient = baseClient.extend({
     afterResponse: [
       async (request, options, response) => {
         if (response.status !== 401) return
-        const headers = new Headers(options.headers as HeadersInit)
-        if (headers.get('x-is-retry')) return
         try {
           const newToken = await acquireRefreshedToken()
-          headers.set('Authorization', `Bearer ${newToken}`)
-          headers.set('x-is-retry', '1')
-          return await retryClient(request.clone(), { ...options, headers })
+          const retryHeaders = new Headers(request.headers)
+          retryHeaders.set('Authorization', `Bearer ${newToken}`)
+          // retryClient에는 afterResponse 재시도 훅이 없으므로 무한루프 위험 없음
+          return await retryClient(request.clone(), { ...options, headers: retryHeaders })
         } catch {
           return response
         }

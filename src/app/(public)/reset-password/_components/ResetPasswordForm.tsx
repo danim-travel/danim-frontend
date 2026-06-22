@@ -58,6 +58,8 @@ export function ResetPasswordForm() {
           type="text"
           inputMode="numeric"
           placeholder="인증 코드 6자리 입력"
+          name="danim-email-code"
+          autoComplete="one-time-code"
           value={code}
           onChange={(e) => setCode(sanitizeVerificationCode(e.target.value))}
           actionLabel={verified ? "완료" : "확인"}
@@ -80,6 +82,7 @@ export function ResetPasswordForm() {
           <div>
             <PasswordField
               label="새 비밀번호"
+              required
               autoComplete="new-password"
               placeholder="8자 이상, 영문+숫자+특수문자 조합"
               className="h-12"
@@ -92,6 +95,7 @@ export function ResetPasswordForm() {
 
           <TextField
             label="새 비밀번호 확인"
+            required
             type="password"
             autoComplete="new-password"
             placeholder="비밀번호를 다시 입력하세요"

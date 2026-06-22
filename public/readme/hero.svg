@@ -1,0 +1,235 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 220" role="img" aria-label="Danim Hero">
+  <defs>
+    <!-- Sunset sky gradient -->
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#1C1C3A"/>
+      <stop offset="28%"  stop-color="#9B2335"/>
+      <stop offset="58%"  stop-color="#CF5C36"/>
+      <stop offset="80%"  stop-color="#E8923A"/>
+      <stop offset="100%" stop-color="#F4C430"/>
+    </linearGradient>
+
+    <!-- Sun glow at horizon -->
+    <radialGradient id="sun" cx="50%" cy="100%" r="60%">
+      <stop offset="0%"   stop-color="#FFD700" stop-opacity="0.50"/>
+      <stop offset="100%" stop-color="#FFD700" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Contrail gradient -->
+    <linearGradient id="ct" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%"   stop-color="white" stop-opacity="0"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0.55"/>
+    </linearGradient>
+
+    <!-- Text shadow -->
+    <filter id="textShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#1C1C3A" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+
+  <!-- ══════ Background ══════ -->
+  <rect width="800" height="220" fill="url(#sky)"/>
+  <ellipse cx="400" cy="218" rx="320" ry="80" fill="url(#sun)"/>
+
+  <!-- ══════ Stars ══════ -->
+  <circle cx="42"  cy="22" r="1.3" fill="white">
+    <animate attributeName="opacity" values="0.2;1;0.4;1;0.2" dur="3.4s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="115" cy="13" r="0.9" fill="white">
+    <animate attributeName="opacity" values="0.8;0.2;0.9;0.3;0.8" dur="4.2s" begin="0.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="198" cy="28" r="1.5" fill="white">
+    <animate attributeName="opacity" values="0.3;0.9;0.2;0.7;0.3" dur="2.9s" begin="1.1s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="310" cy="17" r="1.0" fill="white">
+    <animate attributeName="opacity" values="0.6;0.1;0.8;0.4;0.6" dur="3.8s" begin="0.8s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="502" cy="25" r="1.2" fill="white">
+    <animate attributeName="opacity" values="0.1;0.9;0.3;0.7;0.1" dur="5.0s" begin="0.3s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="612" cy="15" r="0.8" fill="white">
+    <animate attributeName="opacity" values="0.7;0.2;0.6;0.1;0.7" dur="3.5s" begin="1.6s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="694" cy="31" r="1.4" fill="white">
+    <animate attributeName="opacity" values="0.4;1;0.2;0.8;0.4" dur="4.7s" begin="0.9s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="762" cy="19" r="1.0" fill="white">
+    <animate attributeName="opacity" values="0.9;0.3;0.7;0.2;0.9" dur="2.7s" begin="1.4s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- ══════ Airplane (3/4 뷰 — 측면 45°) ══════ -->
+  <g opacity="0">
+    <animateTransform attributeName="transform" type="translate"
+      values="-90,61; -21,68; 49,61; 118,54; 187,61; 257,68; 326,61; 395,54; 464,61; 534,68; 603,61; 672,54; 742,61; 811,68; 880,61"
+      keyTimes="0;0.071;0.143;0.214;0.286;0.357;0.429;0.500;0.571;0.643;0.714;0.786;0.857;0.929;1"
+      dur="14s" repeatCount="indefinite"/>
+    <animate attributeName="opacity"
+      values="0;0;1;1;1;1;1;1;1;1;1;1;0;0"
+      keyTimes="0;0.04;0.10;0.20;0.35;0.50;0.60;0.70;0.78;0.84;0.90;0.94;0.98;1"
+      dur="14s" repeatCount="indefinite"/>
+
+    <g>
+      <animateTransform attributeName="transform" type="rotate"
+        values="3;0;-3;0;3;0;-3;0;3;0;-3;0;3;0;-3"
+        keyTimes="0;0.071;0.143;0.214;0.286;0.357;0.429;0.500;0.571;0.643;0.714;0.786;0.857;0.929;1"
+        dur="14s" repeatCount="indefinite"/>
+
+      <!-- ── 비행운 ── -->
+      <rect x="-158" y="12.2" width="120" height="1.2" rx="0.6" fill="url(#ct)" opacity="0.72"/>
+      <rect x="-148" y="14.4" width="110" height="0.9" rx="0.45" fill="url(#ct)" opacity="0.42"/>
+
+      <!-- ═══ FAR SIDE (반대쪽) — 동체 뒤에 깔림 ═══ -->
+      <!-- 반대쪽 (위쪽) 날개 — 동체 위로 살짝 짧고 옅게 -->
+      <path d="
+        M2,-5
+        L-20,-22
+        L-8,-22
+        L10,-5 Z"
+        fill="rgba(195,195,210,0.78)"/>
+      <line x1="10" y1="-5" x2="-8" y2="-22"
+        stroke="rgba(255,255,255,0.35)" stroke-width="0.5"/>
+      <!-- 반대쪽 윙렛 -->
+      <path d="M-20,-22 L-19,-26 L-16,-22 Z" fill="rgba(180,180,196,0.78)"/>
+      <!-- 반대쪽 엔진 (살짝 보임) -->
+      <ellipse cx="-5" cy="-15" rx="4.5" ry="2.2" fill="rgba(155,155,175,0.78)"/>
+      <ellipse cx="-1" cy="-15" rx="1.4" ry="1.8" fill="rgba(70,70,90,0.78)"/>
+
+      <!-- ═══ 동체 + 꼬리 (가운데 layer) ═══ -->
+      <!-- 수평 꼬리 (후미 옆) -->
+      <path d="M-30,-1 L-44,-3 L-44,1 L-30,3 Z"
+        fill="rgba(215,215,228,0.95)"/>
+
+      <!-- 수직 꼬리 (후미 위) -->
+      <path d="
+        M-32,-3
+        C-32,-5 -34,-8 -38,-18
+        L-32,-18
+        L-22,-3 Z"
+        fill="rgba(225,225,235,0.97)"/>
+      <line x1="-22" y1="-3" x2="-32" y2="-18"
+        stroke="rgba(255,255,255,0.55)" stroke-width="0.6"/>
+
+      <!-- 메인 동체 (가로 캡슐, 노즈 우측) -->
+      <path d="
+        M40,0
+        C39,-4 33,-7 22,-7
+        L-26,-6
+        C-32,-5 -36,-3 -36,0
+        C-36,3 -32,5 -26,6
+        L22,7
+        C33,7 39,4 40,0 Z"
+        fill="rgba(245,245,252,0.98)"/>
+
+      <!-- 동체 하단 음영 -->
+      <path d="
+        M-26,6 L22,7
+        C33,7 39,4 40,0
+        L38,0
+        C36,3 30,5 22,5
+        L-26,4 Z"
+        fill="rgba(170,170,190,0.42)"/>
+
+      <!-- 항공사 띠 -->
+      <rect x="-32" y="-1.2" width="68" height="1.4"
+        fill="rgba(35,82,170,0.22)"/>
+
+      <!-- 조종석 윈드실드 -->
+      <path d="
+        M32,-6
+        C36,-6 38,-3 38,-1
+        L32,-1.5 Z"
+        fill="#5BA8D0"
+        stroke="rgba(70,120,160,0.55)" stroke-width="0.4"/>
+
+      <!-- 객실 창문 -->
+      <rect x="-22" y="-3.8" width="2.6" height="1.8" rx="0.7" fill="#88C8EC" opacity="0.85"/>
+      <rect x="-18" y="-3.9" width="2.6" height="1.8" rx="0.7" fill="#88C8EC" opacity="0.85"/>
+      <rect x="-14" y="-4.0" width="2.6" height="1.8" rx="0.7" fill="#88C8EC" opacity="0.85"/>
+      <rect x="-10" y="-4.1" width="2.6" height="1.8" rx="0.7" fill="#88C8EC" opacity="0.85"/>
+      <rect x="-6"  y="-4.2" width="2.6" height="1.8" rx="0.7" fill="#88C8EC" opacity="0.85"/>
+      <rect x="-2"  y="-4.3" width="2.6" height="1.8" rx="0.7" fill="#88C8EC" opacity="0.85"/>
+      <rect x="2"   y="-4.4" width="2.6" height="1.8" rx="0.7" fill="#88C8EC" opacity="0.85"/>
+      <rect x="6"   y="-4.4" width="2.6" height="1.8" rx="0.7" fill="#88C8EC" opacity="0.85"/>
+      <rect x="10"  y="-4.4" width="2.6" height="1.8" rx="0.7" fill="#88C8EC" opacity="0.85"/>
+      <rect x="14"  y="-4.4" width="2.6" height="1.8" rx="0.7" fill="#88C8EC" opacity="0.85"/>
+      <rect x="18"  y="-4.3" width="2.6" height="1.8" rx="0.7" fill="#88C8EC" opacity="0.85"/>
+      <rect x="22"  y="-4.2" width="2.6" height="1.8" rx="0.7" fill="#88C8EC" opacity="0.85"/>
+
+      <!-- ═══ NEAR SIDE (가까운 쪽 / 아래쪽) ═══ -->
+      <!-- 메인 날개 (앞쪽, 더 크고 진하게) -->
+      <path d="
+        M5,4
+        L-15,22
+        L-3,22
+        L13,4 Z"
+        fill="rgba(225,225,235,0.97)"/>
+      <!-- Bottom shade -->
+      <path d="M-3,22 L-15,22 L-14,24 L-2,24 Z"
+        fill="rgba(180,180,200,0.55)"/>
+      <line x1="13" y1="4" x2="-3" y2="22"
+        stroke="rgba(255,255,255,0.6)" stroke-width="0.7"/>
+
+      <!-- 윙렛 -->
+      <path d="M-15,22 L-13,27 L-10,22 Z"
+        fill="rgba(200,200,215,0.95)"/>
+
+      <!-- 엔진 -->
+      <ellipse cx="-2" cy="17" rx="6.5" ry="3.2"
+        fill="rgba(175,175,192,0.97)"/>
+      <ellipse cx="4" cy="17" rx="2.2" ry="3"
+        fill="rgba(110,110,130,0.94)"/>
+      <ellipse cx="4" cy="17" rx="1.1" ry="1.8"
+        fill="rgba(60,60,80,0.95)"/>
+      <ellipse cx="-8" cy="17" rx="1.5" ry="2.6"
+        fill="rgba(130,130,150,0.92)"/>
+      <rect x="-3" y="11" width="4" height="6"
+        fill="rgba(200,200,215,0.75)"/>
+
+      <!-- 항법등 -->
+      <!-- 가까운 쪽 윙렛(우측) — 녹색 (실제 항공 규약: starboard) -->
+      <circle cx="-13" cy="27" r="1.1" fill="#22EE55" opacity="0.92"/>
+      <circle cx="-13" cy="27" r="2.6" fill="#22EE55" opacity="0.15"/>
+      <!-- 반대쪽 윙렛(좌측) — 적색 (port) -->
+      <circle cx="-19" cy="-26" r="0.9" fill="#FF2222" opacity="0.85"/>
+      <circle cx="-19" cy="-26" r="2.2" fill="#FF2222" opacity="0.12"/>
+      <!-- 수직 꼬리 위 흰색 비콘 -->
+      <circle cx="-35" cy="-18" r="0.9" fill="white" opacity="0.65"/>
+      <circle cx="-35" cy="-18" r="2"   fill="white" opacity="0.10"/>
+    </g>
+  </g>
+
+  <!-- ══════ Title (Primary mint) ══════ -->
+  <text x="400" y="108" text-anchor="middle" fill="#3ECBA0"
+    font-family="-apple-system,'Helvetica Neue','Noto Sans KR',sans-serif"
+    font-size="56" font-weight="800" letter-spacing="-2" opacity="0"
+    filter="url(#textShadow)">
+    다님
+    <animate attributeName="opacity" from="0" to="1" dur="1.0s" begin="0.4s" fill="freeze"/>
+  </text>
+
+  <!-- ══════ Subtitle ══════ -->
+  <text x="400" y="136" text-anchor="middle"
+    fill="rgba(255,230,200,0.92)"
+    font-family="-apple-system,'Helvetica Neue','Noto Sans KR',sans-serif"
+    font-size="15" font-weight="400" opacity="0">
+    세상의 모든 여행이 연결되는 곳
+    <animate attributeName="opacity" from="0" to="1" dur="1.0s" begin="1.0s" fill="freeze"/>
+  </text>
+
+  <!-- ══════ Waves ══════ -->
+  <path fill="rgba(255,255,255,0.11)"
+    d="M0,186 C100,168 200,200 300,186 C400,168 500,200 600,186 C700,168 800,186 800,186
+       C900,168 1000,200 1100,186 C1200,168 1300,200 1400,186 C1500,168 1600,186 1600,186
+       L1600,220 L0,220 Z">
+    <animateTransform attributeName="transform" type="translate"
+      from="0,0" to="-800,0" dur="14s" repeatCount="indefinite"/>
+  </path>
+  <path fill="rgba(255,255,255,0.20)"
+    d="M0,198 C66,186 134,208 200,198 C266,186 334,208 400,198 C466,186 534,208 600,198
+       C666,186 734,208 800,198 C866,186 934,208 1000,198 C1066,186 1134,208 1200,198
+       C1266,186 1334,208 1400,198 C1466,186 1534,208 1600,198
+       L1600,220 L0,220 Z">
+    <animateTransform attributeName="transform" type="translate"
+      from="0,0" to="-800,0" dur="9s" repeatCount="indefinite"/>
+  </path>
+</svg>

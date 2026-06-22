@@ -1,8 +1,8 @@
 "use client";
 
 import { createContext, useContext } from "react";
-import type { useCommentMutations } from "@/hooks/useCommentMutations";
-import type { usePostDetail } from "@/hooks/usePostDetail";
+import type { useCommentMutations } from "./_hooks/comment/useCommentMutations";
+import type { usePostDetail } from "./_hooks/post/usePostDetail";
 
 type CommentsApi = ReturnType<typeof useCommentMutations>;
 type PostDetailApi = ReturnType<typeof usePostDetail>;
@@ -15,9 +15,14 @@ interface PostModalContextValue {
   postBookmarkMutation: PostDetailApi["bookmarkMutation"];
   createComment: CommentsApi["createMutation"];
   // updateComment·deleteComment는 CommentSection이 mutate 함수만 필요하므로 콜백으로 노출
-  onUpdateComment: (commentId: string, content: string) => void;
+  onUpdateComment: (commentId: string, content: string | null) => void;
   onDeleteComment: (commentId: string) => void;
   toggleCommentLike: CommentsApi["toggleCommentLike"];
+  // 프로필 클릭 등 내부에서 모달을 닫아야 하는 경우에 사용
+  onClose: () => void;
+  // 모달 내부에서 다른 페이지로 이동. 인터셉트 모달은 @modal 슬롯 닫기 + push가 필요해
+  // 외부에서 주입받아 처리한다. 기본값은 router.push.
+  navigate: (href: string) => void;
 }
 
 // 실제 보관함(Context 객체). 초기값은 null

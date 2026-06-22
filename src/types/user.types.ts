@@ -57,28 +57,35 @@ export interface CurrentUserResponse {
   user_id: string
   nickname: string
   profile_img: string | null
+  /** 기존 발급 토큰에 role 클레임이 없을 수 있어 optional. authStore의 toAuthUser에서 'not_verified'로 기본값 처리한다. */
+  role?: 'admin' | 'user' | 'not_verified'
 }
 
 export interface MeDetailResponse {
   user_id: string
   name: string
   email: string
-  birth_date: string
+  birth_day: string
   nickname: string
   profile_img: string | null
-  intro: string
+  intro: string | null
+  phone_number: string | null
 }
 
 export interface UpdateUserRequest {
   nickname?: string
   intro?: string
-  profile_img?: string | null
+  key?: string
+  name?: string
+  /** YYYY-MM-DD */
+  birth_day?: string
 }
 
 export interface ChangePasswordRequest {
   password: string
   new_password: string
 }
+
 
 export interface ProfileImagePresignedResponse {
   presigned_url: string
@@ -93,7 +100,18 @@ export type FollowUser = {
   is_following: boolean
 }
 
-export type FollowListResponse = FollowUser[]
+export type FollowListResponse = {
+  next: string | null
+  results: FollowUser[]
+}
+
+export type UserSearchResult = {
+  user_id: string
+  nickname: string
+  profile_img: string | null
+}
+
+export type UserSearchResponse = UserSearchResult[]
 
 export type SmsVerificationPurpose = 'signup' | 'find_email' | 'phone_change'
 
