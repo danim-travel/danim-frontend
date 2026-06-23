@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useSyncExternalStore, useState } from "react"
 import { Button, FieldLabel, Modal, TextField } from "@/components/common"
 import type { MeDetailResponse } from "@/types"
 
@@ -19,6 +19,17 @@ interface SocialBirthDayFieldProps {
 
 const BIRTH_INPUT_CLASS = "h-12 text-center px-2"
 
+function storageKey(userId: string) {
+  return `danim_social_birth_day_saved_${userId}`
+}
+
+function formatBirthDate(date: string | null | undefined): string {
+  if (!date) return "-"
+  const [y, m, d] = date.split("-")
+  if (!y || !m || !d) return "-"
+  return `${y}년  ${m}월  ${d}일`
+}
+
 export function SocialBirthDayField({
   me,
   birthYear,
@@ -35,19 +46,43 @@ export function SocialBirthDayField({
   const [isSaving, setIsSaving] = useState(false)
   const [savedThisSession, setSavedThisSession] = useState(false)
 
-  const locked = (me.birth_day ?? "") !== "" || savedThisSession
+  // localStorage를 외부 스토어로 읽음 — SSR은 false, 클라이언트는 실제 플래그 반환
+  const savedPreviously = useSyncExternalStore(
+    (cb) => { window.addEventListener('storage', cb); return () => window.removeEventListener('storage', cb) },
+    () => localStorage.getItem(storageKey(me.user_id)) === '1',
+    () => false,
+  )
+
+  // 값 존재 여부가 아닌 "1회 저장 여부"만으로 잠금 판단
+  const locked = savedPreviously || savedThisSession
 
   async function handleConfirm() {
     setIsSaving(true)
     try {
       const ok = await onSave()
       if (ok) {
+        localStorage.setItem(storageKey(me.user_id), '1')
         setSavedThisSession(true)
         setModalOpen(false)
       }
     } finally {
       setIsSaving(false)
     }
+  }
+
+  if (locked) {
+    // 저장 직후 me.birth_day가 아직 빈 값일 수 있으므로 props에서 합성한 값을 fallback으로 사용
+    const displayDate =
+      me.birth_day ||
+      (birthYear && birthMonth && birthDay
+        ? `${birthYear}-${birthMonth.padStart(2, "0")}-${birthDay.padStart(2, "0")}`
+        : "")
+    return (
+      <div className="flex flex-col gap-2 min-w-0">
+        <span className="text-caption font-bold text-text-muted">생년월일</span>
+        <span className="text-body-sm text-text">{formatBirthDate(displayDate)}</span>
+      </div>
+    )
   }
 
   return (
@@ -68,7 +103,6 @@ export function SocialBirthDayField({
                 autoComplete="bday-year"
                 value={birthYear}
                 onChange={e => onBirthYearChange(e.target.value.replace(/\D/g, ""))}
-                disabled={locked}
               />
             </div>
             <div className="flex-1">
@@ -82,7 +116,6 @@ export function SocialBirthDayField({
                 autoComplete="bday-month"
                 value={birthMonth}
                 onChange={e => onBirthMonthChange(e.target.value.replace(/\D/g, ""))}
-                disabled={locked}
               />
             </div>
             <div className="flex-1">
@@ -96,24 +129,21 @@ export function SocialBirthDayField({
                 autoComplete="bday-day"
                 value={birthDay}
                 onChange={e => onBirthDayChange(e.target.value.replace(/\D/g, ""))}
-                disabled={locked}
               />
             </div>
           </div>
-          {!locked && (
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              className="shrink-0"
-              disabled={!isBirthValid || isSaving}
-              onClick={() => setModalOpen(true)}
-            >
-              수정
-            </Button>
-          )}
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className="shrink-0"
+            disabled={!isBirthValid || isSaving}
+            onClick={() => setModalOpen(true)}
+          >
+            저장
+          </Button>
         </div>
-        {!locked && birthError && (
+        {birthError && (
           <span className="block mt-2 text-caption text-error">{birthError}</span>
         )}
       </div>
@@ -121,7 +151,7 @@ export function SocialBirthDayField({
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title="생년월일 수정"
+        title="생년월일 저장"
         className="max-w-sm"
         footer={
           <>
@@ -131,7 +161,7 @@ export function SocialBirthDayField({
         }
         footerAlign="stretch"
       >
-        <p className="text-body-sm text-text">생년월일은 저장 후 다시 수정할 수 없습니다.</p>
+        <p className="text-body-sm text-text">생년월일은 다시 변경할 수 없습니다.</p>
       </Modal>
     </>
   )
