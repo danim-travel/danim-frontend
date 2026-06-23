@@ -112,8 +112,8 @@ function CommentInputBar() {
           </div>
         </div>
       )}
-      <div className="flex items-end gap-2.5 px-6 py-3 pb-4 border-t border-border-subtle">
-        <div className="flex flex-1 items-end gap-2 bg-bg-subtle rounded-2xl border border-border px-3 py-2.5 focus-within:border-primary transition-colors">
+      <div className="flex items-center gap-2.5 px-6 py-3 pb-4 border-t border-border-subtle">
+        <div className="flex flex-1 items-center gap-2 bg-bg-subtle rounded-2xl border border-border px-3 py-2.5 focus-within:border-primary transition-colors">
           <button
             type="button"
             aria-label="이미지 첨부"
@@ -133,7 +133,7 @@ function CommentInputBar() {
                 handleSubmit();
               }
             }}
-            className="flex-1 text-caption bg-transparent outline-none text-text-secondary placeholder:text-text-disabled resize-none min-h-[20px] max-h-[120px] overflow-y-auto leading-5"
+            className="flex-1 text-body-sm bg-transparent outline-none text-text-secondary placeholder:text-text-disabled resize-none min-h-[20px] max-h-[120px] overflow-y-auto leading-5 p-0"
             placeholder="댓글을 입력하세요..."
           />
         </div>
