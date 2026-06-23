@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useSyncExternalStore, useState } from "react"
 import { Button, Modal, TextField } from "@/components/common"
 import type { MeDetailResponse } from "@/types"
 
@@ -13,24 +13,46 @@ interface SocialNameFieldProps {
   onSave: () => Promise<boolean>
 }
 
+function storageKey(userId: string) {
+  return `danim_social_name_saved_${userId}`
+}
+
 export function SocialNameField({ me, name, isNameValid, nameError, onNameChange, onSave }: SocialNameFieldProps) {
   const [modalOpen, setModalOpen] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [savedThisSession, setSavedThisSession] = useState(false)
 
-  const locked = (me.name ?? "") !== "" || savedThisSession
+  // localStorage를 외부 스토어로 읽음 — SSR은 false, 클라이언트는 실제 플래그 반환
+  const savedPreviously = useSyncExternalStore(
+    (cb) => { window.addEventListener('storage', cb); return () => window.removeEventListener('storage', cb) },
+    () => localStorage.getItem(storageKey(me.user_id)) === '1',
+    () => false,
+  )
+
+  // 값 존재 여부가 아닌 "1회 저장 여부"만으로 잠금 판단
+  const locked = savedPreviously || savedThisSession
 
   async function handleConfirm() {
     setIsSaving(true)
     try {
       const ok = await onSave()
       if (ok) {
+        localStorage.setItem(storageKey(me.user_id), '1')
         setSavedThisSession(true)
         setModalOpen(false)
       }
     } finally {
       setIsSaving(false)
     }
+  }
+
+  if (locked) {
+    return (
+      <div className="flex flex-col gap-2 min-w-0">
+        <span className="text-caption font-bold text-text-muted">이름</span>
+        <span className="text-body-sm text-text break-all">{me.name || name}</span>
+      </div>
+    )
   }
 
   return (
@@ -42,31 +64,28 @@ export function SocialNameField({ me, name, isNameValid, nameError, onNameChange
             required
             type="text"
             placeholder="실명을 입력해주세요"
-            value={locked ? (me.name ?? "") : name}
+            value={name}
             onChange={e => onNameChange(e.target.value)}
-            error={locked ? undefined : nameError}
+            error={nameError}
             autoComplete="name"
-            disabled={locked}
           />
         </div>
-        {!locked && (
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            className="shrink-0 mb-px"
-            disabled={!isNameValid || isSaving}
-            onClick={() => setModalOpen(true)}
-          >
-            수정
-          </Button>
-        )}
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          className="shrink-0 mb-px"
+          disabled={!isNameValid || isSaving}
+          onClick={() => setModalOpen(true)}
+        >
+          저장
+        </Button>
       </div>
 
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title="이름 수정"
+        title="이름 저장"
         className="max-w-sm"
         footer={
           <>
@@ -76,7 +95,7 @@ export function SocialNameField({ me, name, isNameValid, nameError, onNameChange
         }
         footerAlign="stretch"
       >
-        <p className="text-body-sm text-text">이름은 저장 후 다시 수정할 수 없습니다.</p>
+        <p className="text-body-sm text-text">이름은 다시 변경할 수 없습니다.</p>
       </Modal>
     </>
   )
