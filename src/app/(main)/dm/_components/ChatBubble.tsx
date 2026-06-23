@@ -99,7 +99,7 @@ export function ChatBubble({ message, isMine, showAvatar, opponent, onDelete, is
 
           {/* 삭제 드롭다운 */}
           {showMenu && (
-            <div className="absolute bottom-full mb-1 right-0 bg-bg-card border border-border rounded-card shadow-modal py-1 min-w-[80px] z-10">
+            <div className="absolute bottom-full mb-1 right-0 bg-bg-card border border-border rounded-card shadow-modal py-1 min-w-[80px] z-10 overflow-hidden">
               <button
                 type="button"
                 className="w-full px-3 py-2 text-body-sm text-left text-error hover:bg-bg-subtle transition-colors"
