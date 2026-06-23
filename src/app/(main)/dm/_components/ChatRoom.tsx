@@ -3,6 +3,7 @@
 import { MessageSquare } from "lucide-react"
 import { EmptyState } from "@/components/common"
 import { useAuthStore } from "@/store/authStore"
+import { getApiErrorMessage } from "@/lib/apiError"
 import { toast } from "@/store/toastStore"
 import { useConversations } from "@/app/(main)/dm/_hooks/useDmQueries"
 import { useDmSocket } from "@/app/(main)/dm/_hooks/useDmSocket"
@@ -23,12 +24,18 @@ export function ChatRoom({ conversationId }: Props) {
   const { sendMessage, isReady } = useDmSocket(conversationId, myUserId ?? null)
 
   const handleSendImage = async (file: File) => {
+    // 업로드 전에 blob URL을 생성해 낙관적 메시지에 사용 —
+    // 업로드 API의 img_url이 private S3 raw URL이면 echo 전까지 403이 나므로
+    // 로컬 blob URL로 즉시 표시하고, echo 수신 후 서버가 CDN URL로 교체한다
+    const blobUrl = URL.createObjectURL(file)
     try {
       const { img_url, key } = await uploadDmImage(conversationId, file)
-      // 댓글 이미지와 동일하게 key(original_img)를 전달 — 서버가 key로 CDN URL을 생성한다
-      sendMessage("", img_url, key)
-    } catch {
-      toast.error("이미지를 전송할 수 없습니다.")
+      // key(original_img)를 전달 — 서버가 key로 CDN URL을 생성해 echo로 내려준다
+      // displayImgUrl(blobUrl)은 echo 도착 전 낙관적 창에만 사용
+      sendMessage("", img_url, key, blobUrl)
+    } catch (err) {
+      URL.revokeObjectURL(blobUrl)
+      toast.error(getApiErrorMessage(err, { client: '이미지를 전송할 수 없습니다.' }))
     }
   }
 

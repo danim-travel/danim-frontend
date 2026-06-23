@@ -3,29 +3,45 @@
 import { apiClient } from '@/lib/apiClient'
 import { compressImage } from '@/lib/media/imageCompression'
 
-export type PresignedUrlResponse = {
+type PresignedUrlApiResponse = {
   presigned_url: string
   img_url: string
   key: string
 }
 
-export async function uploadImage(endpoint: string, file: File): Promise<PresignedUrlResponse> {
-  // 1. 클라이언트 압축 (직렬). HEIC → JPEG 자동 변환 케이스에서 파일명/타입이 바뀔 수 있어
-  //    presigned URL과 S3 PUT 모두 압축 결과 기준으로 진행한다.
+export type UploadResult = {
+  img_url: string
+  key: string
+}
+
+const UPLOAD_TIMEOUT_MS = 30_000
+
+export async function uploadImage(endpoint: string, file: File): Promise<UploadResult> {
   const compressed = await compressImage(file)
 
-  // 2. presigned URL 요청 — 압축본 파일명 기준
   const { presigned_url, img_url, key } = await apiClient
     .post(endpoint, { json: { original_img: compressed.name } })
-    .json<PresignedUrlResponse>()
+    .json<PresignedUrlApiResponse>()
 
-  // 3. S3 PUT — 압축본 업로드
-  const s3Res = await fetch(presigned_url, {
-    method: 'PUT',
-    body: compressed,
-    headers: { 'Content-Type': compressed.type },
-  })
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), UPLOAD_TIMEOUT_MS)
+  let s3Res: Response
+  try {
+    s3Res = await fetch(presigned_url, {
+      method: 'PUT',
+      body: compressed,
+      headers: { 'Content-Type': compressed.type },
+      signal: controller.signal,
+    })
+  } catch (e) {
+    if (e instanceof DOMException && e.name === 'AbortError') {
+      throw new Error('이미지 업로드 시간이 초과되었습니다.')
+    }
+    throw e
+  } finally {
+    clearTimeout(timeoutId)
+  }
   if (!s3Res.ok) throw new Error(`S3 upload failed: ${s3Res.status}`)
 
-  return { presigned_url, img_url, key }
+  return { img_url, key }
 }
