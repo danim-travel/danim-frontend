@@ -32,18 +32,6 @@ function seededShuffle<T>(items: T[], seed: number): T[] {
   return result
 }
 
-const MOCK_TITLES = [
-  '제주도 동쪽 드라이브 코스', '부산 해운대 야경 투어', '경주 문화유산 탐방',
-  '강릉 커피거리 & 해변', '속초 청초호 산책 코스', '여수 밤바다 여행기',
-  '전주 한옥마을 하루 일정', '남이섬 가을 단풍 나들이', '서울 북촌 골목 산책',
-  '울릉도 1박 2일 코스', '통영 미륵산 케이블카', '안동 하회마을 문화 탐방',
-  '거제도 바람의 언덕', '포항 호미곶 일출', '제주 서쪽 올레길',
-  '부산 감천문화마을 산책', '경주 야간 개장 투어', '강릉 정동진 일출',
-  '서울 한강 야경 크루즈', '인천 차이나타운 & 송월동', '수원 화성 성곽 걷기',
-  '춘천 남이섬 & 김유정역', '전주 비빔밥 골목 탐방', '목포 유달산 케이블카',
-  '여수 돌산도 해안 드라이브',
-]
-
 const MOCK_HEIGHTS = [320, 480, 260, 560, 400, 300, 520, 380, 440, 280, 500, 360, 420, 600, 340, 460, 240, 540, 390, 470, 310, 490, 350, 610, 430]
 
 // 게시글에 저장된 지역 값(spot 주소의 시/도)을 탐색 버튼의 8도 분류로 매핑.
@@ -67,15 +55,19 @@ function addressToRegion(address: string): string {
 }
 
 // ALL_FEED_ITEMS → ExplorePost 변환. _region은 게시글 첫 spot 주소로 도출한 지역(필터용),
-// _title/_description은 검색용 내부 필드.
+// _spots은 장소 검색용 내부 필드.
 const EXPLORE_ITEMS = ALL_FEED_ITEMS.map((item, i) => ({
   post_id: item.post.post_id,
   thumbnail: `https://picsum.photos/seed/feedpost${i + 1}/480/${MOCK_HEIGHTS[i % MOCK_HEIGHTS.length]}`,
   like_count: item.like_count,
   comment_count: item.comment_count,
   _region: addressToRegion(item.spots[0]?.location.address_name ?? ''),
-  _title: MOCK_TITLES[i % MOCK_TITLES.length],
-  _description: item.post.description,
+  // 장소명(place_name) + 주소(address_name) 합산 — "성수", "홍대" 같은 주소 기반 검색 지원
+  _spots: item.spots
+    .flatMap(s => [s.location.place_name, s.location.address_name])
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase(),
 }))
 
 export const exploreHandlers = [
@@ -103,8 +95,8 @@ export const exploreHandlers = [
     // ── 검색 모드: post_id 기반 Base64 cursor ──────────────────────────────
     if (search) {
       const filtered = EXPLORE_ITEMS.filter((item) => {
-        const matchesSearch =
-          item._title.toLowerCase().includes(search) || item._description.toLowerCase().includes(search)
+        // 장소 정보(place_name + address_name)만 검색 대상 — "성수", "해운대" 등
+        const matchesSearch = item._spots.includes(search)
         return matchesSearch && matchesCategory(item)
       })
 

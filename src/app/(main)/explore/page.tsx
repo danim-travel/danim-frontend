@@ -15,6 +15,7 @@ export default function ExplorePage() {
   const [search, setSearch] = useQueryState("search", { defaultValue: "" })
   const [inputValue, setInputValue] = useState(search)
   const [category, setCategory] = useState<Category>("전체")
+  const [isComposing, setIsComposing] = useState(false)
 
   const { posts, isLoading, hasNextPage, isFetchingNextPage, fetchNextPage } =
     useExplorePageState(inputValue, category)
@@ -28,8 +29,10 @@ export default function ExplorePage() {
       <SearchBar
         value={inputValue}
         variant="panel"
-        placeholder="여행지, 장소 검색..."
-        onChange={(e) => setInputValue(e.target.value)}
+        placeholder="장소 또는 주소로 검색..."
+        onChange={(e) => { if (!isComposing) setInputValue(e.target.value) }}
+        onCompositionStart={() => setIsComposing(true)}
+        onCompositionEnd={(e) => { setIsComposing(false); setInputValue(e.currentTarget.value) }}
         onClear={() => { setInputValue(""); setSearch(null) }}
       />
 
