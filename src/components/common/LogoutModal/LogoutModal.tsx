@@ -4,7 +4,6 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { logout } from "@/lib/api/auth"
 import { useAuthStore } from "@/store/authStore"
-import { getApiErrorMessage } from "@/lib/apiError"
 import { toast } from "@/store/toastStore"
 import { Button } from "@/components/common/Button/Button"
 import { Modal } from "@/components/common/Modal/Modal"
@@ -23,15 +22,16 @@ export function LogoutModal({ open, onClose }: LogoutModalProps) {
     setIsLoading(true)
     try {
       await logout()
-      clearAuth()
-      toast.success("로그아웃 되었습니다.")
-      onClose()
-      router.push("/login")
-    } catch (err) {
-      toast.error(getApiErrorMessage(err, { client: "로그아웃에 실패했습니다." }))
+    } catch {
+      // refresh_token 쿠키가 없는 경우(비밀번호 변경 후 등) 400이 오지만
+      // 서버 측 토큰이 이미 없는 상태이므로 클라이언트 정리 후 로그인으로 이동
     } finally {
       setIsLoading(false)
     }
+    clearAuth()
+    toast.success("로그아웃 되었습니다.")
+    onClose()
+    router.push("/login")
   }
 
   return (

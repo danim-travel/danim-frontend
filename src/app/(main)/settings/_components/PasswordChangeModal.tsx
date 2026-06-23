@@ -1,9 +1,12 @@
 "use client"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button, Modal, PasswordField } from "@/components/common"
 import { changePassword } from "@/lib/api/users"
+import { logout } from "@/lib/api/auth"
 import { getApiErrorMessage, isApiError } from "@/lib/apiError"
 import { toast } from "@/store/toastStore"
+import { useAuthStore } from "@/store/authStore"
 
 interface PasswordChangeModalProps {
   open: boolean
@@ -11,6 +14,8 @@ interface PasswordChangeModalProps {
 }
 
 export function PasswordChangeModal({ open, onClose }: PasswordChangeModalProps) {
+  const router = useRouter()
+  const clearAuth = useAuthStore(s => s.clearAuth)
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
@@ -51,8 +56,11 @@ export function PasswordChangeModal({ open, onClose }: PasswordChangeModalProps)
     setCurrentPasswordError(undefined)
     try {
       await changePassword({ password: currentPassword, new_password: newPassword })
-      toast.success("비밀번호가 변경되었습니다.")
-      handleClose()
+      toast.success("비밀번호가 변경되었습니다. 다시 로그인해 주세요.")
+      try { await logout() } catch { /* refresh_token 이미 만료된 경우 무시 */ }
+      clearAuth()
+      onClose()
+      router.push("/login")
     } catch (err) {
       if (isApiError(err) && err.status === 400) {
         setCurrentPasswordError(getApiErrorMessage(err, { client: "현재 비밀번호가 일치하지 않습니다." }))

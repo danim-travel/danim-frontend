@@ -18,11 +18,11 @@
  *   7. 게시글 클릭 실패 — API 에러 → 모달 내 에러 메시지
  *   8. 무한 스크롤 — 다음 페이지 로드
  *
- * Mock 데이터 기준 (MSW exploreHandlers / MOCK_TITLES 25개):
+ * Mock 데이터 기준 (MSW exploreHandlers / 지역별 5개씩 25개):
  *   - 전체 25개, page_size = 12 → 첫 페이지 12개
- *   - '부산' 검색: '부산 해운대 야경 투어', '부산 감천문화마을 산책' → 2개
- *   - '제주' 카테고리: '제주도 동쪽 드라이브 코스', '제주 서쪽 올레길' → 2개
- *   - '제주' 카테고리 + '서쪽' 검색: '제주 서쪽 올레길' → 1개
+ *   - '부산' 검색: 부산 지역 spot 주소("부산광역시...") 매칭 → 5개
+ *   - '제주' 카테고리: 제주 지역 게시글 → 5개
+ *   - '경상' 카테고리 + '해운대' 검색: 경상(부산+경주) 10개 중 해운대 포함 → 5개
  *   - '충청' 카테고리: 0개 (빈 상태)
  *
  * MSW postsHandlers / commentsHandlers는 비활성화 상태.
@@ -179,7 +179,7 @@ test.describe('탐색 페이지 — 초기 렌더링', () => {
     await page.goto('/explore')
     await waitForExploreLoaded(page)
 
-    await expect(page.getByPlaceholder('여행지, 장소 검색...')).toBeVisible()
+    await expect(page.getByPlaceholder('장소 또는 주소로 검색...')).toBeVisible()
 
     const categories = ['전체', '경기', '강원', '충청', '전라', '경상', '제주', '서울']
     for (const cat of categories) {
@@ -227,15 +227,16 @@ test.describe('탐색 페이지 — 초기 렌더링', () => {
 // ─── 2. 검색 — 성공 ────────────────────────────────────────────────────────────
 
 test.describe('탐색 페이지 — 검색 성공', () => {
-  test('"부산" 검색 후 필터링된 2개의 게시글만 표시된다', async ({ page }) => {
+  test('"부산" 검색 후 부산 지역 게시글 5개만 표시된다', async ({ page }) => {
     await bootstrapAuthedPage(page)
     await page.goto('/explore')
     await waitForExploreLoaded(page)
 
-    await page.getByPlaceholder('여행지, 장소 검색...').fill('부산')
+    await page.getByPlaceholder('장소 또는 주소로 검색...').fill('부산')
 
     // debounce 300ms + 네트워크 응답 대기
-    await expect(page.locator('[data-testid="explore-post-card"]')).toHaveCount(2, { timeout: 5000 })
+    // 부산 지역 spot 주소("부산광역시...") 매칭 → 5개
+    await expect(page.locator('[data-testid="explore-post-card"]')).toHaveCount(5, { timeout: 5000 })
   })
 
   test('검색어가 URL search 파라미터에 반영된다', async ({ page }) => {
@@ -243,7 +244,7 @@ test.describe('탐색 페이지 — 검색 성공', () => {
     await page.goto('/explore')
     await waitForExploreLoaded(page)
 
-    await page.getByPlaceholder('여행지, 장소 검색...').fill('부산')
+    await page.getByPlaceholder('장소 또는 주소로 검색...').fill('부산')
 
     // nuqs가 URL을 업데이트할 때까지 대기 (debounce 300ms 이후)
     await expect(page).toHaveURL(/search=/, { timeout: 3000 })
@@ -254,8 +255,8 @@ test.describe('탐색 페이지 — 검색 성공', () => {
     await page.goto('/explore')
     await waitForExploreLoaded(page)
 
-    await page.getByPlaceholder('여행지, 장소 검색...').fill('부산')
-    await expect(page.locator('[data-testid="explore-post-card"]')).toHaveCount(2, { timeout: 5000 })
+    await page.getByPlaceholder('장소 또는 주소로 검색...').fill('부산')
+    await expect(page.locator('[data-testid="explore-post-card"]')).toHaveCount(5, { timeout: 5000 })
 
     await page.getByRole('button', { name: '검색어 지우기' }).click()
 
@@ -268,7 +269,7 @@ test.describe('탐색 페이지 — 검색 성공', () => {
     await page.goto('/explore')
     await waitForExploreLoaded(page)
 
-    await page.getByPlaceholder('여행지, 장소 검색...').fill('부산')
+    await page.getByPlaceholder('장소 또는 주소로 검색...').fill('부산')
     await expect(page).toHaveURL(/search=/, { timeout: 3000 })
 
     await page.getByRole('button', { name: '검색어 지우기' }).click()
@@ -280,8 +281,8 @@ test.describe('탐색 페이지 — 검색 성공', () => {
     await page.goto('/explore')
     await waitForExploreLoaded(page)
 
-    await page.getByPlaceholder('여행지, 장소 검색...').fill('부산')
-    await expect(page.locator('[data-testid="explore-post-card"]')).toHaveCount(2, { timeout: 5000 })
+    await page.getByPlaceholder('장소 또는 주소로 검색...').fill('부산')
+    await expect(page.locator('[data-testid="explore-post-card"]')).toHaveCount(5, { timeout: 5000 })
 
     const captures = await getCaptures(page)
     const searchReq = captures.find(
@@ -299,7 +300,7 @@ test.describe('탐색 페이지 — 검색 실패', () => {
     await page.goto('/explore')
     await waitForExploreLoaded(page)
 
-    await page.getByPlaceholder('여행지, 장소 검색...').fill('xyz999존재하지않는검색어')
+    await page.getByPlaceholder('장소 또는 주소로 검색...').fill('xyz999존재하지않는검색어')
 
     await expect(page.locator('[data-testid="explore-post-card"]')).toHaveCount(0, { timeout: 5000 })
     await expect(page.getByText('게시글이 없어요')).toBeVisible()
@@ -356,15 +357,15 @@ test.describe('탐색 페이지 — 카테고리 성공', () => {
     await expect(page.locator('[data-testid="category-btn-전체"]')).not.toHaveClass(/chip-bg-selected/)
   })
 
-  test('"제주" 카테고리 클릭 시 해당 지역 게시글 2개만 표시된다', async ({ page }) => {
+  test('"제주" 카테고리 클릭 시 해당 지역 게시글 5개만 표시된다', async ({ page }) => {
     await bootstrapAuthedPage(page)
     await page.goto('/explore')
     await waitForExploreLoaded(page)
 
     await page.locator('[data-testid="category-btn-제주"]').click()
 
-    // '제주도 동쪽 드라이브 코스', '제주 서쪽 올레길' → 2개
-    await expect(page.locator('[data-testid="explore-post-card"]')).toHaveCount(2, { timeout: 5000 })
+    // 제주 지역 게시글 → 5개
+    await expect(page.locator('[data-testid="explore-post-card"]')).toHaveCount(5, { timeout: 5000 })
   })
 
   test('"전체" 클릭 시 전체 12개 목록이 복원된다', async ({ page }) => {
@@ -373,24 +374,25 @@ test.describe('탐색 페이지 — 카테고리 성공', () => {
     await waitForExploreLoaded(page)
 
     await page.locator('[data-testid="category-btn-제주"]').click()
-    await expect(page.locator('[data-testid="explore-post-card"]')).toHaveCount(2, { timeout: 5000 })
+    await expect(page.locator('[data-testid="explore-post-card"]')).toHaveCount(5, { timeout: 5000 })
 
     await page.locator('[data-testid="category-btn-전체"]').click()
     await expect(page.locator('[data-testid="explore-post-card"]')).toHaveCount(12, { timeout: 5000 })
   })
 
-  test('"제주" 카테고리 + "서쪽" 검색 복합 필터링 시 1개만 표시된다', async ({ page }) => {
+  test('"경상" 카테고리 + "해운대" 검색 복합 필터링 시 5개만 표시된다', async ({ page }) => {
     await bootstrapAuthedPage(page)
     await page.goto('/explore')
     await waitForExploreLoaded(page)
 
-    await page.locator('[data-testid="category-btn-제주"]').click()
-    await expect(page.locator('[data-testid="explore-post-card"]')).toHaveCount(2, { timeout: 5000 })
+    await page.locator('[data-testid="category-btn-경상"]').click()
+    // 경상 = 부산(5) + 경주(5) → 10개
+    await expect(page.locator('[data-testid="explore-post-card"]')).toHaveCount(10, { timeout: 5000 })
 
-    await page.getByPlaceholder('여행지, 장소 검색...').fill('서쪽')
+    await page.getByPlaceholder('장소 또는 주소로 검색...').fill('해운대')
 
-    // '제주 서쪽 올레길' 만 매칭 → 1개
-    await expect(page.locator('[data-testid="explore-post-card"]')).toHaveCount(1, { timeout: 5000 })
+    // "해운대해수욕장" 포함된 부산 지역 게시글만 매칭 → 5개
+    await expect(page.locator('[data-testid="explore-post-card"]')).toHaveCount(5, { timeout: 5000 })
   })
 
   test('카테고리 선택 시 API 요청 URL에 category 파라미터가 포함된다', async ({ page }) => {
@@ -418,7 +420,7 @@ test.describe('탐색 페이지 — 카테고리 실패', () => {
     await page.goto('/explore')
     await waitForExploreLoaded(page)
 
-    // 충청 키워드('충청', '천안', '공주')는 MOCK_TITLES에 없음 → 0개
+    // 충청 지역 spot이 mock 데이터에 없음 → 0개
     await page.locator('[data-testid="category-btn-충청"]').click()
 
     await expect(page.locator('[data-testid="explore-post-card"]')).toHaveCount(0, { timeout: 5000 })
@@ -637,20 +639,20 @@ test.describe('탐색 페이지 — 무한 스크롤', () => {
   })
 
   test('카테고리 필터 적용 상태에서 스크롤 시 해당 카테고리 데이터만 추가 로드된다', async ({ page }) => {
-    // '경상' 카테고리: 9개 → 한 페이지에 모두 들어옴, 다음 페이지 없음
+    // '경상' 카테고리: 부산(5) + 경주(5) = 10개 → 한 페이지에 모두 들어옴, 다음 페이지 없음
     await bootstrapAuthedPage(page)
     await page.goto('/explore')
     await waitForExploreLoaded(page)
 
     await page.locator('[data-testid="category-btn-경상"]').click()
 
-    // 경상 총 9개 (< page_size 12) → 첫 페이지에 전부 표시
-    await expect(page.locator('[data-testid="explore-post-card"]')).toHaveCount(9, { timeout: 5000 })
+    // 경상 총 10개 (< page_size 12) → 첫 페이지에 전부 표시
+    await expect(page.locator('[data-testid="explore-post-card"]')).toHaveCount(10, { timeout: 5000 })
 
     await scrollExploreToBottom(page)
 
-    // 더 이상 로드 없음 — 여전히 9개
+    // 더 이상 로드 없음 — 여전히 10개
     await page.waitForTimeout(1000)
-    await expect(page.locator('[data-testid="explore-post-card"]')).toHaveCount(9)
+    await expect(page.locator('[data-testid="explore-post-card"]')).toHaveCount(10)
   })
 })

@@ -84,7 +84,7 @@ export function ChatComposer({ onSend, onSendImage, disabled }: Props) {
   }
 
   return (
-    <div className="relative flex items-end gap-1 px-3 min-h-14 py-3 border-t border-border shrink-0">
+    <div className="relative flex items-center gap-1 px-3 min-h-14 py-3 border-t border-border shrink-0">
       <div ref={emojiRef} className="relative">
         <IconButton
           icon={<Smile size={20} />}
@@ -117,7 +117,7 @@ export function ChatComposer({ onSend, onSendImage, disabled }: Props) {
         placeholder="메시지 입력..."
         maxLength={MAX_LENGTH}
         disabled={isInputDisabled}
-        className="flex-1 bg-transparent outline-none text-body-sm text-text placeholder:text-text-placeholder disabled:cursor-not-allowed resize-none min-h-[20px] max-h-[120px] overflow-y-auto leading-5 self-end"
+        className="flex-1 bg-transparent outline-none text-body-sm text-text placeholder:text-text-placeholder disabled:cursor-not-allowed resize-none min-h-[20px] max-h-[120px] overflow-y-auto leading-5"
       />
       {value.length > 0 && (
         <span className={`text-nav shrink-0 ${value.length >= MAX_LENGTH ? "text-error" : "text-text-disabled"}`}>
