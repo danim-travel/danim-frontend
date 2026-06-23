@@ -113,8 +113,9 @@ function removeFromCache(
 interface PendingEntry {
   tempId: string
   content: string | null
-  imgUrl: string | null
+  imgUrl: string | null       // WebSocket으로 서버에 전달하는 img_url
   originalImg: string | null  // S3 key — echo 매칭에 사용 (img_url은 서버가 변환 후 달라질 수 있음)
+  displayImgUrl: string | null // 낙관적 메시지 표시용 URL (blob:로 시작하면 echo 후 revoke)
   sentAt: number
 }
 
@@ -182,8 +183,9 @@ export function useDmSocket(
       // 재연결 시 캐시의 낙관적 메시지 롤백 후 pending 초기화
       // (tempId가 남은 채 echo가 오면 de-dupe 불가 → 중복 발생 방지)
       const orphaned = pendingRef.current.splice(0)
-      for (const { tempId } of orphaned) {
+      for (const { tempId, displayImgUrl } of orphaned) {
         removeFromCache(queryClient, conversationId, tempId)
+        if (displayImgUrl?.startsWith('blob:')) URL.revokeObjectURL(displayImgUrl)
       }
 
       // Issue one-time socket_key
@@ -281,10 +283,11 @@ export function useDmSocket(
           )
 
           if (pendingIdx !== -1) {
-            const { tempId } = pendingRef.current[pendingIdx]
-            pendingRef.current.splice(pendingIdx, 1)
+            const [entry] = pendingRef.current.splice(pendingIdx, 1)
             // FIX 2: echo 스킵 대신 낙관적 메시지를 실제 서버 메시지로 교체
-            replaceInCache(queryClient, conversationId, tempId, message)
+            replaceInCache(queryClient, conversationId, entry.tempId, message)
+            // 낙관적 표시에 blob URL을 사용했다면 메모리 해제
+            if (entry.displayImgUrl?.startsWith('blob:')) URL.revokeObjectURL(entry.displayImgUrl)
             queryClient.invalidateQueries({ queryKey: queryKeys.dm.conversations, exact: true })
             return
           }
@@ -342,7 +345,10 @@ export function useDmSocket(
     return () => {
       cancelled = true
       setIsReady(false)
-      // FIX 3: 언마운트 시 pending 항목 초기화
+      // FIX 3: 언마운트 시 pending 항목 초기화 — blob URL도 함께 해제
+      for (const { displayImgUrl } of pendingRef.current) {
+        if (displayImgUrl?.startsWith('blob:')) URL.revokeObjectURL(displayImgUrl)
+      }
       pendingRef.current = []
       clearReconnectTimer()
       if (socket) {
@@ -363,14 +369,16 @@ export function useDmSocket(
   }, [accessToken, conversationId, queryClient])
 
   const sendMessage = useCallback(
-    (content: string, imgUrl?: string, originalImg?: string) => {
+    (content: string, imgUrl?: string, originalImg?: string, displayImgUrl?: string) => {
       if (!myUserId) return false
 
       const trimmed = content.trim()
       const normalizedContent = trimmed || null
       const normalizedImgUrl = imgUrl ?? null
       const normalizedOriginalImg = originalImg ?? null
-      if (!normalizedContent && !normalizedImgUrl) return false
+      // 낙관적 표시 URL: 명시적으로 제공된 경우(blob URL 등) 우선, 없으면 imgUrl 폴백
+      const normalizedDisplayUrl = displayImgUrl != null ? displayImgUrl : normalizedImgUrl
+      if (!normalizedContent && !normalizedImgUrl && !normalizedDisplayUrl) return false
 
       // mock 모드: 소켓 없이 낙관적 삽입만 수행
       if (isMockModeRef.current) {
@@ -379,7 +387,7 @@ export function useDmSocket(
           message_id: tempId,
           sender: { user_id: myUserId, nickname: '', profile_img: null },
           content: normalizedContent,
-          img_url: normalizedImgUrl,
+          img_url: normalizedDisplayUrl,
           original_img: normalizedOriginalImg,
           is_deleted: false,
           created_at: new Date().toISOString(),
@@ -402,7 +410,7 @@ export function useDmSocket(
         message_id: tempId,
         sender: { user_id: myUserId, nickname: '', profile_img: null },
         content: normalizedContent,
-        img_url: normalizedImgUrl,
+        img_url: normalizedDisplayUrl,   // blob URL(접근 가능) 또는 imgUrl 폴백
         original_img: normalizedOriginalImg,
         is_deleted: false,
         created_at: new Date().toISOString(),
@@ -414,6 +422,7 @@ export function useDmSocket(
         content: normalizedContent,
         imgUrl: normalizedImgUrl,
         originalImg: normalizedOriginalImg,
+        displayImgUrl: normalizedDisplayUrl,
         sentAt: Date.now(),
       })
 
@@ -440,7 +449,10 @@ export function useDmSocket(
       } catch {
         removeFromCache(queryClient, conversationId, tempId)
         const idx = pendingRef.current.findIndex(p => p.tempId === tempId)
-        if (idx !== -1) pendingRef.current.splice(idx, 1)
+        if (idx !== -1) {
+          const [entry] = pendingRef.current.splice(idx, 1)
+          if (entry.displayImgUrl?.startsWith('blob:')) URL.revokeObjectURL(entry.displayImgUrl)
+        }
         return false
       }
     },

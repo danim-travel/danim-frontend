@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import { Heart, Pencil, Trash2, X } from "lucide-react";
@@ -76,6 +76,21 @@ export default function CommentItem({ comment, isOwn, onLike, onEdit, onDelete }
   });
 
   // onDelete는 부모 렌더마다 새 참조이므로 ref로 안정화 → menuItems useMemo 효과 보장
+  const editTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useLayoutEffect(() => {
+    const el = editTextareaRef.current;
+    if (!el) return;
+    const style = getComputedStyle(el);
+    const lineHeight = parseFloat(style.lineHeight);
+    const paddingY = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+    const maxHeight = lineHeight * 3 + paddingY;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, maxHeight)}px`;
+  // editDraft: null→string 변화(수정 시작)를 캐치해야 하므로 draft만으로는 부족
+   
+  }, [draft, editDraft]);
+
   const onDeleteRef = useRef(onDelete);
   useEffect(() => { onDeleteRef.current = onDelete; }, [onDelete]);
 
@@ -103,8 +118,11 @@ export default function CommentItem({ comment, isOwn, onLike, onEdit, onDelete }
     setEditDraft(null);
   };
 
-  const handleEditKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && !e.nativeEvent.isComposing) handleSaveEdit();
+  const handleEditKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+      e.preventDefault();
+      handleSaveEdit();
+    }
     if (e.key === "Escape") { e.stopPropagation(); setEditDraft(null); }
   };
 
@@ -150,13 +168,15 @@ export default function CommentItem({ comment, isOwn, onLike, onEdit, onDelete }
         </div>
 
         {editing ? (
-          <div className="mt-1 flex items-center gap-1.5">
-            <input
+          <div className="mt-1 flex items-end gap-1.5">
+            <textarea
+              ref={editTextareaRef}
               autoFocus
+              rows={1}
               value={draft}
               onChange={(e) => setEditDraft(e.target.value)}
               onKeyDown={handleEditKeyDown}
-              className="flex-1 text-caption bg-bg-subtle rounded-full border border-border px-3 py-1.5 outline-none text-text-secondary focus:border-primary"
+              className="flex-1 text-body-sm bg-bg-subtle rounded-xl border border-border px-3 py-1.5 outline-none text-text-secondary focus:border-primary resize-none leading-5 overflow-y-auto scrollbar-none"
             />
             <Button variant="secondary" size="sm" onClick={() => setEditDraft(null)}>
               취소
@@ -167,7 +187,7 @@ export default function CommentItem({ comment, isOwn, onLike, onEdit, onDelete }
           </div>
         ) : (
           comment.content && (
-            <p className="mt-0.5 text-body-sm text-text-body leading-5 line-clamp-2 break-words">
+            <p className="mt-0.5 text-body-sm text-text-body leading-5 break-words whitespace-pre-wrap">
               {comment.content}
             </p>
           )

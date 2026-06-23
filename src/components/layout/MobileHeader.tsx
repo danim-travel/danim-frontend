@@ -1,10 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { Search, Bell } from "lucide-react";
+import Link from "next/link";
+import { useRef, useState } from "react";
+import { Search, Bell, Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useUIStore } from "@/store/uiStore";
 import { useNotificationBadgeStore } from "@/store/notificationBadgeStore";
+import { useOnClickOutside } from "@/hooks/ui/useOnClickOutside";
+import { LogoutModal } from "@/components/common";
 
 export function MobileHeader() {
   const router = useRouter();
@@ -13,6 +17,12 @@ export function MobileHeader() {
   const closePanel = useUIStore((s) => s.closePanel);
   const unreadCount = useNotificationBadgeStore((s) => s.unreadCount);
   const badgeLabel = unreadCount > 99 ? "99+" : unreadCount;
+
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [logoutModal, setLogoutModal] = useState(false);
+  const settingsRef = useRef<HTMLDivElement>(null);
+
+  useOnClickOutside(settingsRef, () => setSettingsOpen(false), settingsOpen);
 
   const goHome = () => {
     router.push('/')
@@ -45,7 +55,40 @@ export function MobileHeader() {
             </span>
           )}
         </button>
+
+        <div ref={settingsRef} className="relative">
+          <button
+            type="button"
+            onClick={() => setSettingsOpen((o) => !o)}
+            className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-bg-subtle transition-colors"
+            aria-label="설정"
+            aria-expanded={settingsOpen}
+          >
+            <Settings className="w-5 h-5 text-text-muted" strokeWidth={2} />
+          </button>
+
+          {settingsOpen && (
+            <div className="absolute top-full right-0 mt-2 bg-bg-card border border-border rounded-card shadow-modal min-w-[140px] py-1 z-50 overflow-hidden">
+              <Link
+                href="/settings"
+                onClick={() => { setSettingsOpen(false); closePanel() }}
+                className="flex px-4 py-2.5 text-body-sm text-text hover:bg-bg active:bg-bg transition-colors"
+              >
+                내 정보 수정
+              </Link>
+              <button
+                type="button"
+                onClick={() => { setSettingsOpen(false); setLogoutModal(true) }}
+                className="w-full text-left px-4 py-2.5 text-body-sm text-error hover:bg-bg active:bg-bg transition-colors"
+              >
+                로그아웃
+              </button>
+            </div>
+          )}
+        </div>
       </div>
+
+      <LogoutModal open={logoutModal} onClose={() => setLogoutModal(false)} />
     </header>
   );
 }

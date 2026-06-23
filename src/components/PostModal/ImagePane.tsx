@@ -44,7 +44,7 @@ export default function PostModalImagePane({ spots, activeSpotIdx, activeSpot, o
     <div className="w-full h-[45%] shrink-0 md:w-1/2 md:h-auto flex flex-col overflow-hidden bg-bg-subtle">
       {activeSpot && <SpotImages key={activeSpot.spot_id} spot={activeSpot} />}
 
-      <div className="px-6 py-5 bg-bg-card border-t border-border-subtle">
+      <div className="px-5 py-5 md:px-6 md:py-5 bg-bg-card border-t border-border-subtle">
         <Stepper
           steps={steps}
           current={activeSpotIdx}

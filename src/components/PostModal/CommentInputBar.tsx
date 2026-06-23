@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Plus, X } from "lucide-react";
 import { Button } from "@/components/common";
 import { getApiErrorMessage } from "@/lib/apiError";
@@ -17,7 +17,15 @@ function CommentInputBar() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { createComment } = usePostModalContext();
+
+  useLayoutEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [comment]);
 
   // imagePreview가 바뀌거나 언마운트될 때 이전 ObjectURL을 해제해 메모리 누수를 방지한다
   useEffect(() => {
@@ -105,7 +113,7 @@ function CommentInputBar() {
         </div>
       )}
       <div className="flex items-center gap-2.5 px-6 py-3 pb-4 border-t border-border-subtle">
-        <div className="flex flex-1 items-center gap-2 bg-bg-subtle rounded-full border border-border px-3 py-2.5 focus-within:border-primary transition-colors">
+        <div className="flex flex-1 items-center gap-2 bg-bg-subtle rounded-2xl border border-border px-3 py-2.5 focus-within:border-primary transition-colors">
           <button
             type="button"
             aria-label="이미지 첨부"
@@ -114,11 +122,18 @@ function CommentInputBar() {
           >
             <Plus className="w-4 h-4" />
           </button>
-          <input
+          <textarea
+            ref={textareaRef}
             value={comment}
+            rows={1}
             onChange={(e) => setComment(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && !e.nativeEvent.isComposing && handleSubmit()}
-            className="flex-1 text-caption bg-transparent outline-none text-text-secondary placeholder:text-text-disabled"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+                e.preventDefault();
+                handleSubmit();
+              }
+            }}
+            className="flex-1 text-body-sm bg-transparent outline-none text-text-secondary placeholder:text-text-disabled resize-none min-h-[20px] max-h-[120px] overflow-y-auto leading-5 p-0"
             placeholder="댓글을 입력하세요..."
           />
         </div>

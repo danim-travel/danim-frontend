@@ -1,7 +1,7 @@
 "use client"
 import { useState, useRef, useEffect } from "react"
 import { Camera, Trash2 } from "lucide-react"
-import { Avatar, Button, Modal, TextField } from "@/components/common"
+import { Avatar, Button, FieldLabel, Modal } from "@/components/common"
 import { getApiErrorMessage } from "@/lib/apiError"
 import { uploadImage } from "@/lib/media/uploadImage"
 import { toast } from "@/store/toastStore"
@@ -43,8 +43,8 @@ export function ProfileSection({
     setIsUploading(true)
 
     try {
-      const { presigned_url, key } = await uploadImage('users/me/profile-image/presigned-url', file)
-      onProfileImgChange(presigned_url)
+      const { img_url, key } = await uploadImage('users/me/profile-image/presigned-url', file)
+      onProfileImgChange(img_url)
       onProfileKeyChange(key)
     } catch (err) {
       toast.error(getApiErrorMessage(err, { client: '이미지 업로드에 실패했습니다.' }))
@@ -131,14 +131,21 @@ export function ProfileSection({
           <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
         </div>
 
-        <TextField
-          label="소개글"
-          name="intro"
-          value={intro}
-          onChange={e => onIntroChange(e.target.value)}
-          placeholder="소개를 입력해주세요"
-          maxLength={100}
-        />
+        <label className="block">
+          <FieldLabel>소개글</FieldLabel>
+          <textarea
+            name="intro"
+            rows={3}
+            value={intro}
+            onChange={e => onIntroChange(e.target.value)}
+            placeholder="소개를 입력해주세요"
+            maxLength={100}
+            className="w-full py-3 px-4 rounded-input text-base outline-none border transition-colors bg-(--input-bg) text-(--input-text) border-(--input-border) focus:border-(--input-border-focus) resize-none"
+          />
+          <span className={`block mt-1.5 text-caption text-right ${intro.length >= 100 ? 'text-error' : 'text-text-muted'}`}>
+            {intro.length}/100
+          </span>
+        </label>
       </div>
 
       <Modal

@@ -21,6 +21,7 @@ function formatDateSeparator(dateStr: string) {
 
 export function MessageList({ conversationId, myUserId, opponent }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
   const { mutate: deleteMessage, isPending: isDeleting } = useDeleteMessage(conversationId)
   // FIX 5: 두 개의 effect가 isFirstRender 공유 → 초기 로드 시 이중 스크롤 발생 문제 해결
   // prevLastMessageIdRef 하나로 초기 로드(instant)와 신규 메시지(smooth)를 구분
@@ -62,15 +63,28 @@ export function MessageList({ conversationId, myUserId, opponent }: Props) {
     return flags
   }, [messages])
 
-  // 초기 로드: instant / 새 메시지: smooth / 과거 메시지 추가(fetchNextPage): 미동작
+  // 초기 로드: instant / 내 메시지 or 하단 근처: smooth / 위로 스크롤 중: 미동작
   useEffect(() => {
     if (isLoading || !lastMessageId) return
     if (lastMessageId === prevLastMessageIdRef.current) return
 
     const isFirstLoad = prevLastMessageIdRef.current === undefined
     prevLastMessageIdRef.current = lastMessageId
-    bottomRef.current?.scrollIntoView({ behavior: isFirstLoad ? "instant" : "smooth" })
-  }, [isLoading, lastMessageId])
+
+    if (isFirstLoad) {
+      bottomRef.current?.scrollIntoView({ behavior: "instant" })
+      return
+    }
+
+    const lastMessage = messages[messages.length - 1]
+    const isMine = lastMessage?.sender.user_id === myUserId
+    const el = scrollRef.current
+    const isNearBottom = !el || el.scrollHeight - el.scrollTop - el.clientHeight < 100
+
+    if (isMine || isNearBottom) {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" })
+    }
+  }, [isLoading, lastMessageId, messages, myUserId])
 
   const handleLoadMore = useCallback(() => {
     fetchNextPage()
@@ -92,7 +106,7 @@ export function MessageList({ conversationId, myUserId, opponent }: Props) {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-1">
+    <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-1">
       {/* 최상단 sentinel — 뷰포트 진입 시 이전 메시지 로드 */}
       <div ref={sentinelRef} className="h-px shrink-0" />
 
