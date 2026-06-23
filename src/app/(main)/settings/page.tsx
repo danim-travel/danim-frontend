@@ -212,7 +212,7 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
       //    응답에 해당 필드가 없으면(undefined) 기존 authStore 값을 유지해 undefined가 persist되는 것을 방지
       const currentAuthUser = useAuthStore.getState().user
       updateAuthUser({
-        userId: updated.user_id,
+        userId: updated.user_id ?? currentAuthUser?.userId,
         nickname: updated.nickname ?? currentAuthUser?.nickname ?? "",
         profileImg: updated.profile_img !== undefined ? updated.profile_img : (currentAuthUser?.profileImg ?? null),
       })
