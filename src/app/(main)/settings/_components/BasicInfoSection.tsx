@@ -1,5 +1,7 @@
 "use client"
+import { type ReactNode } from "react"
 import { VerificationField } from "@/components/common"
+import { cn } from "@/lib/utils"
 import type { MeDetailResponse } from "@/types"
 
 interface BasicInfoSectionProps {
@@ -9,6 +11,10 @@ interface BasicInfoSectionProps {
   isCheckingNickname: boolean
   onNicknameChange: (v: string) => void
   onNicknameCheck: () => void
+  /** 소셜 사용자 전용 — 제공 시 이름 read-only 대신 렌더링 */
+  nameField?: ReactNode
+  /** 소셜 사용자 전용 — 제공 시 생년월일 read-only 대신 렌더링 */
+  birthDayField?: ReactNode
 }
 
 function formatBirthDate(date: string | null) {
@@ -17,26 +23,46 @@ function formatBirthDate(date: string | null) {
   return `${y}년  ${m}월  ${d}일`
 }
 
-export function BasicInfoSection({ me, nickname, nicknameChecked, isCheckingNickname, onNicknameChange, onNicknameCheck }: BasicInfoSectionProps) {
+export function BasicInfoSection({
+  me, nickname, nicknameChecked, isCheckingNickname, onNicknameChange, onNicknameCheck,
+  nameField, birthDayField,
+}: BasicInfoSectionProps) {
+  const isSocial = nameField !== undefined || birthDayField !== undefined
+
   return (
     <section>
       <h2 className="text-body-lg font-bold text-text mb-4">기본 정보</h2>
-      <div className="bg-bg-card border border-border rounded-card shadow-sm p-5 md:p-8 flex flex-col gap-7">
-        {/* 이름·이메일·생년월일 읽기 전용 */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-16">
-          <div className="flex flex-col gap-2 min-w-0">
-            <span className="text-caption font-bold text-text-muted">이름</span>
-            <span className="text-body-sm text-text break-all">{me.name}</span>
+      <div className={cn(
+        "bg-bg-card border border-border rounded-card shadow-sm p-5 md:p-8 flex flex-col",
+        isSocial ? "gap-5" : "gap-7",
+      )}>
+        {isSocial ? (
+          <>
+            {/* 소셜: 이름·생년월일 편집 필드 + 이메일 읽기 전용 */}
+            {nameField}
+            {birthDayField}
+            <div className="flex flex-col gap-2 min-w-0">
+              <span className="text-caption font-bold text-text-muted">이메일</span>
+              <span className="text-body-sm text-text break-all">{me.email}</span>
+            </div>
+          </>
+        ) : (
+          /* 이메일 로그인: 이름·이메일·생년월일 읽기 전용 */
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-16">
+            <div className="flex flex-col gap-2 min-w-0">
+              <span className="text-caption font-bold text-text-muted">이름</span>
+              <span className="text-body-sm text-text break-all">{me.name}</span>
+            </div>
+            <div className="flex flex-col gap-2 min-w-0">
+              <span className="text-caption font-bold text-text-muted">이메일</span>
+              <span className="text-body-sm text-text break-all">{me.email}</span>
+            </div>
+            <div className="flex flex-col gap-2 min-w-0">
+              <span className="text-caption font-bold text-text-muted">생년월일</span>
+              <span className="text-body-sm text-text break-all">{formatBirthDate(me.birth_day)}</span>
+            </div>
           </div>
-          <div className="flex flex-col gap-2 min-w-0">
-            <span className="text-caption font-bold text-text-muted">이메일</span>
-            <span className="text-body-sm text-text break-all">{me.email}</span>
-          </div>
-          <div className="flex flex-col gap-2 min-w-0">
-            <span className="text-caption font-bold text-text-muted">생년월일</span>
-            <span className="text-body-sm text-text break-all">{formatBirthDate(me.birth_day)}</span>
-          </div>
-        </div>
+        )}
 
         {/* 닉네임 */}
         <VerificationField
