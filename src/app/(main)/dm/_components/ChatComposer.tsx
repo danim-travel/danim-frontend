@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useCallback, type ChangeEvent, type KeyboardEvent } from "react"
+import { useState, useRef, useCallback, useLayoutEffect, type ChangeEvent, type KeyboardEvent } from "react"
 import { useOnClickOutside } from "@/hooks/ui/useOnClickOutside"
 import { Send, ImagePlus, Smile } from "lucide-react"
 import { IconButton } from "@/components/common"
@@ -18,7 +18,7 @@ export function ChatComposer({ onSend, onSendImage, disabled }: Props) {
   const [value, setValue] = useState("")
   const [emojiOpen, setEmojiOpen] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const emojiRef = useRef<HTMLDivElement>(null)
 
@@ -27,6 +27,13 @@ export function ChatComposer({ onSend, onSendImage, disabled }: Props) {
 
   const isInputDisabled = isUploading
   const isSendDisabled = disabled || isUploading
+
+  useLayoutEffect(() => {
+    const el = inputRef.current
+    if (!el) return
+    el.style.height = "auto"
+    el.style.height = `${el.scrollHeight}px`
+  }, [value])
 
   const handleSend = () => {
     const trimmed = value.trim()
@@ -38,7 +45,7 @@ export function ChatComposer({ onSend, onSendImage, disabled }: Props) {
     inputRef.current?.focus()
   }
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     // isComposing=true: 한글 IME 조합 중 Enter → 글자 확정만 하고 전송하지 않음
     if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault()
@@ -77,7 +84,7 @@ export function ChatComposer({ onSend, onSendImage, disabled }: Props) {
   }
 
   return (
-    <div className="relative flex items-center gap-1 px-3 h-14 border-t border-border shrink-0">
+    <div className="relative flex items-end gap-1 px-3 min-h-14 py-3 border-t border-border shrink-0">
       <div ref={emojiRef} className="relative">
         <IconButton
           icon={<Smile size={20} />}
@@ -101,16 +108,16 @@ export function ChatComposer({ onSend, onSendImage, disabled }: Props) {
           </div>
         )}
       </div>
-      <input
+      <textarea
         ref={inputRef}
-        type="text"
+        rows={1}
         value={value}
         onChange={e => setValue(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="메시지 입력..."
         maxLength={MAX_LENGTH}
         disabled={isInputDisabled}
-        className="flex-1 bg-transparent outline-none text-body-sm text-text placeholder:text-text-placeholder disabled:cursor-not-allowed"
+        className="flex-1 bg-transparent outline-none text-body-sm text-text placeholder:text-text-placeholder disabled:cursor-not-allowed resize-none min-h-[20px] max-h-[120px] overflow-y-auto leading-5 self-end"
       />
       {value.length > 0 && (
         <span className={`text-nav shrink-0 ${value.length >= MAX_LENGTH ? "text-error" : "text-text-disabled"}`}>
