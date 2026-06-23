@@ -71,12 +71,12 @@ export function SocialBirthDayField({
   }
 
   if (locked) {
-    // 저장 직후 me.birth_day가 아직 빈 값일 수 있으므로 props에서 합성한 값을 fallback으로 사용
+    // 로컬 입력값을 우선 사용 — 저장 직후 me.birth_day가 stale(2001-01-01)이면 덮어쓰는 문제 방지
     const displayDate =
-      me.birth_day ||
       (birthYear && birthMonth && birthDay
         ? `${birthYear}-${birthMonth.padStart(2, "0")}-${birthDay.padStart(2, "0")}`
-        : "")
+        : "") ||
+      me.birth_day
     return (
       <div className="flex flex-col gap-2 min-w-0">
         <span className="text-caption font-bold text-text-muted">생년월일</span>

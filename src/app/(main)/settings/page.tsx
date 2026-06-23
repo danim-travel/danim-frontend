@@ -133,8 +133,13 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
 
   async function handleSaveName(): Promise<boolean> {
     try {
-      await updateUser({ name: name.trim() })
-      await queryClient.invalidateQueries({ queryKey: queryKeys.users.me })
+      const updated = await updateUser({ name: name.trim() })
+      // PATCH 응답으로 캐시를 즉시 패치 — locked 표시가 stale 값(카카오/구글)을 보여주는 문제 방지
+      setName(updated.name)
+      queryClient.setQueryData<MeDetailResponse>(queryKeys.users.me, (old) =>
+        old ? { ...old, name: updated.name } : old
+      )
+      void queryClient.invalidateQueries({ queryKey: queryKeys.users.me })
       return true
     } catch (err) {
       toast.error(getApiErrorMessage(err, { client: "이름 저장에 실패했습니다." }))
@@ -144,8 +149,16 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
 
   async function handleSaveBirthDay(): Promise<boolean> {
     try {
-      await updateUser({ birth_day: composedBirthDay })
-      await queryClient.invalidateQueries({ queryKey: queryKeys.users.me })
+      const updated = await updateUser({ birth_day: composedBirthDay })
+      // PATCH 응답으로 캐시를 즉시 패치 — locked 표시가 stale 값(2001-01-01)을 보여주는 문제 방지
+      const [y, m, d] = splitBirthDay(updated.birth_day)
+      setBirthYear(y)
+      setBirthMonth(m)
+      setBirthDay(d)
+      queryClient.setQueryData<MeDetailResponse>(queryKeys.users.me, (old) =>
+        old ? { ...old, birth_day: updated.birth_day } : old
+      )
+      void queryClient.invalidateQueries({ queryKey: queryKeys.users.me })
       return true
     } catch (err) {
       toast.error(getApiErrorMessage(err, { client: "생년월일 저장에 실패했습니다." }))
