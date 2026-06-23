@@ -228,38 +228,6 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
           onProfileKeyChange={setProfileKey}
         />
 
-        {isSocial && (
-          <section>
-            <h2 className="text-body-lg font-bold text-text mb-4">기본 정보</h2>
-            <div className="bg-bg-card border border-border rounded-card shadow-sm p-5 md:p-8 flex flex-col gap-5">
-              <SocialNameField
-                me={me}
-                name={name}
-                isNameValid={isNameValid}
-                nameError={name.length > 0 && !isNameValid ? "이름을 입력해주세요" : undefined}
-                onNameChange={setName}
-                onSave={handleSaveName}
-              />
-              <SocialBirthDayField
-                me={me}
-                birthYear={birthYear}
-                birthMonth={birthMonth}
-                birthDay={birthDay}
-                isBirthValid={isBirthValid}
-                birthError={(birthYear || birthMonth || birthDay) && !isBirthValid ? "생년월일을 올바르게 입력해주세요" : undefined}
-                onBirthYearChange={setBirthYear}
-                onBirthMonthChange={setBirthMonth}
-                onBirthDayChange={setBirthDay}
-                onSave={handleSaveBirthDay}
-              />
-              <div className="flex flex-col gap-2 min-w-0">
-                <span className="text-caption font-bold text-text-muted">이메일</span>
-                <span className="text-body-sm text-text break-all">{me.email}</span>
-              </div>
-            </div>
-          </section>
-        )}
-
         <BasicInfoSection
           me={me}
           nickname={nickname}
@@ -271,6 +239,30 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
             nicknameAtCheckRef.current = null
           }}
           onNicknameCheck={() => { void handleNicknameCheck() }}
+          nameField={isSocial ? (
+            <SocialNameField
+              me={me}
+              name={name}
+              isNameValid={isNameValid}
+              nameError={name.length > 0 && !isNameValid ? "이름을 입력해주세요" : undefined}
+              onNameChange={setName}
+              onSave={handleSaveName}
+            />
+          ) : undefined}
+          birthDayField={isSocial ? (
+            <SocialBirthDayField
+              me={me}
+              birthYear={birthYear}
+              birthMonth={birthMonth}
+              birthDay={birthDay}
+              isBirthValid={isBirthValid}
+              birthError={(birthYear || birthMonth || birthDay) && !isBirthValid ? "생년월일을 올바르게 입력해주세요" : undefined}
+              onBirthYearChange={setBirthYear}
+              onBirthMonthChange={setBirthMonth}
+              onBirthDayChange={setBirthDay}
+              onSave={handleSaveBirthDay}
+            />
+          ) : undefined}
         />
 
         {!isSocial && <AccountSection />}
