@@ -50,7 +50,7 @@ export function SocialNameField({ me, name, isNameValid, nameError, onNameChange
     return (
       <div className="flex flex-col gap-2 min-w-0">
         <span className="text-caption font-bold text-text-muted">이름</span>
-        <span className="text-body-sm text-text break-all">{me.name || name}</span>
+        <span className="text-body-sm text-text break-all">{name || me.name}</span>
       </div>
     )
   }
