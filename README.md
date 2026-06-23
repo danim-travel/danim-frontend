@@ -16,7 +16,7 @@
 
 <br/>
 
-[🌍 서비스 바로가기](https://danim.kr) &nbsp;·&nbsp; [🐛 버그 제보](../../issues) &nbsp;·&nbsp;
+[🌍 서비스 바로가기](https://danim.kr) &nbsp;·&nbsp; [🐛 버그 제보](../../issues)
 
 <br/>
 
@@ -38,7 +38,7 @@
 | 여행 기록이 사진첩에 흩어진다 | 일정·장소·사진을 한 곳에 구조화하여 기록 |
 | 사진만 봐선 어디인지 모른다 | 카카오맵 위에 여행 경로가 마커·polyline으로 시각화 |
 | 공유 링크 미리보기가 아쉽다 | SSR + OG 메타데이터로 카카오톡·트위터 공유에 풍부한 미리보기 |
-| 모바일에서 끊기는 UX | iOS Safari·Android Chrome 호환성 직접 검증 — 70% 모바일 사용자 대응 |
+| 모바일에서 끊기는 UX | iOS Safari·Android Chrome 호환성 직접 검증|
 
 <br/>
 
@@ -330,20 +330,20 @@ pnpm lint
 
 ### 프론트엔드
 
-| 역할 | 이름 | GitHub |
-|------|------|--------|
-| | 김민재 | [@GAMMJ](https://github.com/GAMMJ) |
-| | 정선영 | [@SunMyunC](https://github.com/SunMyunC) |
+| 이름 | GitHub | 담당 |
+|------|--------|------|
+| 김민재 | [@GAMMJ](https://github.com/GAMMJ) | 로그인, 메인&작성&마이페이지, 공개URL(SEO적용), 알림기능, 상세게시글, 코드최적화&리팩터링 |
+| 정선영 | [@SunMyunC](https://github.com/SunMyunC) | UI 시스템 구축, 인증·계정 관리, 탐색·소셜 기능, DM·반응형 UI |
 
 ### 백엔드
 
-| 역할 | 이름 | GitHub |
-|------|------|--------|
-| | 오디모데 | [@Di-Mo-De-OH](https://github.com/Di-Mo-De-OH) |
-| | 고찬열 | [@kochanyeol](https://github.com/kochanyeol) |
-| | 김건웅 | [@gunung-kim](https://github.com/gunung-kim) |
-| | 손유진 | [@yoojinsohn](https://github.com/yoojinsohn) |
-| | 최승용 | [@gumba6740](https://github.com/gumba6740) |
+| 이름 | GitHub | 담당 |
+|------|--------|------|
+| 오디모데 | [@Di-Mo-De-OH](https://github.com/Di-Mo-De-OH) | 유저 인증, JWT 토큰 관리, 소셜 로그인, 소셜 기능 조회 |
+| 고찬열 | [@kochanyeol](https://github.com/kochanyeol) | 인프라&배포, DM 기능, 환경설정 |
+| 손유진 | [@yoojinsohn](https://github.com/yoojinsohn) | 게시글 CRUD, 좋아요 기능, 공유 기능 |
+| 최승용 | [@gumba6740](https://github.com/gumba6740) | 탐색 탭 및 알고리즘 |
+| 김건웅 | [@gunung-kim](https://github.com/gunung-kim) | 댓글 CRUD, 알림 CRUD |
 
 <br/>
 
