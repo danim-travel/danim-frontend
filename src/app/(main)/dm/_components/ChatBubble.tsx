@@ -18,8 +18,6 @@ interface Props {
 }
 
 export function ChatBubble({ message, isMine, showAvatar, opponent, onDelete, isPending }: Props) {
-  // opt- 접두사 메시지는 서버에 존재하지 않는 낙관적 임시 메시지
-  const isOptimistic = message.message_id.startsWith('opt-')
   const [showMenu, setShowMenu] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -29,7 +27,6 @@ export function ChatBubble({ message, isMine, showAvatar, opponent, onDelete, is
 
   const handleDeleteConfirm = () => {
     setShowDeleteModal(false)
-    if (isOptimistic) return  // 서버 미존재 메시지 — API 호출 차단
     onDelete(message.message_id)
   }
 
