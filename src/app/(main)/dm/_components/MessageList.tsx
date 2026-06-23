@@ -1,13 +1,15 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useCallback } from "react"
+import { useQueryClient, type InfiniteData } from "@tanstack/react-query"
 import { format, isSameDay, differenceInMinutes } from "date-fns"
 import { ko } from "date-fns/locale"
 import { useMessages, useDeleteMessage } from "@/app/(main)/dm/_hooks/useDmQueries"
 import { useInfiniteScrollSentinel } from "@/hooks/async/useInfiniteScrollSentinel"
 import { UserRowSkeleton } from "@/components/common"
+import { queryKeys } from "@/lib/queryKeys"
 import { ChatBubble } from "./ChatBubble"
-import type { UserBrief } from "@/types"
+import type { UserBrief, MessageListResponse } from "@/types"
 
 interface Props {
   conversationId: string
@@ -22,7 +24,31 @@ function formatDateSeparator(dateStr: string) {
 export function MessageList({ conversationId, myUserId, opponent }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const queryClient = useQueryClient()
   const { mutate: deleteMessage, isPending: isDeleting } = useDeleteMessage(conversationId)
+
+  // opt- 접두사 낙관적 메시지: 서버 미확인 상태 → API 없이 캐시에서 직접 제거
+  // 실제 메시지: deleteMessage 뮤테이션으로 REST DELETE 호출
+  const handleDelete = useCallback((messageId: string) => {
+    if (messageId.startsWith('opt-')) {
+      const cacheKey = queryKeys.dm.messages(conversationId)
+      const cacheData = queryClient.getQueryData<InfiniteData<MessageListResponse>>(cacheKey)
+      const msg = cacheData?.pages.flatMap(p => p.results).find(m => m.message_id === messageId)
+      if (msg?.img_url?.startsWith('blob:')) URL.revokeObjectURL(msg.img_url)
+      queryClient.setQueryData<InfiniteData<MessageListResponse>>(cacheKey, (old) => {
+        if (!old) return old
+        return {
+          ...old,
+          pages: old.pages.map(page => ({
+            ...page,
+            results: page.results.filter(m => m.message_id !== messageId),
+          })),
+        }
+      })
+      return
+    }
+    deleteMessage(messageId)
+  }, [conversationId, deleteMessage, queryClient])
   // FIX 5: 두 개의 effect가 isFirstRender 공유 → 초기 로드 시 이중 스크롤 발생 문제 해결
   // prevLastMessageIdRef 하나로 초기 로드(instant)와 신규 메시지(smooth)를 구분
   const prevLastMessageIdRef = useRef<string | undefined>(undefined)
@@ -149,7 +175,7 @@ export function MessageList({ conversationId, myUserId, opponent }: Props) {
               isMine={isMine}
               showAvatar={showAvatar}
               opponent={opponent}
-              onDelete={deleteMessage}
+              onDelete={handleDelete}
               isPending={isDeleting}
             />
           </div>
