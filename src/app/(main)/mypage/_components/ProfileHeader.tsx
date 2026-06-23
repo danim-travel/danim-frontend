@@ -92,7 +92,7 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
   const avatarEditButton = (
     <button
       onClick={() => router.push("/settings")}
-      className="absolute -bottom-1 -right-1 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-border bg-bg-card shadow-sm hover:bg-bg-subtle transition-colors"
+      className="absolute -bottom-1 -right-1 z-[1] flex h-8 w-8 items-center justify-center rounded-full border border-border bg-bg-card shadow-sm hover:bg-bg-subtle transition-colors"
       aria-label="프로필 사진 편집"
     >
       <Pencil size={13} className="text-text-secondary" />
