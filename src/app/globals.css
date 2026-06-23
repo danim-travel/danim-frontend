@@ -18,6 +18,15 @@ body {
   box-sizing: border-box;
 }
 
+/* textarea는 브라우저 UA 스타일이 font를 상속하지 않아 16px로 고정됨.
+   @layer base는 utilities보다 낮은 우선순위라 text-* 클래스가 정상 동작함. */
+@layer base {
+  textarea {
+    font: inherit;
+  }
+}
+
+
 ::-webkit-scrollbar {
   width: 4px;
   height: 4px;

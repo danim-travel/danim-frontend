@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useRef } from "react";
 import { ChevronRight } from "lucide-react";
 import type { Comment, PostDetail, Spot } from "@/types";
 import { Avatar, Button } from "@/components/common";
@@ -38,8 +38,10 @@ function PostModalDetailPane({
     navigate(profileHref);
   };
 
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
   return (
-    <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+    <div className="flex flex-col flex-1 min-w-0 overflow-hidden relative">
       <header className="flex items-center px-6 pt-5 pb-4 shrink-0">
         <a
           href={profileHref}
@@ -79,13 +81,15 @@ function PostModalDetailPane({
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto px-6 flex flex-col">
+      <div ref={scrollAreaRef} className="flex-1 overflow-y-auto px-6 flex flex-col pb-[112px]">
         <SpotContent content={activeSpot?.content ?? ''} />
-        <CommentSection comments={comments} commentCount={data.comment_count} />
+        <CommentSection comments={comments} commentCount={data.comment_count} scrollAreaRef={scrollAreaRef} />
       </div>
 
-      <ActionBar data={data} />
-      <CommentInputBar />
+      <div className="absolute bottom-0 left-0 right-0 bg-bg-card">
+        <ActionBar data={data} />
+        <CommentInputBar />
+      </div>
     </div>
   );
 }

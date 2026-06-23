@@ -29,7 +29,6 @@ export default function GuestPostView({ data }: Props) {
   const [activeIdx, setActiveIdx] = useState(0);
   const activeSpot = spots[Math.min(activeIdx, spots.length - 1)] ?? spots[0];
   const [authModalOpen, setAuthModalOpen] = useState(false);
-
   const requireLogin = () => setAuthModalOpen(true);
   const goToLogin = () => router.push("/login");
 
@@ -58,7 +57,7 @@ export default function GuestPostView({ data }: Props) {
       <article className="bg-bg-card rounded-3xl overflow-hidden flex flex-col md:flex-row shadow-[0_32px_80px_-12px_rgba(0,0,0,0.15)] w-full md:w-[1000px] md:max-w-[96vw] md:h-[640px]">
         {/* 좌측: 이미지 + 스테퍼 */}
         <div className="w-full md:w-1/2 flex flex-col overflow-hidden bg-bg-subtle">
-          <div className="flex-1 min-h-0">
+          <div className="flex-1 min-h-0 flex flex-col">
             {activeSpot ? (
               <SpotImages key={activeSpot.spot_id} spot={activeSpot} />
             ) : (
@@ -68,16 +67,14 @@ export default function GuestPostView({ data }: Props) {
             )}
           </div>
 
-          {spots.length > 1 && (
-            <div className="px-6 py-4 bg-bg-card border-t border-border-subtle shrink-0">
-              <Stepper
-                steps={stepperSteps}
-                current={activeIdx}
-                onStepClick={setActiveIdx}
-                showLabels={false}
-              />
-            </div>
-          )}
+          <div className="px-5 py-5 md:px-6 md:py-5 bg-bg-card border-t border-border-subtle shrink-0">
+            <Stepper
+              steps={stepperSteps}
+              current={activeIdx}
+              onStepClick={setActiveIdx}
+              showLabels={false}
+            />
+          </div>
         </div>
 
         {/* 우측: 상세 + 댓글 */}
@@ -119,27 +116,26 @@ export default function GuestPostView({ data }: Props) {
             )}
           </div>
 
-          {/* 본문 + 댓글 스크롤 영역 */}
-          <div className="flex-1 min-h-0 overflow-y-auto px-6 flex flex-col gap-4">
-            {/* 스팟 본문 */}
+          {/* 본문 + 댓글 */}
+          <div className="flex-1 min-h-0 overflow-hidden px-6 flex flex-col">
             {activeSpot?.content && (
               <SpotContent content={activeSpot.content} />
             )}
 
-            {/* 댓글 섹션 */}
-            <div className="border-t border-border-subtle pt-3">
-              <div className="mb-2">
+            {/* 댓글 섹션 — 남은 공간 차지 후 리스트만 스크롤 */}
+            <div className="flex-1 min-h-0 flex flex-col pt-1 border-t border-border-subtle">
+              <div className="mb-2 shrink-0">
                 <span className="text-caption font-semibold text-text-muted uppercase tracking-wide">댓글</span>
                 <span className="ml-2 text-text-emphasis text-caption font-semibold">{data.comment_count}개</span>
               </div>
 
-              {commentsNeedAuth ? (
-                <p className="text-body-sm text-text-disabled py-2">댓글을 보려면 로그인이 필요합니다.</p>
-              ) : !comments ? null : comments.length === 0 ? (
-                <EmptyState title="첫 댓글을 남겨보세요" />
-              ) : (
-                <div className="divide-y divide-border-subtle">
-                  {comments.map((c) => (
+              <div className="flex-1 min-h-0 overflow-y-auto scrollbar-none divide-y divide-border-subtle">
+                {commentsNeedAuth ? (
+                  <p className="text-body-sm text-text-disabled py-2">댓글을 보려면 로그인이 필요합니다.</p>
+                ) : !comments ? null : comments.length === 0 ? (
+                  <EmptyState title="첫 댓글을 남겨보세요" />
+                ) : (
+                  comments.map((c) => (
                     <div key={c.comment_id} className="flex gap-2.5 py-2.5">
                       <Avatar
                         src={c.user.profile_img ?? undefined}
@@ -163,15 +159,14 @@ export default function GuestPostView({ data }: Props) {
                         )}
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
+                  ))
+                )}
+              </div>
             </div>
           </div>
 
-          {/* 하단 고정: 액션바 + 댓글 입력 자리 */}
+          {/* 하단 고정: 액션바 + 로그인 유도 버튼 */}
           <div className="shrink-0 border-t border-border-subtle">
-            {/* 액션바 */}
             <div className="flex items-center gap-4 px-6 py-3">
               <button type="button" onClick={requireLogin} aria-label="좋아요" className="flex items-center gap-1.5 group">
                 <Heart className="w-5 h-5 text-text-disabled" />
@@ -185,7 +180,6 @@ export default function GuestPostView({ data }: Props) {
               />
             </div>
 
-            {/* 댓글 입력 자리 — 로그인 유도 */}
             <div className="px-4 pb-4">
               <Button variant="outline" size="md" className="w-full" onClick={goToLogin}>
                 로그인하고 더 보기

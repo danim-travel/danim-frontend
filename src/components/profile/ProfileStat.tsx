@@ -1,23 +1,34 @@
 import Link from "next/link";
 import { formatCount } from "@/lib/formatCount";
 
-export type ProfileStatVariant = "inline" | "divider";
+export type ProfileStatVariant = "inline" | "divider" | "compact";
 
 interface ProfileStatProps {
   label: string;
   value: number;
   href?: string;
-  /** inline: 모바일 divide-x 인라인 / divider: 데스크톱 대형 숫자 */
+  /** inline: 모바일 divide-x 인라인 / divider: 데스크톱 대형 숫자 / compact: 모바일 소형 */
   variant?: ProfileStatVariant;
 }
 
 export function ProfileStat({ label, value, href, variant = "inline" }: ProfileStatProps) {
   const isDivider = variant === "divider";
+  const isCompact = variant === "compact";
   const base = isDivider
     ? "flex flex-col items-center px-6"
-    : "flex flex-1 flex-col items-center px-3";
-  const valueCls = `${isDivider ? "text-section-title" : "text-title-lg"} font-bold text-text leading-none`;
-  const labelCls = `${isDivider ? "text-body-sm mt-1.5" : "text-body-sm mt-1"} text-text-muted`;
+    : isCompact
+      ? "flex flex-1 flex-col items-center px-2"
+      : "flex flex-1 flex-col items-center px-3";
+  const valueCls = isDivider
+    ? "text-section-title font-bold text-text leading-none"
+    : isCompact
+      ? "text-base font-bold text-text leading-none"
+      : "text-title-lg font-bold text-text leading-none";
+  const labelCls = isDivider
+    ? "text-body-sm mt-1.5 text-text-muted"
+    : isCompact
+      ? "text-caption mt-0.5 text-text-muted"
+      : "text-body-sm mt-1 text-text-muted";
 
   const content = (
     <>

@@ -81,9 +81,15 @@ export default function CommentItem({ comment, isOwn, onLike, onEdit, onDelete }
   useLayoutEffect(() => {
     const el = editTextareaRef.current;
     if (!el) return;
+    const style = getComputedStyle(el);
+    const lineHeight = parseFloat(style.lineHeight);
+    const paddingY = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+    const maxHeight = lineHeight * 3 + paddingY;
     el.style.height = "auto";
-    el.style.height = `${el.scrollHeight}px`;
-  }, [draft]);
+    el.style.height = `${Math.min(el.scrollHeight, maxHeight)}px`;
+  // editDraft: null→string 변화(수정 시작)를 캐치해야 하므로 draft만으로는 부족
+   
+  }, [draft, editDraft]);
 
   const onDeleteRef = useRef(onDelete);
   useEffect(() => { onDeleteRef.current = onDelete; }, [onDelete]);
@@ -170,7 +176,7 @@ export default function CommentItem({ comment, isOwn, onLike, onEdit, onDelete }
               value={draft}
               onChange={(e) => setEditDraft(e.target.value)}
               onKeyDown={handleEditKeyDown}
-              className="flex-1 text-caption bg-bg-subtle rounded-xl border border-border px-3 py-1.5 outline-none text-text-secondary focus:border-primary resize-none min-h-[28px] max-h-[80px] overflow-y-auto leading-5"
+              className="flex-1 text-body-sm bg-bg-subtle rounded-xl border border-border px-3 py-1.5 outline-none text-text-secondary focus:border-primary resize-none leading-5 overflow-y-auto scrollbar-none"
             />
             <Button variant="secondary" size="sm" onClick={() => setEditDraft(null)}>
               취소
@@ -181,7 +187,7 @@ export default function CommentItem({ comment, isOwn, onLike, onEdit, onDelete }
           </div>
         ) : (
           comment.content && (
-            <p className="mt-0.5 text-body-sm text-text-body leading-5 line-clamp-2 break-words whitespace-pre-wrap">
+            <p className="mt-0.5 text-body-sm text-text-body leading-5 break-words whitespace-pre-wrap">
               {comment.content}
             </p>
           )
