@@ -73,7 +73,7 @@ export function BasicInfoSection({
           maxLength={20}
           actionLabel="중복확인"
           onAction={onNicknameCheck}
-          actionDisabled={!nickname.trim() || isCheckingNickname}
+          actionDisabled={!(nickname ?? "").trim() || isCheckingNickname}
           actionLoading={isCheckingNickname}
           helperText={nicknameChecked ? "사용 가능한 닉네임입니다." : "다른 사용자에게 보이는 이름이에요."}
           helperTone={nicknameChecked ? "primary" : "muted"}
