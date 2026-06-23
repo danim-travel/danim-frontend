@@ -4,7 +4,6 @@ import type {
   ConversationListResponse,
   CreateConversationResponse,
   MessageListResponse,
-  DmPresignedUrlResponse,
 } from '@/types'
 
 const BASE = 'direct-messages/conversations'
@@ -48,12 +47,3 @@ export async function deleteMessage(
   await apiClient.delete(`${BASE}/${conversationId}/messages/${messageId}`)
 }
 
-/** DM 이미지 업로드용 S3 presigned URL을 발급한다. */
-export async function getDmImagePresignedUrl(
-  conversationId: string,
-  fileName: string,
-): Promise<DmPresignedUrlResponse> {
-  return apiClient
-    .post(`${BASE}/${conversationId}/messages/presigned-url`, { json: { original_img: fileName } })
-    .json<DmPresignedUrlResponse>()
-}

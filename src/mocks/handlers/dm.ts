@@ -23,6 +23,9 @@ import type {
   DmWsServerMessage,
 } from '@/types'
 
+/** presigned_url은 S3 PUT 전용 — 공개 타입(DmPresignedUrlResponse)에는 없으므로 mock 내부에서만 확장한다. */
+type MockPresignedResponse = DmPresignedUrlResponse & { presigned_url: string }
+
 /** MSW가 콜백으로 넘겨주는 WebSocket client connection 타입. */
 type WsClient = Parameters<
   Parameters<ReturnType<typeof ws.link>['addEventListener']>[1]
@@ -211,7 +214,7 @@ export const dmHandlers: RequestHandler[] = [
     if (!isMockConv(convId)) return passthrough()
 
     const mockKey = `dm/${convId}/${Date.now()}.jpg`
-    const res: DmPresignedUrlResponse = {
+    const res: MockPresignedResponse = {
       presigned_url: `https://oz-externship.s3.ap-northeast-2.amazonaws.com/${mockKey}?X-Amz-Signature=mock`,
       img_url: `https://picsum.photos/seed/${Date.now()}/300/300`,
       key: mockKey,

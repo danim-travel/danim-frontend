@@ -56,8 +56,8 @@ export interface MessageListResponse {
   results: Message[]
 }
 
+/** DM 이미지 업로드 결과. presigned_url은 uploadImage 내부에서만 사용하고 외부에 노출하지 않는다. */
 export interface DmPresignedUrlResponse {
-  presigned_url: string
   img_url: string
   key: string
 }

@@ -3,6 +3,7 @@
 import { MessageSquare } from "lucide-react"
 import { EmptyState } from "@/components/common"
 import { useAuthStore } from "@/store/authStore"
+import { getApiErrorMessage } from "@/lib/apiError"
 import { toast } from "@/store/toastStore"
 import { useConversations } from "@/app/(main)/dm/_hooks/useDmQueries"
 import { useDmSocket } from "@/app/(main)/dm/_hooks/useDmSocket"
@@ -27,8 +28,8 @@ export function ChatRoom({ conversationId }: Props) {
       const { img_url, key } = await uploadDmImage(conversationId, file)
       // 댓글 이미지와 동일하게 key(original_img)를 전달 — 서버가 key로 CDN URL을 생성한다
       sendMessage("", img_url, key)
-    } catch {
-      toast.error("이미지를 전송할 수 없습니다.")
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, { client: '이미지를 전송할 수 없습니다.' }))
     }
   }
 
