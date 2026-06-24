@@ -139,7 +139,6 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
       queryClient.setQueryData<MeDetailResponse>(queryKeys.users.me, (old) =>
         old ? { ...old, name: updated.name ?? old.name } : old
       )
-      void queryClient.invalidateQueries({ queryKey: queryKeys.users.me })
       return true
     } catch (err) {
       toast.error(getApiErrorMessage(err, { client: "이름 저장에 실패했습니다." }))
@@ -161,7 +160,6 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
       queryClient.setQueryData<MeDetailResponse>(queryKeys.users.me, (old) =>
         old ? { ...old, birth_day: updated.birth_day ?? old.birth_day } : old
       )
-      void queryClient.invalidateQueries({ queryKey: queryKeys.users.me })
       return true
     } catch (err) {
       toast.error(getApiErrorMessage(err, { client: "생년월일 저장에 실패했습니다." }))
