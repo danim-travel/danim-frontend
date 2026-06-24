@@ -51,7 +51,7 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
   // isHydrated 전에는 false로 평가 — silent refresh 중 소셜 사용자가 이메일 UI를 보는 것 방지
   const isSocial = isHydrated && (loginType === 'kakao' || loginType === 'google')
 
-  const [nickname, setNickname] = useState(me.nickname)
+  const [nickname, setNickname] = useState(me.nickname ?? "")
   const [intro, setIntro] = useState(me.intro ?? "")
   // 소셜 사용자 전용 — 이름/생년월일 편집 상태
   const [name, setName] = useState(me.name ?? "")
@@ -79,7 +79,7 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
   const composedBirthDay = birthYear && birthMonth && birthDay
     ? `${birthYear}-${birthMonth.padStart(2, "0")}-${birthDay.padStart(2, "0")}`
     : ""
-  const isNameValid = name.trim().length > 0
+  const isNameValid = (name ?? "").trim().length > 0
   const isBirthValid =
     BIRTHDATE_RULES.year.test(birthYear) &&
     BIRTHDATE_RULES.month.test(birthMonth) &&
@@ -91,7 +91,7 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
     profileKey !== undefined
 
   function handleCancel() {
-    setNickname(me.nickname)
+    setNickname(me.nickname ?? "")
     setIntro(me.intro ?? "")
     if (isSocial) {
       setName(me.name ?? "")
@@ -133,13 +133,12 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
 
   async function handleSaveName(): Promise<boolean> {
     try {
-      const updated = await updateUser({ name: name.trim() })
+      const updated = await updateUser({ name: (name ?? "").trim() })
       // PATCH 응답으로 캐시를 즉시 패치 — locked 표시가 stale 값(카카오/구글)을 보여주는 문제 방지
-      setName(updated.name)
+      setName(updated.name ?? name)
       queryClient.setQueryData<MeDetailResponse>(queryKeys.users.me, (old) =>
-        old ? { ...old, name: updated.name } : old
+        old ? { ...old, name: updated.name ?? old.name } : old
       )
-      void queryClient.invalidateQueries({ queryKey: queryKeys.users.me })
       return true
     } catch (err) {
       toast.error(getApiErrorMessage(err, { client: "이름 저장에 실패했습니다." }))
@@ -151,14 +150,16 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
     try {
       const updated = await updateUser({ birth_day: composedBirthDay })
       // PATCH 응답으로 캐시를 즉시 패치 — locked 표시가 stale 값(2001-01-01)을 보여주는 문제 방지
-      const [y, m, d] = splitBirthDay(updated.birth_day)
-      setBirthYear(y)
-      setBirthMonth(m)
-      setBirthDay(d)
+      // 부분 응답일 때 상태를 빈 값으로 덮어쓰지 않도록 birth_day가 있을 때만 분해
+      if (updated.birth_day) {
+        const [y, m, d] = splitBirthDay(updated.birth_day)
+        setBirthYear(y)
+        setBirthMonth(m)
+        setBirthDay(d)
+      }
       queryClient.setQueryData<MeDetailResponse>(queryKeys.users.me, (old) =>
-        old ? { ...old, birth_day: updated.birth_day } : old
+        old ? { ...old, birth_day: updated.birth_day ?? old.birth_day } : old
       )
-      void queryClient.invalidateQueries({ queryKey: queryKeys.users.me })
       return true
     } catch (err) {
       toast.error(getApiErrorMessage(err, { client: "생년월일 저장에 실패했습니다." }))
@@ -184,12 +185,14 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
       const profileUserId = useAuthStore.getState().user?.userId ?? updated.user_id
 
       // 1) PATCH 응답으로 캐시를 즉시 패치 — 마이페이지 first paint 부터 새 값 반영
+      //    응답이 부분 객체일 수 있으므로 undefined 필드는 기존 캐시 값을 유지한다
       queryClient.setQueryData<UserProfileResponse>(
         queryKeys.users.profile(profileUserId),
         (old) => old ? {
           ...old,
-          nickname: updated.nickname,
-          profile_img: updated.profile_img,
+          nickname: updated.nickname ?? old.nickname,
+          // profile_img는 null(삭제)이 유효한 값이므로 undefined일 때만 기존 값 유지
+          profile_img: updated.profile_img !== undefined ? updated.profile_img : old.profile_img,
           intro: updated.intro ?? old.intro,
           name: updated.name ?? old.name,
         } : old
@@ -204,7 +207,13 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
       ])
 
       // 3) authStore도 동기화 — SideNav 아바타/닉네임 등 store 기반 UI 즉시 반영
-      updateAuthUser({ userId: updated.user_id, nickname: updated.nickname, profileImg: updated.profile_img })
+      //    응답에 해당 필드가 없으면(undefined) 기존 authStore 값을 유지해 undefined가 persist되는 것을 방지
+      const currentAuthUser = useAuthStore.getState().user
+      updateAuthUser({
+        userId: updated.user_id ?? currentAuthUser?.userId,
+        nickname: updated.nickname ?? currentAuthUser?.nickname ?? "",
+        profileImg: updated.profile_img !== undefined ? updated.profile_img : (currentAuthUser?.profileImg ?? null),
+      })
       toast.success("변경사항이 저장되었습니다.")
     } catch (err) {
       toast.error(getApiErrorMessage(err, { client: "저장에 실패했습니다." }))

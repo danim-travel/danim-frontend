@@ -72,9 +72,9 @@ export function SocialNameField({ me, name, isNameValid, nameError, onNameChange
         </div>
         <Button
           type="button"
-          variant="secondary"
-          size="sm"
-          className="shrink-0 mb-px"
+          variant="primary"
+          size="lg"
+          className="shrink-0"
           disabled={!isNameValid || isSaving}
           onClick={() => setModalOpen(true)}
         >

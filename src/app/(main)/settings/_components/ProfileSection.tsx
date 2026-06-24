@@ -74,7 +74,7 @@ export function ProfileSection({
             <div className="relative shrink-0">
               <Avatar
                 src={displayImg ?? undefined}
-                initial={me.nickname[0]}
+                initial={(me.nickname ?? "")[0] ?? ""}
                 size="xl"
                 className="w-20 h-20 md:w-28 md:h-28"
               />

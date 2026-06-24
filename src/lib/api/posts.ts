@@ -19,13 +19,20 @@ export interface ExploreParams {
 }
 
 export async function getExplorePosts(params: ExploreParams = {}): Promise<ExploreResponse> {
-  const searchParams: Record<string, string> = {}
-  if (params.search) searchParams.search = params.search
-  if (params.category && params.category !== '전체') searchParams.category = params.category
-  if (params.cursor) searchParams.cursor = params.cursor
-  if (params.seed !== undefined) searchParams.seed = String(params.seed)
-  if (params.page_size) searchParams.page_size = String(params.page_size)
-  return apiClient.get('explore', { searchParams }).json<ExploreResponse>()
+  // search(한글)를 ky의 searchParams 옵션으로 넘기면 내부적으로 URLSearchParams가
+  // 퍼센트 인코딩(예: 제주 → %EC%A0%9C%EC%A3%BC)한다.
+  // 원문 한글 그대로 전달하기 위해 쿼리 문자열을 직접 조립한다.
+  // (ky의 searchParams 옵션은 URL에 이미 있는 쿼리를 덮어쓰므로 혼용하지 않고 전부 직접 조립)
+  const queryParts: string[] = []
+  if (params.search) queryParts.push(`search=${params.search}`)
+  if (params.category && params.category !== '전체') queryParts.push(`category=${params.category}`)
+  // cursor는 Base64(+, /, = 포함 가능)일 수 있으므로 안전하게 인코딩한다.
+  if (params.cursor) queryParts.push(`cursor=${encodeURIComponent(params.cursor)}`)
+  if (params.seed !== undefined) queryParts.push(`seed=${params.seed}`)
+  if (params.page_size) queryParts.push(`page_size=${params.page_size}`)
+
+  const queryString = queryParts.length > 0 ? `?${queryParts.join('&')}` : ''
+  return apiClient.get(`explore${queryString}`).json<ExploreResponse>()
 }
 
 export interface GetBookmarksParams {

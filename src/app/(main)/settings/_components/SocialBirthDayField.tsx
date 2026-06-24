@@ -134,8 +134,8 @@ export function SocialBirthDayField({
           </div>
           <Button
             type="button"
-            variant="secondary"
-            size="sm"
+            variant="primary"
+            size="lg"
             className="shrink-0"
             disabled={!isBirthValid || isSaving}
             onClick={() => setModalOpen(true)}
