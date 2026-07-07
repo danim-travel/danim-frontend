@@ -39,7 +39,7 @@ export default function ThumbnailPicker({ spots, thumbnailKey, onSelect }: Thumb
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={previewUrl}
-              alt=""
+              alt={`${spotIdx + 1}번째 장소 사진 ${photoIdx + 1}`}
               className={`w-16 h-16 rounded-xl object-cover border-2 transition-all ${
                 isSelected
                   ? 'border-primary ring-2 ring-primary/25'
