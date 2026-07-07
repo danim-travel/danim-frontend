@@ -12,6 +12,8 @@ export interface AvatarProps {
   colorClass?: string;
   /** 크기 등을 반응형으로 덮어쓸 때 사용 (예: "w-20 h-20 md:w-28 md:h-28") */
   className?: string;
+  /** 스크린 리더용 대체 텍스트. 미지정 시 "프로필 사진"으로 대체 */
+  alt?: string;
 }
 
 const sizeClasses: Record<AvatarSize, { box: string; text: string }> = {
@@ -21,7 +23,7 @@ const sizeClasses: Record<AvatarSize, { box: string; text: string }> = {
   xl: { box: "w-28 h-28", text: "text-hero" },
 };
 
-export function Avatar({ src, initial, size = "md", ring, colorClass = "bg-primary", className }: AvatarProps) {
+export function Avatar({ src, initial, size = "md", ring, colorClass = "bg-primary", className, alt = "프로필 사진" }: AvatarProps) {
   const { box, text } = sizeClasses[size];
   const inner = (
     <div
@@ -38,7 +40,7 @@ export function Avatar({ src, initial, size = "md", ring, colorClass = "bg-prima
           /* eslint-disable-next-line @next/next/no-img-element */
           <img
             src={src}
-            alt=""
+            alt={alt}
             loading="lazy"
             decoding="async"
             className="absolute inset-0 w-full h-full object-cover"

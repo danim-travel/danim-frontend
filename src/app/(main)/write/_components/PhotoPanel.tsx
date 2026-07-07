@@ -140,7 +140,7 @@ export default function PhotoPanel({ active, photosState, photoError }: PhotoPan
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={url}
-                alt=""
+                alt={`사진 ${i + 1}`}
                 className={`w-14 h-14 rounded-xl object-cover border-2 transition-all ${
                   selectedPhotoIdx === i
                     ? 'border-primary ring-2 ring-primary/25'

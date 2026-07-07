@@ -59,7 +59,7 @@ export function ExploreGrid({
             <div className={`relative rounded-xl overflow-hidden bg-bg-subtle ${GRID_ASPECT_RATIOS[i % GRID_ASPECT_RATIOS.length]}`}>
               <Image
                 src={post.thumbnail}
-                alt=""
+                alt="게시글 썸네일"
                 fill
                 sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
                 className="object-cover"

@@ -9,6 +9,8 @@ export const metadata: Metadata = {
   title: "Danim · 여행자들의 이야기",
   description: "여행의 모든 순간을 기록하세요",
   icons: { icon: "/logo.svg" },
+  applicationName: "Danim",
+  formatDetection: { telephone: false, email: false, address: false },
 };
 
 export const viewport: Viewport = {

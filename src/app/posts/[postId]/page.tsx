@@ -47,6 +47,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       robots: { index: true, follow: true },
       openGraph: {
         type: "article",
+        locale: "ko_KR",
         title,
         description,
         images,
@@ -93,5 +94,42 @@ export default async function PostPublicRoute({ params }: Props) {
   if (notFoundMessage) {
     return <NotFoundView title={notFoundMessage} description={notFoundDescription} />;
   }
-  return <PostPublicPage postId={postId} initialData={initialData!} />;
+  if (!initialData) {
+    notFound();
+  }
+
+  const postUrl = `${config.siteUrl}/posts/${postId}`;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: initialData.post.title || `${initialData.user.nickname}의 여행 기록`,
+    description: initialData.post.description || `${initialData.user.nickname}의 여행 이야기`,
+    image: initialData.post.thumbnail ? [initialData.post.thumbnail] : undefined,
+    datePublished: initialData.post.created_at,
+    author: { "@type": "Person", name: initialData.user.nickname },
+    publisher: {
+      "@type": "Organization",
+      name: "다님",
+      logo: {
+        "@type": "ImageObject",
+        url: `${config.siteUrl}/logo.svg`,
+      },
+    },
+    url: postUrl,
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": postUrl,
+    },
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <PostPublicPage postId={postId} initialData={initialData} />
+    </>
+  );
 }
