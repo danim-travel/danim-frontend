@@ -1,10 +1,8 @@
 "use client";
 
 import { memo, useState } from "react";
-import Image from "next/image";
-import { MapPin, Heart, MessageCircle, Bookmark } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Avatar, Card } from "@/components/common";
+import { Card } from "@/components/common";
 import { cn } from "@/lib/utils";
 import { extractRegion } from "@/lib/region";
 import { queryKeys } from "@/lib/queryKeys";
@@ -13,6 +11,9 @@ import { useBookmarkMutation } from "@/hooks/interactions/useBookmarkMutation";
 import { useDebouncedToggle } from "@/hooks/async/useDebouncedToggle";
 import { updateFeedItem, type FeedCache } from "@/lib/feedCache";
 import { usePrefetchPostDetail } from "../_hooks/usePrefetchPostDetail";
+import { FeedCardHeader } from "./FeedCardHeader";
+import { FeedCardImage } from "./FeedCardImage";
+import { FeedCardActions } from "./FeedCardActions";
 import type { MainFeedItem, PostDetail } from "@/types";
 
 interface FeedCardProps {
@@ -141,6 +142,11 @@ export function FeedCard({
     toggleBookmarkDebounced();
   };
 
+  const handleCommentClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onCommentClick?.();
+  };
+
   if (variant === "sheet") {
     return (
       <Card
@@ -154,74 +160,35 @@ export function FeedCard({
         )}
       >
         {/* 사진 영역 — 카드 너비의 1/2 */}
-        <div className="relative w-1/2 self-stretch bg-bg-subtle">
-          {feed.post.thumbnail && (
-            <Image
-              src={feed.post.thumbnail}
-              alt={feed.post.description}
-              fill
-              sizes="50vw"
-              loading="eager"
-              className="object-cover"
-            />
-          )}
-          {feed.spot_count > 0 && (
-            <div className="absolute top-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded-pill bg-white text-label font-semibold shadow-sm shrink-0">
-              <MapPin size={10} className="text-primary" />
-              <span data-testid="spot-count">{feed.spot_count}</span>
-            </div>
-          )}
-        </div>
+        <FeedCardImage
+          thumbnail={feed.post.thumbnail}
+          description={feed.post.description}
+          spotCount={feed.spot_count}
+          variant="sheet"
+        />
 
         {/* 텍스트 영역 — 카드 너비의 1/2 */}
         <div className="w-1/2 p-3 flex flex-col gap-2 min-w-0">
-          {/* 작성자 */}
-          <div className="flex items-center gap-2 min-w-0">
-            <Avatar
-              size="sm"
-              src={feed.user.profile_img ?? undefined}
-              initial={feed.user.nickname.charAt(0)}
-            />
-            <div className="flex flex-col min-w-0">
-              <span className="font-bold text-base truncate">{feed.user.nickname}</span>
-              {region && <span className="text-caption text-text-muted truncate">{region}</span>}
-            </div>
-          </div>
+          <FeedCardHeader
+            nickname={feed.user.nickname}
+            profileImg={feed.user.profile_img}
+            region={region}
+            variant="sheet"
+          />
 
           {/* 설명 */}
           <ExpandableDescription text={feed.post.description} clampClass="line-clamp-2" />
 
-          {/* 액션 */}
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              data-testid="like-button"
-              onClick={handleLikeClick}
-              className="flex items-center gap-1 text-text-muted text-body-sm hover:text-error transition-colors"
-            >
-              <Heart size={14} className={cn(isLiked && "fill-error text-error")} />
-              <span data-testid="like-count">{likeCountDisplay}</span>
-            </button>
-            <button
-              type="button"
-              onClick={(e) => { e.stopPropagation(); onCommentClick?.(); }}
-              className="flex items-center gap-1 text-text-muted text-body-sm hover:text-primary transition-colors"
-            >
-              <MessageCircle size={14} />
-              <span>{feed.comment_count}</span>
-            </button>
-            <button
-              type="button"
-              data-testid="bookmark-button"
-              onClick={handleBookmarkClick}
-              className="ml-auto text-text-muted hover:text-primary transition-colors"
-            >
-              <Bookmark
-                size={14}
-                className={cn(isBookmarked && "fill-primary text-primary")}
-              />
-            </button>
-          </div>
+          <FeedCardActions
+            isLiked={isLiked}
+            likeCountDisplay={likeCountDisplay}
+            commentCount={feed.comment_count}
+            isBookmarked={isBookmarked}
+            onLikeClick={handleLikeClick}
+            onCommentClick={handleCommentClick}
+            onBookmarkClick={handleBookmarkClick}
+            variant="sheet"
+          />
         </div>
       </Card>
     );
@@ -240,76 +207,38 @@ export function FeedCard({
       )}
     >
       {/* 썸네일 */}
-      <div className="relative w-full aspect-[16/9] bg-bg-subtle">
-        {feed.post.thumbnail && (
-          <Image
-            src={feed.post.thumbnail}
-            alt={feed.post.description}
-            fill
-            sizes="(max-width: 1280px) 50vw, 480px"
-            priority={priority}
-            className="object-cover"
-          />
-        )}
-        {feed.spot_count > 0 && (
-          <div className="absolute top-3 left-3 flex items-center gap-1 px-2 py-1 rounded-pill bg-white text-text-primary text-label font-semibold shadow-sm shrink-0">
-            <MapPin size={12} className="text-primary" />
-            <span data-testid="spot-count">{feed.spot_count}</span>
-          </div>
-        )}
-      </div>
+      <FeedCardImage
+        thumbnail={feed.post.thumbnail}
+        description={feed.post.description}
+        spotCount={feed.spot_count}
+        priority={priority}
+        variant="panel"
+      />
 
       {/* 본문 영역 */}
       <div className="p-4 flex flex-col gap-3">
-        {/* 작성자 */}
-        <div className="flex items-center gap-3">
-          <Avatar
-            size="sm"
-            src={feed.user.profile_img ?? undefined}
-            initial={feed.user.nickname.charAt(0)}
-          />
-          <div className="flex flex-col min-w-0">
-            <span className="font-bold text-base truncate">{feed.user.nickname}</span>
-            {region && <span className="text-body-sm text-text-muted">{region}</span>}
-          </div>
-        </div>
+        <FeedCardHeader
+          nickname={feed.user.nickname}
+          profileImg={feed.user.profile_img}
+          region={region}
+          variant="panel"
+        />
 
         {/* 설명 */}
         <ExpandableDescription text={feed.post.description} clampClass="line-clamp-2" />
 
         <hr className="border-border" />
 
-        {/* 액션 */}
-        <div className="flex items-center gap-4 pt-1">
-          <button
-            type="button"
-            data-testid="like-button"
-            onClick={handleLikeClick}
-            className="flex items-center gap-1 text-text-muted text-body-sm hover:text-error transition-colors"
-          >
-            <Heart size={16} className={cn(isLiked && "fill-error text-error")} />
-            <span data-testid="like-count">{likeCountDisplay}</span>
-          </button>
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); onCommentClick?.(); }}
-            className="flex items-center gap-1 text-text-muted text-body-sm hover:text-primary transition-colors"
-          >
-            <MessageCircle size={16} />
-            <span>{feed.comment_count}</span>
-          </button>
-          <button
-            type="button"
-            data-testid="bookmark-button"
-            onClick={handleBookmarkClick}
-            className="ml-auto text-text-muted hover:text-primary transition-colors"
-          >
-            <Bookmark
-              size={16}
-              className={cn(isBookmarked && "fill-primary text-primary")}
-            />
-          </button>
-        </div>
+        <FeedCardActions
+          isLiked={isLiked}
+          likeCountDisplay={likeCountDisplay}
+          commentCount={feed.comment_count}
+          isBookmarked={isBookmarked}
+          onLikeClick={handleLikeClick}
+          onCommentClick={handleCommentClick}
+          onBookmarkClick={handleBookmarkClick}
+          variant="panel"
+        />
       </div>
     </Card>
   );
