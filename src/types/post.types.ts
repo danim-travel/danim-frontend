@@ -2,6 +2,9 @@ export type PostImage = {
   img_url: string
   original_img: string
   img_order: number
+  key: string
+  width: number | null
+  height: number | null
 }
 
 export type SpotLocation = {
@@ -26,7 +29,10 @@ export type PostDetail = {
     title: string
     description: string
     thumbnail: string
+    thumbnail_width: number | null
+    thumbnail_height: number | null
     created_at: string
+    updated_at: string
   }
   user: {
     user_id: string
