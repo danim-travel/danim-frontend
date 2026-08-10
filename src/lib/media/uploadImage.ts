@@ -53,12 +53,14 @@ async function getImageDimensions(blob: Blob): Promise<{ width: number; height: 
 export async function uploadImage(endpoint: string, file: File): Promise<UploadResult> {
   const compressed = await compressImage(file)
 
-  // S3에 실제 올라가는 압축본 기준으로 크기 측정 (표시 이미지와 일치)
-  const { width, height } = await getImageDimensions(compressed)
-
-  const { presigned_url, img_url, key } = await apiClient
-    .post(endpoint, { json: { original_img: compressed.name } })
-    .json<PresignedUrlApiResponse>()
+  // 크기 측정과 presigned URL 발급은 서로 의존하지 않으므로 동시에 진행한다.
+  // 크기는 S3에 실제 올라가는 압축본 기준으로 재야 표시 이미지와 일치한다.
+  const [{ width, height }, { presigned_url, img_url, key }] = await Promise.all([
+    getImageDimensions(compressed),
+    apiClient
+      .post(endpoint, { json: { original_img: compressed.name } })
+      .json<PresignedUrlApiResponse>(),
+  ])
 
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), UPLOAD_TIMEOUT_MS)
