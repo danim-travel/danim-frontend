@@ -126,10 +126,6 @@ function EditPostForm({ postId, initial, onCancel, onCompleted }: EditPostFormPr
 
     if (!canSubmit || photo.thumbnailKey === null) return
 
-    // TODO(FEAT-003): 기존 이미지의 key가 PostDetail에 없어 payload에 채워 보낼 수 없음.
-    // 백엔드 GET 응답에 spots[].images[].key 필드가 추가되면 postDetailToForm.helper에서
-    // 자동으로 채워져 아래 payload가 정상 동작한다. 현재는 기존 이미지의 key가 ''로 들어가므로
-    // 새로 추가한 이미지만 정상 처리됨에 유의.
     const payload = buildPostPayload({
       title,
       description,
