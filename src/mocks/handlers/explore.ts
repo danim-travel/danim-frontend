@@ -59,6 +59,9 @@ function addressToRegion(address: string): string {
 const EXPLORE_ITEMS = ALL_FEED_ITEMS.map((item, i) => ({
   post_id: item.post.post_id,
   thumbnail: `https://picsum.photos/seed/feedpost${i + 1}/480/${MOCK_HEIGHTS[i % MOCK_HEIGHTS.length]}`,
+  // 위 URL이 실제로 생성하는 이미지 크기와 일치시킨다 (마소너리 비율 검증용)
+  thumbnail_width: 480,
+  thumbnail_height: MOCK_HEIGHTS[i % MOCK_HEIGHTS.length],
   like_count: item.like_count,
   comment_count: item.comment_count,
   _region: addressToRegion(item.spots[0]?.location.address_name ?? ''),
@@ -124,9 +127,11 @@ export const exploreHandlers = [
         ? `${url.origin}/explore?search=${encodeURIComponent(search)}${categoryQuery}&cursor=${encodeURIComponent(btoa(lastItem.post_id))}`
         : null
 
-      const results: ExplorePost[] = sliced.map(({ post_id, thumbnail, like_count, comment_count }) => ({
-        post_id, thumbnail, like_count, comment_count,
-      }))
+      const results: ExplorePost[] = sliced.map(
+        ({ post_id, thumbnail, thumbnail_width, thumbnail_height, like_count, comment_count }) => ({
+          post_id, thumbnail, thumbnail_width, thumbnail_height, like_count, comment_count,
+        }),
+      )
 
       const response: ExploreResponse = { next: nextUrl, results }
       return HttpResponse.json(response)
@@ -145,9 +150,11 @@ export const exploreHandlers = [
       ? `${url.origin}/explore?cursor=${page + 1}&seed=${seed}${categoryQuery}`
       : null
 
-    const results: ExplorePost[] = sliced.map(({ post_id, thumbnail, like_count, comment_count }) => ({
-      post_id, thumbnail, like_count, comment_count,
-    }))
+    const results: ExplorePost[] = sliced.map(
+      ({ post_id, thumbnail, thumbnail_width, thumbnail_height, like_count, comment_count }) => ({
+        post_id, thumbnail, thumbnail_width, thumbnail_height, like_count, comment_count,
+      }),
+    )
 
     const response: ExploreResponse = { next: nextUrl, seed, results }
     return HttpResponse.json(response)

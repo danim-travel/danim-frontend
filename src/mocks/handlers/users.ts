@@ -11,6 +11,9 @@ const mockPosts: UserProfilePost[] = Array.from({ length: 20 }, (_, i) => ({
   post_id: `01HZXK9P${String(i + 1).padStart(2, '0')}ABCDEFGHJKLMNPQRST`,
   title: `여행 기록 ${i + 1}`,
   thumbnail: `https://picsum.photos/seed/userpost${i + 1}/480/${mockHeights[i % mockHeights.length]}`,
+  // 위 URL이 실제로 생성하는 이미지 크기와 일치시킨다 (마소너리 비율 검증용)
+  thumbnail_width: 480,
+  thumbnail_height: mockHeights[i % mockHeights.length],
 }))
 
 const mockUserProfile: UserProfileResponse = {

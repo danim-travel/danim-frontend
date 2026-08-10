@@ -144,6 +144,9 @@ export type MainFeedResponse = {
 export type ExplorePost = {
   post_id: string
   thumbnail: string
+  // 마소너리 그리드에서 실제 비율로 공간을 예약하기 위한 썸네일 크기. 크기 미기록 게시글은 null
+  thumbnail_width: number | null
+  thumbnail_height: number | null
   like_count: number
   comment_count: number
 }
