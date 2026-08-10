@@ -58,12 +58,19 @@ export function buildPostPayload({
     })
   }
 
+  // 썸네일로 지정된 이미지의 실제 크기. 찾지 못하면 백엔드가 크기 없이 저장한다.
+  const thumbnailImage = requestSpots
+    .flatMap((s) => s.images)
+    .find((img) => img.key === thumbnailKey)
+
   return {
     ok: true,
     payload: {
       title: title.trim(),
       description: description.trim(),
       thumbnail: thumbnailKey,
+      thumbnail_width: thumbnailImage?.width ?? null,
+      thumbnail_height: thumbnailImage?.height ?? null,
       spots: requestSpots,
     },
   }

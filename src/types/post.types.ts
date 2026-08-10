@@ -81,6 +81,9 @@ export type CreatePostRequest = {
   title: string
   description: string
   thumbnail: string
+  // 썸네일 이미지의 실제 픽셀 크기 (선택, 최솟값 1, null 허용)
+  thumbnail_width: number | null
+  thumbnail_height: number | null
   spots: CreatePostSpot[]
 }
 
