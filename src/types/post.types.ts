@@ -66,6 +66,8 @@ export type CreatePostSpotLocation = {
 export type CreatePostSpotImage = {
   original_img: string
   key: string // S3 key
+  width: number // 업로드된 이미지의 실제 픽셀 너비 (필수, 최솟값 1)
+  height: number // 업로드된 이미지의 실제 픽셀 높이 (필수, 최솟값 1)
 }
 
 export type CreatePostSpot = {
