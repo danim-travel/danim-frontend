@@ -194,7 +194,6 @@ function SettingsForm({ me }: { me: MeDetailResponse }) {
           // profile_img는 null(삭제)이 유효한 값이므로 undefined일 때만 기존 값 유지
           profile_img: updated.profile_img !== undefined ? updated.profile_img : old.profile_img,
           intro: updated.intro ?? old.intro,
-          name: updated.name ?? old.name,
         } : old
       )
 

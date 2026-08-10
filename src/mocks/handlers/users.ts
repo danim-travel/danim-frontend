@@ -17,7 +17,6 @@ const mockPosts: UserProfilePost[] = Array.from({ length: 20 }, (_, i) => ({
 }))
 
 const mockUserProfile: UserProfileResponse = {
-  name: '홍길동',
   nickname: 'test_nickname',
   profile_img: 'https://picsum.photos/seed/userprofile/200/200',
   intro: '여행을 좋아하는 사람입니다.',
@@ -45,7 +44,6 @@ export const mockFollowings: FollowUser[] = [
 
 const mockOtherProfiles: Record<string, UserProfileResponse> = {
   'other-user-1': {
-    name: '김철수',
     nickname: 'traveler_kim',
     profile_img: 'https://picsum.photos/seed/otherprofile1/200/200',
     intro: '국내 여행 전문가입니다.',
@@ -56,7 +54,6 @@ const mockOtherProfiles: Record<string, UserProfileResponse> = {
     posts: mockPosts.slice(0, 5),
   },
   'other-user-2': {
-    name: '이영희',
     nickname: 'yh_explorer',
     profile_img: null,
     intro: '',

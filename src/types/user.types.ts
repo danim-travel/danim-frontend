@@ -13,7 +13,6 @@ export type UserProfilePost = {
 }
 
 export type UserProfileResponse = {
-  name: string
   nickname: string
   profile_img: string | null
   intro: string
