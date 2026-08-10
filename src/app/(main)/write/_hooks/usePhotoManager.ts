@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { uploadImage } from '@/lib/media/uploadImage'
+import { uploadImageWithSize } from '@/lib/media/uploadImage'
 import { getApiErrorMessage } from '@/lib/apiError'
 import { toast } from '@/store/toastStore'
 import { MAX_PHOTOS } from '../_constants'
@@ -70,7 +70,7 @@ export function usePhotoManager({ spots, active, updateSpot, initialThumbnailKey
     try {
       const uploaded = await Promise.all(
         pairs.map(async ({ file, previewUrl }) => {
-          const { img_url, key, width, height } = await uploadImage('posts/presigned-url', file)
+          const { img_url, key, width, height } = await uploadImageWithSize('posts/presigned-url', file)
           setSpotUploads((prev) => {
             const next = new Map(prev)
             const curr = next.get(targetSpotId)
