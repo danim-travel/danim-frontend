@@ -19,6 +19,10 @@ export function postDetailToSpotFormData(detail: PostDetail): SpotFormData[] {
       images: sortedImages.map((img) => ({
         original_img: img.original_img,
         key: img.key,
+        // 크기 정보가 없으면 null 그대로 둔다. 0 같은 값을 지어내면 쓰기 검증(최솟값 1)에서
+        // 원인을 알 수 없는 400이 난다. 실제 차단은 hasImageWithoutSize가 담당한다.
+        width: img.width,
+        height: img.height,
       })),
       previewUrls: sortedImages.map((img) => img.img_url),
     }

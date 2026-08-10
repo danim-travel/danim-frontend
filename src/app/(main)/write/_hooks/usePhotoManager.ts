@@ -4,9 +4,8 @@ import { useState, useRef, useEffect } from 'react'
 import { uploadImage } from '@/lib/media/uploadImage'
 import { getApiErrorMessage } from '@/lib/apiError'
 import { toast } from '@/store/toastStore'
-import type { CreatePostSpotImage } from '@/types'
 import { MAX_PHOTOS } from '../_constants'
-import type { SpotFormData } from '../_types/write.types'
+import type { SpotFormData, SpotFormImage } from '../_types/write.types'
 import { findFallbackThumbnail } from '../_helpers/thumbnail.helper'
 
 type UsePhotoManagerArgs = {
@@ -71,14 +70,14 @@ export function usePhotoManager({ spots, active, updateSpot, initialThumbnailKey
     try {
       const uploaded = await Promise.all(
         pairs.map(async ({ file, previewUrl }) => {
-          const { img_url, key } = await uploadImage('posts/presigned-url', file)
+          const { img_url, key, width, height } = await uploadImage('posts/presigned-url', file)
           setSpotUploads((prev) => {
             const next = new Map(prev)
             const curr = next.get(targetSpotId)
             if (curr) next.set(targetSpotId, { current: curr.current + 1, total: curr.total })
             return next
           })
-          const image: CreatePostSpotImage = { original_img: img_url, key }
+          const image: SpotFormImage = { original_img: img_url, key, width, height }
           return { image, previewUrl }
         })
       )
