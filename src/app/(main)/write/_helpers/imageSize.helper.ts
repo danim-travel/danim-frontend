@@ -5,11 +5,19 @@ import type { PostDetail } from '@/types'
 
 type MaybeSizedImage = { width: number | null; height: number | null }
 
-/** 크기 정보가 모두 채워져 있는지 판별한다. 통과하면 width/height가 number로 좁혀진다. */
+/**
+ * 크기 정보가 모두 유효하게 채워져 있는지 판별한다. 통과하면 width/height가 number로 좁혀진다.
+ * null뿐 아니라 0·음수·NaN도 걸러낸다. 이 값들은 서버 응답에서 그대로 폼 상태로 흘러들어오는데,
+ * 쓰기 스키마의 최솟값 1을 만족하지 못해 저장 시점에 원인 불명의 400이 된다.
+ */
+function isValidSize(value: number | null): value is number {
+  return value !== null && Number.isFinite(value) && value >= 1
+}
+
 export function hasImageSize<T extends MaybeSizedImage>(
   img: T,
 ): img is T & { width: number; height: number } {
-  return img.width !== null && img.height !== null
+  return isValidSize(img.width) && isValidSize(img.height)
 }
 
 /**
