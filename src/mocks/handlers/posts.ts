@@ -36,8 +36,8 @@ const showcaseFallback: PostDetail = {
     title: '제주도 동쪽 드라이브',
     description: '성산일출봉부터 섭지코지까지 이어지는 코스예요.',
     thumbnail: 'https://picsum.photos/seed/showcase0spot0/480/320',
-    thumbnail_width: null,
-    thumbnail_height: null,
+    thumbnail_width: 480,
+    thumbnail_height: 320,
     created_at: '2026-05-28T11:45:00Z',
     updated_at: '2026-05-28T11:45:00Z',
   },
@@ -62,16 +62,16 @@ const showcaseFallback: PostDetail = {
           original_img: 'https://picsum.photos/seed/showcase0spot0/960/640',
           img_order: 1,
           key: 'mock/showcase0spot0',
-          width: null,
-          height: null,
+          width: 480,
+          height: 320,
         },
         {
           img_url: 'https://picsum.photos/seed/showcase0spot0b/540/960',
           original_img: 'https://picsum.photos/seed/showcase0spot0b/1080/1920',
           img_order: 2,
           key: 'mock/showcase0spot0b',
-          width: null,
-          height: null,
+          width: 540,
+          height: 960,
         },
       ],
       content: spotContents[0],
@@ -92,8 +92,8 @@ const showcaseFallback: PostDetail = {
           original_img: 'https://picsum.photos/seed/showcase0spot1/960/640',
           img_order: 1,
           key: 'mock/showcase0spot1',
-          width: null,
-          height: null,
+          width: 480,
+          height: 320,
         },
       ],
       content: spotContents[1],
@@ -131,18 +131,22 @@ function buildPostDetail(postId: string): PostDetail {
       const sizes = ['480/320', '540/960', '800/800', '480/320', '540/960']
       const origSizes = ['960/640', '1080/1920', '1080/1080', '960/640', '1080/1920']
       const suffixes = ['', 'b', 'c', 'd', 'e']
-      return Array.from({ length: imgCount }, (_, k) => ({
-        img_url: k === 0 && j === thumbnailSpotIdx
-          ? feedItem.post.thumbnail
-          : `https://picsum.photos/seed/post${itemIndex}spot${j}${suffixes[k]}/${sizes[k % sizes.length]}`,
-        original_img: k === 0 && j === thumbnailSpotIdx
-          ? feedItem.post.thumbnail.replace('/480/320', '/960/640')
-          : `https://picsum.photos/seed/post${itemIndex}spot${j}${suffixes[k]}/${origSizes[k % origSizes.length]}`,
-        img_order: k + 1,
-        key: `mock/post${itemIndex}spot${j}${suffixes[k]}`,
-        width: null,
-        height: null,
-      }))
+      return Array.from({ length: imgCount }, (_, k) => {
+        // img_url이 실제로 생성하는 크기와 일치시킨다 (썸네일은 항상 480/320)
+        const [width, height] = sizes[k % sizes.length].split('/').map(Number)
+        return {
+          img_url: k === 0 && j === thumbnailSpotIdx
+            ? feedItem.post.thumbnail
+            : `https://picsum.photos/seed/post${itemIndex}spot${j}${suffixes[k]}/${sizes[k % sizes.length]}`,
+          original_img: k === 0 && j === thumbnailSpotIdx
+            ? feedItem.post.thumbnail.replace('/480/320', '/960/640')
+            : `https://picsum.photos/seed/post${itemIndex}spot${j}${suffixes[k]}/${origSizes[k % origSizes.length]}`,
+          img_order: k + 1,
+          key: `mock/post${itemIndex}spot${j}${suffixes[k]}`,
+          width,
+          height,
+        }
+      })
     })(),
     content: spotContents[(itemIndex + j) % spotContents.length],
     order: s.order,
@@ -154,8 +158,8 @@ function buildPostDetail(postId: string): PostDetail {
       title: titles[itemIndex % titles.length],
       description: feedItem.post.description,
       thumbnail: feedItem.post.thumbnail,
-      thumbnail_width: null,
-      thumbnail_height: null,
+      thumbnail_width: 480,
+      thumbnail_height: 320,
       created_at: '2026-05-28T11:45:00Z',
       updated_at: '2026-05-28T11:45:00Z',
     },

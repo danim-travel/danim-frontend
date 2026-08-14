@@ -11,10 +11,12 @@ const mockPosts: UserProfilePost[] = Array.from({ length: 20 }, (_, i) => ({
   post_id: `01HZXK9P${String(i + 1).padStart(2, '0')}ABCDEFGHJKLMNPQRST`,
   title: `여행 기록 ${i + 1}`,
   thumbnail: `https://picsum.photos/seed/userpost${i + 1}/480/${mockHeights[i % mockHeights.length]}`,
+  // 위 URL이 실제로 생성하는 이미지 크기와 일치시킨다 (마소너리 비율 검증용)
+  thumbnail_width: 480,
+  thumbnail_height: mockHeights[i % mockHeights.length],
 }))
 
 const mockUserProfile: UserProfileResponse = {
-  name: '홍길동',
   nickname: 'test_nickname',
   profile_img: 'https://picsum.photos/seed/userprofile/200/200',
   intro: '여행을 좋아하는 사람입니다.',
@@ -42,7 +44,6 @@ export const mockFollowings: FollowUser[] = [
 
 const mockOtherProfiles: Record<string, UserProfileResponse> = {
   'other-user-1': {
-    name: '김철수',
     nickname: 'traveler_kim',
     profile_img: 'https://picsum.photos/seed/otherprofile1/200/200',
     intro: '국내 여행 전문가입니다.',
@@ -53,7 +54,6 @@ const mockOtherProfiles: Record<string, UserProfileResponse> = {
     posts: mockPosts.slice(0, 5),
   },
   'other-user-2': {
-    name: '이영희',
     nickname: 'yh_explorer',
     profile_img: null,
     intro: '',

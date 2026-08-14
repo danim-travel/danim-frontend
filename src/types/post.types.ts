@@ -66,6 +66,8 @@ export type CreatePostSpotLocation = {
 export type CreatePostSpotImage = {
   original_img: string
   key: string // S3 key
+  width: number // 업로드된 이미지의 실제 픽셀 너비 (필수, 최솟값 1)
+  height: number // 업로드된 이미지의 실제 픽셀 높이 (필수, 최솟값 1)
 }
 
 export type CreatePostSpot = {
@@ -79,6 +81,9 @@ export type CreatePostRequest = {
   title: string
   description: string
   thumbnail: string
+  // 썸네일 이미지의 실제 픽셀 크기 (선택, 최솟값 1, null 허용)
+  thumbnail_width: number | null
+  thumbnail_height: number | null
   spots: CreatePostSpot[]
 }
 
@@ -139,6 +144,9 @@ export type MainFeedResponse = {
 export type ExplorePost = {
   post_id: string
   thumbnail: string
+  // 마소너리 그리드에서 실제 비율로 공간을 예약하기 위한 썸네일 크기. 크기 미기록 게시글은 null
+  thumbnail_width: number | null
+  thumbnail_height: number | null
   like_count: number
   comment_count: number
 }

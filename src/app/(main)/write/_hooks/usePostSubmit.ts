@@ -10,6 +10,7 @@ import { useAuthStore } from '@/store/authStore'
 import type { DetailResponse } from '@/types'
 import type { SpotFormData } from '../_types/write.types'
 import { buildPostPayload } from '../_helpers/postPayload.helper'
+import { BUILD_PAYLOAD_ERROR_MESSAGE } from '../_constants'
 
 type UsePostSubmitArgs = {
   title: string
@@ -32,13 +33,17 @@ export function usePostSubmit({ title, description, spots, thumbnailKey }: UsePo
     !isSubmitting
 
   const submitPost = async (): Promise<boolean> => {
-    if (isSubmitting || !canSubmit) return false
+    if (isSubmitting || !canSubmit || thumbnailKey === null) return false
     setIsSubmitting(true)
-    // canSubmit이 thumbnailKey !== null을 보장하므로 타입 단언 사용
-    const payload = buildPostPayload({ title, description, spots, thumbnailKey: thumbnailKey! })
+    const result = buildPostPayload({ title, description, spots, thumbnailKey })
+    if (!result.ok) {
+      toast.error(BUILD_PAYLOAD_ERROR_MESSAGE[result.reason])
+      setIsSubmitting(false)
+      return false
+    }
 
     try {
-      await apiClient.post('posts', { json: payload }).json<DetailResponse>()
+      await apiClient.post('posts', { json: result.payload }).json<DetailResponse>()
       // 탐색 페이지·마이페이지에 새 게시글 즉시 반영
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.posts.exploreBase }),

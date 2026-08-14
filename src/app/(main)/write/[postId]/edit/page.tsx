@@ -13,6 +13,7 @@ import type { PostDetail } from '@/types'
 import { useWriteForm } from '../../_hooks/useWriteForm'
 import { usePostEdit } from '../../_hooks/usePostEdit'
 import { buildPostPayload } from '../../_helpers/postPayload.helper'
+import { hasImageWithoutSize } from '../../_helpers/imageSize.helper'
 import PhotoPanel from '../../_components/PhotoPanel'
 import SpotOrderList, { type SpotError } from '../../_components/SpotOrderList'
 import SpotIndicatorBar from '../../_components/SpotIndicatorBar'
@@ -20,7 +21,7 @@ import ThumbnailPicker from '../../_components/ThumbnailPicker'
 import WriteHeader from '../../_components/WriteHeader'
 import TitleSection from '../../_components/TitleSection'
 import DescriptionSection from '../../_components/DescriptionSection'
-import { MAX_SPOTS } from '../../_constants'
+import { MAX_SPOTS, BUILD_PAYLOAD_ERROR_MESSAGE } from '../../_constants'
 
 export default function EditPostPage() {
   const router = useRouter()
@@ -47,10 +48,16 @@ export default function EditPostPage() {
     }
   }, [isError, error, router])
 
-  // 데이터 도착 후 본인 게시글이 아니면 차단
+  // 데이터 도착 후 수정 불가 사유를 검사한다. 사유가 겹쳐도 안내는 하나만 노출되도록 한 곳에서 판단한다.
+  // 이미지 크기가 없는 게시글은 수정 요청이 백엔드 검증(최솟값 1)을 통과할 수 없어,
+  // 폼을 채우게 두면 저장 시점에야 원인 불명의 실패를 겪는다. 진입 단계에서 미리 안내한다.
   useEffect(() => {
-    if (data && data.is_owner === false) {
+    if (!data) return
+    if (data.is_owner === false) {
       toast.error('본인 게시글만 수정할 수 있습니다.')
+      router.replace('/mypage')
+    } else if (hasImageWithoutSize(data)) {
+      toast.error('이미지 정보가 없어 수정할 수 없는 게시글입니다.')
       router.replace('/mypage')
     }
   }, [data, router])
@@ -63,7 +70,9 @@ export default function EditPostPage() {
     )
   }
 
-  if (data.is_owner === false) {
+  // 위 useEffect가 리다이렉트를 예약했더라도 이번 렌더는 그대로 진행되므로,
+  // 수정 불가 게시글의 폼이 한 프레임 깜빡이지 않도록 여기서도 막는다.
+  if (data.is_owner === false || hasImageWithoutSize(data)) {
     return null
   }
 
@@ -126,19 +135,19 @@ function EditPostForm({ postId, initial, onCancel, onCompleted }: EditPostFormPr
 
     if (!canSubmit || photo.thumbnailKey === null) return
 
-    // TODO(FEAT-003): 기존 이미지의 key가 PostDetail에 없어 payload에 채워 보낼 수 없음.
-    // 백엔드 GET 응답에 spots[].images[].key 필드가 추가되면 postDetailToForm.helper에서
-    // 자동으로 채워져 아래 payload가 정상 동작한다. 현재는 기존 이미지의 key가 ''로 들어가므로
-    // 새로 추가한 이미지만 정상 처리됨에 유의.
-    const payload = buildPostPayload({
+    const result = buildPostPayload({
       title,
       description,
       spots: spot.spots,
       thumbnailKey: photo.thumbnailKey,
     })
+    if (!result.ok) {
+      toast.error(BUILD_PAYLOAD_ERROR_MESSAGE[result.reason])
+      return
+    }
 
     try {
-      await editPost(payload)
+      await editPost(result.payload)
       toast.success('게시글이 수정되었습니다.')
       onCompleted()
     } catch {
