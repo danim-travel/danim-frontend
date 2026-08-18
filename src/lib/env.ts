@@ -15,6 +15,9 @@ const envSchema = z.object({
     .url('올바른 URL 형식이 아닙니다')
     .optional()
     .default('http://localhost:3000'),
+  // 개발 환경에서 MSW(목 서버) 사용 여부. 'disabled'면 실제 백엔드에 붙는다.
+  // 미설정 시 기존 동작(개발 환경에서 MSW 사용)을 유지한다.
+  NEXT_PUBLIC_API_MOCKING: z.enum(['enabled', 'disabled']).optional().default('enabled'),
 })
 
 const result = envSchema.safeParse({
@@ -22,6 +25,7 @@ const result = envSchema.safeParse({
   NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL,
   NEXT_PUBLIC_KAKAO_MAP_KEY: process.env.NEXT_PUBLIC_KAKAO_MAP_KEY,
   NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+  NEXT_PUBLIC_API_MOCKING: process.env.NEXT_PUBLIC_API_MOCKING,
 })
 
 if (!result.success) {

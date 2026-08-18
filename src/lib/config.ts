@@ -30,4 +30,11 @@ export const config = {
   get isDev() {
     return process.env.NODE_ENV === 'development'
   },
+  /**
+   * MSW(목 서버) 사용 여부. 개발 환경이면서 명시적으로 끄지 않은 경우에만 true.
+   * 끄면 요청이 실제 백엔드로 나가므로 실계정 로그인·업로드 속도 측정이 가능하다.
+   */
+  get isApiMockingEnabled() {
+    return this.isDev && env.NEXT_PUBLIC_API_MOCKING !== 'disabled'
+  },
 } as const
