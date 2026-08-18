@@ -7,12 +7,13 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { isApiError } from '@/lib/apiError'
+import { config } from '@/lib/config'
 import { refreshToken, getCurrentUser } from '@/lib/api/auth'
 import { useAuthStore, toAuthUser } from '@/store/authStore'
 import { ToastProvider } from './ToastProvider'
 
 async function initMsw() {
-  if (process.env.NODE_ENV !== 'development') return
+  if (!config.isApiMockingEnabled) return
   if (typeof window === 'undefined') return
   const { worker } = await import('@/mocks/browser')
   await worker.start({
