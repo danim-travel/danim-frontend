@@ -10,6 +10,7 @@ export const resetPasswordSchema = z
       .min(PASSWORD_RULES.minLength, `${PASSWORD_RULES.minLength}자 이상이어야 합니다`)
       .max(PASSWORD_RULES.maxLength, `${PASSWORD_RULES.maxLength}자 이하여야 합니다`)
       .regex(PASSWORD_RULES.hasLetter, "영문이 포함되어야 합니다")
+      .regex(PASSWORD_RULES.hasUppercase, "영문 대문자가 포함되어야 합니다")
       .regex(PASSWORD_RULES.hasNumber, "숫자가 포함되어야 합니다")
       .regex(PASSWORD_RULES.hasSpecial, "특수문자가 포함되어야 합니다"),
     passwordConfirm: z.string().min(1, "비밀번호 확인을 입력해주세요"),
