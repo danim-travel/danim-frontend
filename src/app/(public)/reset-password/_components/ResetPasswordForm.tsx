@@ -84,7 +84,7 @@ export function ResetPasswordForm() {
               label="새 비밀번호"
               required
               autoComplete="new-password"
-              placeholder="8자 이상, 영문+숫자+특수문자 조합"
+              placeholder={PASSWORD_RULES.guideText}
               className="h-12"
               maxLength={PASSWORD_RULES.maxLength}
               {...passwordField}

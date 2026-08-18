@@ -2,6 +2,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button, Modal, PasswordField } from "@/components/common"
+import { PASSWORD_RULES } from "@/app/(public)/_constants/passwordValidation"
 import { changePassword } from "@/lib/api/users"
 import { logout } from "@/lib/api/auth"
 import { getApiErrorMessage, isApiError } from "@/lib/apiError"
@@ -104,7 +105,7 @@ export function PasswordChangeModal({ open, onClose }: PasswordChangeModalProps)
           required
           autoComplete="new-password"
           name="danim-new-password"
-          helperText="영문, 숫자, 특수문자 포함 8자 이상"
+          helperText={PASSWORD_RULES.guideText}
           error={newPasswordError}
         />
         <PasswordField
