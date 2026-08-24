@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/apiClient";
@@ -42,6 +42,13 @@ export default function UserPage() {
     });
   }, [profile]);
 
+  // PostGrid는 alt 필드를 읽는데 UserProfilePost에는 title만 있다.
+  // 매핑하지 않으면 썸네일이 전부 alt=""(장식 이미지)로 렌더된다. 마이페이지와 동일한 처리.
+  const gridPosts = useMemo(
+    () => (profile?.posts ?? []).map((p) => ({ ...p, alt: p.title })),
+    [profile?.posts],
+  );
+
   if (isOwnProfile) return null;
 
   if (isLoading) {
@@ -70,7 +77,7 @@ export default function UserPage() {
 
       <div className="mt-6">
         <PostGrid
-          posts={profile.posts}
+          posts={gridPosts}
           onPostClick={(id) => {
             const post = profile.posts.find((p) => p.post_id === id);
             if (post?.thumbnail) setModalThumbnail(id, post.thumbnail);

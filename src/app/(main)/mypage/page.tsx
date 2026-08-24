@@ -53,6 +53,8 @@ function MyPageContent({ userId }: { userId: string }) {
         post_id: p.post_id,
         thumbnail: p.thumbnail,
         alt: p.title,
+        thumbnail_width: p.thumbnail_width,
+        thumbnail_height: p.thumbnail_height,
       })),
     [profile?.posts],
   );

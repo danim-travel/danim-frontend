@@ -1,25 +1,31 @@
 /**
- * 핀터레스트 스타일 그리드에서 이미지 비율을 모를 때 순환 적용하는 aspect-ratio 클래스 배열.
- * ExploreGrid, PostGrid 등 마소너리 그리드에서 공통으로 사용한다.
+ * 마소너리 그리드 카드의 가로세로 비율(width / height).
+ *
+ * 파노라마·초세로 이미지는 카드 하나가 화면을 뒤덮거나 종잇장처럼 납작해지므로
+ * 상·하한으로 잘라낸다. 잘려나간 만큼은 object-cover가 흡수한다.
  */
-export const GRID_ASPECT_RATIOS = [
-  'aspect-[2/3]',
-  'aspect-[1/1]',
-  'aspect-[16/9]',
-  'aspect-[3/4]',
-  'aspect-[1/1]',
-  'aspect-[9/16]',
-]
+export const MIN_CARD_RATIO = 0.5 // 1:2 — 세로 한계
+export const MAX_CARD_RATIO = 2 // 2:1 — 가로 한계
 
 /**
- * next/image placeholder="blur" 용 단색 blurDataURL.
- * 실제 썸네일 데이터가 없는 경우 연한 회색(#EFEFEF) 1×1 SVG를 base64로 인코딩해 사용한다.
+ * 썸네일 크기를 모를 때 쓰는 비율(4:5).
+ * 백엔드가 아직 크기를 내려주지 않는 화면(마이페이지 저장됨 탭)과
+ * 크기가 기록되지 않은 레거시 게시글이 이 경로를 탄다.
  */
-const toBase64 = (str: string): string =>
-  typeof window === 'undefined'
-    ? Buffer.from(str).toString('base64')
-    : window.btoa(str)
+export const FALLBACK_CARD_RATIO = 0.8
 
-const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='1' height='1'><rect fill='#D3EFE0'/></svg>`
+/** 백엔드 모델이 null을 허용하므로(`null=True`) 0·음수·NaN까지 함께 걸러낸다. */
+function isValidSize(value: number | null | undefined): value is number {
+  return value != null && Number.isFinite(value) && value > 0
+}
 
-export const BLUR_DATA_URL = `data:image/svg+xml;base64,${toBase64(svg)}`
+/**
+ * 썸네일 크기로 카드 비율을 구한다.
+ *
+ * 렌더(aspect-ratio)와 컬럼 분배(높이 계산)가 **반드시 이 함수의 같은 결과를 공유**해야 한다.
+ * 실측값으로 분배하고 클램프한 값으로 렌더하면 계산 높이와 실제 높이가 어긋나 컬럼 바닥이 안 맞는다.
+ */
+export function cardRatio(width: number | null, height: number | null): number {
+  if (!isValidSize(width) || !isValidSize(height)) return FALLBACK_CARD_RATIO
+  return Math.min(MAX_CARD_RATIO, Math.max(MIN_CARD_RATIO, width / height))
+}

@@ -19,6 +19,8 @@ export * from "./Toggle/Toggle";
 export * from "./feedback/EmptyState";
 export * from "./feedback/Skeleton";
 export * from "./GridSkeleton/GridSkeleton";
+export * from "./MasonryGrid/MasonryGrid";
+export * from "./MasonryGrid/GridImage";
 export * from "./PageContainer";
 export * from "./SettingsRow/SettingsRow";
 export * from "./SideDrawer/SideDrawer";
