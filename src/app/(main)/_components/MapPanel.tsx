@@ -1,11 +1,14 @@
 "use client";
 
-import { useMemo, useEffect, useRef, useState } from "react";
+import { useCallback, useMemo, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence, useMotionValue, useTransform, animate as motionAnimate } from "motion/react";
 import { Plane } from "lucide-react";
-import type { MainFeedItem, Post } from "@/types";
+import type { MainFeedItem, NearPostSpot, Post } from "@/types";
 import { usePinColor } from "../_hooks/usePinColor";
+import { useNearbySpots } from "../_hooks/useNearbySpots";
+import type { Coords } from "../_hooks/useCurrentPosition";
+import NearbySpotsCarousel from "./NearbySpotsCarousel";
 
 const FLY_DURATION = 0.9;
 const FLY_EASE: [number, number, number, number] = [0.4, 0, 0.6, 1];
@@ -23,16 +26,60 @@ const KakaoMap = dynamic(() => import("@/components/KakaoMap"), {
   ),
 });
 
+/** 참조가 매번 바뀌면 지도 오버레이 이펙트가 다시 돈다. */
+const EMPTY_SPOTS: NearPostSpot[] = [];
+
 interface MapPanelProps {
   focusedPost: MainFeedItem | null;
   focusedPostIndex: number;
   onPinClick: (postId: string, spotIdx: number) => void;
   onResetFocus?: () => void;
+  coords: Coords | null;
+  onLocationResolved: (coords: Coords) => void;
+  /** 주변 기록 칩/도트를 두 번 눌렀을 때 해당 게시글을 연다. */
+  onOpenNearbyPost: (postId: string) => void;
+  /** solo 모드(`?solo=`)에서는 특정 게시글 전용 화면이라 주변 기록을 띄우지 않는다. */
+  isSoloMode?: boolean;
 }
 
-export function MapPanel({ focusedPost, focusedPostIndex, onPinClick, onResetFocus }: MapPanelProps) {
+export function MapPanel({
+  focusedPost,
+  focusedPostIndex,
+  onPinClick,
+  onResetFocus,
+  coords,
+  onLocationResolved,
+  onOpenNearbyPost,
+  isSoloMode = false,
+}: MapPanelProps) {
   const pinColor = usePinColor(focusedPostIndex);
   const sectionRef = useRef<HTMLElement>(null);
+
+  // 게시글이 포커스되면 번호 핀 + 폴리라인이 주인공이다. 주변 도트는 완전히 숨긴다.
+  const nearbyEnabled = !focusedPost && !isSoloMode;
+  const { spots } = useNearbySpots(coords, nearbyEnabled);
+  const [selectedNearbyId, setSelectedNearbyId] = useState<string | null>(null);
+
+  const visibleSpots = nearbyEnabled ? spots : EMPTY_SPOTS;
+
+  // 이펙트로 리셋하지 않고 파생값으로 둔다. 게시글이 포커스돼 캐러셀이 사라졌을 때,
+  // 그리고 목록이 갱신돼 이전 선택이 빠졌을 때 모두 자동으로 해제된다.
+  const selectedId = visibleSpots.some((s) => s.post_id === selectedNearbyId)
+    ? selectedNearbyId
+    : null;
+
+  const handleNearbyTap = useCallback(
+    (postId: string) => {
+      // 1탭 = 선택(지도에서 위치만 확인), 재탭 = 열기.
+      // 한 번에 모달을 띄우면 지도 탐색이 끊긴다.
+      if (selectedId === postId) {
+        onOpenNearbyPost(postId);
+        return;
+      }
+      setSelectedNearbyId(postId);
+    },
+    [selectedId, onOpenNearbyPost],
+  );
 
   const [flyKey, setFlyKey] = useState(0);
   const prevIdRef = useRef<string | null>(null);
@@ -101,11 +148,24 @@ export function MapPanel({ focusedPost, focusedPostIndex, onPinClick, onResetFoc
         selectedPost={mapPost}
         onPinClick={(post, pinIndex) => onPinClick(post.post_id, pinIndex)}
         onCurrentLocation={onResetFocus}
+        onLocationResolved={onLocationResolved}
+        nearbySpots={visibleSpots}
+        selectedNearbyId={selectedId}
+        onNearbySpotClick={handleNearbyTap}
+        onMapClick={() => setSelectedNearbyId(null)}
+        liftControls={visibleSpots.length > 0}
       />
 
       <div className="absolute top-4 left-4 z-10 px-3 py-1.5 rounded-pill bg-bg-card shadow-md text-body-sm font-semibold text-text-primary">
         지도
       </div>
+
+      <NearbySpotsCarousel
+        spots={visibleSpots}
+        selectedId={selectedId}
+        onSelect={handleNearbyTap}
+        onOpen={onOpenNearbyPost}
+      />
 
       <AnimatePresence>
         {flyKey > 0 && (
