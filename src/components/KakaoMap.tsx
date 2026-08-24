@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect, memo } from "react";
 import Script from "next/script";
-import type { Post } from "@/types";
+import type { NearPostSpot, Post } from "@/types";
 import { config } from "@/lib/config";
 
 type Status = "loading" | "ready" | "error";
@@ -27,14 +27,69 @@ const makeNumberPin = (num: number, color: string, onClick?: () => void): HTMLEl
   return el;
 };
 
+// 게시글 핀(zIndex 3)보다 항상 아래. 선택된 도트만 그 사이로 올린다.
+const NEARBY_Z = 1;
+const NEARBY_SELECTED_Z = 2;
+
+/** 거리 라벨. 1km 미만은 m로 끊어야 "0.8km"보다 읽힌다. */
+const formatDistance = (km: number): string =>
+  km < 1 ? `${Math.round(km * 1000)}m` : `${km.toFixed(1)}km`;
+
+/**
+ * 주변 기록 도트. 게시글 번호 핀(34px)보다 확실히 작아야 위계가 잡힌다.
+ * CustomOverlay가 DOM을 요구해 인라인 style이 불가피하다 — 색은 하드코딩하지 않고
+ * 전역 CSS 변수를 참조한다.
+ */
+const makeDotPin = (spot: NearPostSpot, selected: boolean, onClick: () => void): HTMLElement => {
+  const el = document.createElement("div");
+  el.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;";
+
+  const size = selected ? 18 : 12;
+  const label = selected
+    ? `<div style="padding:2px 8px;border-radius:9999px;background:var(--color-bg-card);color:var(--color-text);font-size:12px;font-weight:600;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.2);">${spot.place_name} · ${formatDistance(spot.distance)}</div>`
+    : "";
+
+  el.innerHTML = `
+    <div style="width:${size}px;height:${size}px;border-radius:50%;background:var(--color-primary);border:2px solid var(--color-bg-card);box-shadow:0 1px 4px rgba(0,0,0,0.3);"></div>
+    ${label}
+  `;
+  el.addEventListener("click", (e) => { e.stopPropagation(); onClick(); });
+  return el;
+};
+
 interface KakaoMapProps {
   selectedPost: Post | null;
   onBoundsChange?: (bounds: BoundsData) => void;
   onPinClick?: (post: Post, pinIndex: number) => void;
   onCurrentLocation?: () => void;
+  /**
+   * 지도가 알아낸 현재 위치. 초기 마운트와 "현재위치" 버튼 양쪽에서 호출된다.
+   * `onCurrentLocation`(포커스 해제용)과 의미가 다르므로 분리한다 —
+   * 초기 마운트에서 포커스를 해제하면 안 되기 때문.
+   */
+  onLocationResolved?: (coords: { lat: number; lng: number }) => void;
+  /** 내 주변 기록 도트. 게시글이 포커스된 동안에는 호출부가 빈 배열을 넘긴다. */
+  nearbySpots?: NearPostSpot[];
+  selectedNearbyId?: string | null;
+  onNearbySpotClick?: (postId: string) => void;
+  /** 지도 빈 곳 클릭 — 주변 기록 선택 해제용. */
+  onMapClick?: () => void;
+  /** 하단 캐러셀이 떠 있는 동안 "현재위치" 버튼을 그 위로 올린다. */
+  liftControls?: boolean;
 }
 
-function KakaoMap({ selectedPost, onBoundsChange, onPinClick, onCurrentLocation }: KakaoMapProps) {
+function KakaoMap({
+  selectedPost,
+  onBoundsChange,
+  onPinClick,
+  onCurrentLocation,
+  onLocationResolved,
+  nearbySpots,
+  selectedNearbyId,
+  onNearbySpotClick,
+  onMapClick,
+  liftControls = false,
+}: KakaoMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<kakao.maps.Map | null>(null);
   const overlaysRef = useRef<kakao.maps.CustomOverlay[]>([]);
@@ -46,11 +101,17 @@ function KakaoMap({ selectedPost, onBoundsChange, onPinClick, onCurrentLocation 
   const onBoundsChangeRef = useRef(onBoundsChange);
   const onPinClickRef = useRef(onPinClick);
   const selectedPostRef = useRef(selectedPost);
+  const onLocationResolvedRef = useRef(onLocationResolved);
+  const onNearbySpotClickRef = useRef(onNearbySpotClick);
+  const onMapClickRef = useRef(onMapClick);
   useEffect(() => {
     onBoundsChangeRef.current = onBoundsChange;
     onPinClickRef.current = onPinClick;
     selectedPostRef.current = selectedPost;
-  }, [onBoundsChange, onPinClick, selectedPost]);
+    onLocationResolvedRef.current = onLocationResolved;
+    onNearbySpotClickRef.current = onNearbySpotClick;
+    onMapClickRef.current = onMapClick;
+  }, [onBoundsChange, onPinClick, selectedPost, onLocationResolved, onNearbySpotClick, onMapClick]);
 
   // initMap 중복 호출 방지
   const mapInitializedRef = useRef(false);
@@ -64,6 +125,15 @@ function KakaoMap({ selectedPost, onBoundsChange, onPinClick, onCurrentLocation 
 
   // 활성 게시글의 path를 ref로 보관 — 컨테이너 리사이즈 시 setBounds 재호출용
   const activeBoundsRef = useRef<kakao.maps.LatLngBounds | null>(null);
+
+  // 주변 기록 도트는 게시글 핀과 생명주기가 완전히 다르다.
+  // clearGroup()이 도트까지 지우면 게시글을 열고 닫을 때마다 도트가 사라진다.
+  const nearbyOverlaysRef = useRef<Map<string, kakao.maps.CustomOverlay>>(new Map());
+
+  const clearNearby = () => {
+    nearbyOverlaysRef.current.forEach((o) => o.setMap(null));
+    nearbyOverlaysRef.current.clear();
+  };
 
   const applyPost = (post: Post) => {
     const map = mapRef.current;
@@ -119,6 +189,49 @@ function KakaoMap({ selectedPost, onBoundsChange, onPinClick, onCurrentLocation 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPost, status]);
 
+  // 도트 생성 — 선택 상태는 아래 이펙트가 입힌다.
+  // 여기서 함께 처리하면 선택이 바뀔 때마다 오버레이를 통째로 다시 만들게 된다.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || status !== "ready") return;
+
+    clearNearby();
+    nearbySpots?.forEach((spot) => {
+      const overlay = new kakao.maps.CustomOverlay({
+        position: new kakao.maps.LatLng(Number(spot.y), Number(spot.x)),
+        content: makeDotPin(spot, false, () => onNearbySpotClickRef.current?.(spot.post_id)),
+        map,
+        yAnchor: 1,
+        zIndex: NEARBY_Z,
+      });
+      nearbyOverlaysRef.current.set(spot.post_id, overlay);
+    });
+
+    return clearNearby;
+  }, [nearbySpots, status]);
+
+  // 선택 상태 반영 — 오버레이를 재생성하지 않고 내용·순서만 교체한다.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || status !== "ready" || !nearbySpots) return;
+
+    nearbySpots.forEach((spot) => {
+      const overlay = nearbyOverlaysRef.current.get(spot.post_id);
+      if (!overlay) return;
+      const isSelected = spot.post_id === selectedNearbyId;
+      overlay.setContent(
+        makeDotPin(spot, isSelected, () => onNearbySpotClickRef.current?.(spot.post_id)),
+      );
+      overlay.setZIndex(isSelected ? NEARBY_SELECTED_Z : NEARBY_Z);
+    });
+
+    // 선택된 곳으로 이동. setBounds가 아니라 panTo — 줌 레벨을 유지해야 한다.
+    const selected = nearbySpots.find((s) => s.post_id === selectedNearbyId);
+    if (selected) {
+      map.panTo(new kakao.maps.LatLng(Number(selected.y), Number(selected.x)));
+    }
+  }, [nearbySpots, selectedNearbyId, status]);
+
   const goToCurrentLocation = () => {
     if (!navigator.geolocation) {
       setLocError("위치 서비스를 지원하지 않는 브라우저입니다.");
@@ -132,6 +245,7 @@ function KakaoMap({ selectedPost, onBoundsChange, onPinClick, onCurrentLocation 
         clearGroup();
         map.setCenter(new kakao.maps.LatLng(coords.latitude, coords.longitude));
         map.setLevel(3);
+        onLocationResolved?.({ lat: coords.latitude, lng: coords.longitude });
         onCurrentLocation?.();
       },
       () => setLocError("위치 권한이 거부되었습니다.")
@@ -169,11 +283,19 @@ function KakaoMap({ selectedPost, onBoundsChange, onPinClick, onCurrentLocation 
         });
       });
 
+      kakao.maps.event.addListener(map, "click", () => {
+        onMapClickRef.current?.();
+      });
+
       // 기본: 현재 위치로 이동
       // geolocation은 비동기 — 콜백 시점에 selectedPost가 생겼으면 덮어쓰지 않음
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           ({ coords }) => {
+            // 지도 이동은 건너뛰더라도 좌표 자체는 항상 올린다.
+            // 주변 기록 조회가 이 좌표에 의존하고, 여기서 안 올리면
+            // 사용자가 "현재위치" 버튼을 누를 때까지 도트가 뜨지 않는다.
+            onLocationResolvedRef.current?.({ lat: coords.latitude, lng: coords.longitude });
             if (selectedPostRef.current) return;
             map.setCenter(new kakao.maps.LatLng(coords.latitude, coords.longitude));
           },
@@ -251,7 +373,9 @@ function KakaoMap({ selectedPost, onBoundsChange, onPinClick, onCurrentLocation 
       {status === "ready" && (
         <button
           onClick={goToCurrentLocation}
-          className="absolute bottom-8 right-3 z-10 flex items-center gap-1.5 rounded-full bg-bg-card px-4 py-2 text-base font-medium shadow-md hover:bg-bg-subtle active:scale-95 transition-transform"
+          // 캐러셀(96px)이 떠 있으면 그 위로 올린다.
+          // Tailwind JIT가 잡으려면 런타임 조합이 아닌 정적 클래스여야 한다.
+          className={`absolute right-3 z-10 flex items-center gap-1.5 rounded-full bg-bg-card px-4 py-2 text-base font-medium shadow-md hover:bg-bg-subtle active:scale-95 transition-[transform,bottom] ${liftControls ? "bottom-32" : "bottom-8"}`}
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
