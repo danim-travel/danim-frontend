@@ -171,3 +171,20 @@ export type BookmarkListResponse = {
   next: string | null
   results: BookmarkListItem[]
 }
+
+// 내 위치 주변 게시글 핀 — GET posts/nearspots/user
+export type NearPostSpot = {
+  post_id: string
+  thumbnail: string
+  place_name: string
+  /** 경도(longitude). 카카오맵 API와 동일하게 문자열로 내려온다. */
+  x: string
+  /** 위도(latitude). */
+  y: string
+  /** 기준 좌표로부터의 거리(km). */
+  distance: number
+}
+
+export type NearUserResponse = {
+  top_near: NearPostSpot[]
+}

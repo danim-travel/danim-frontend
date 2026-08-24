@@ -13,6 +13,9 @@ export const queryKeys = {
     mainFeed: ['posts', 'main', 'feed'] as const,
     exploreBase: ['posts', 'explore'] as const,
     explore: (search?: string, category?: string) => ['posts', 'explore', search, category] as const,
+    // 좌표는 호출부에서 소수점 3자리(≈110m)로 반올림해 넘긴다.
+    // 원본 좌표를 그대로 키에 넣으면 몇 미터만 움직여도 캐시 미스가 난다.
+    nearby: (lat: number, lng: number) => ['posts', 'nearby', lat, lng] as const,
   },
   users: {
     me: ['users', 'me'] as const,

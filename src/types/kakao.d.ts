@@ -34,6 +34,9 @@ declare namespace kakao {
     class CustomOverlay {
       constructor(options: CustomOverlayOptions);
       setMap(map: Map | null): void;
+      // 오버레이를 지웠다 다시 만들면 깜빡이므로, 내용·순서만 바꿀 때 쓴다.
+      setContent(content: string | HTMLElement): void;
+      setZIndex(zIndex: number): void;
     }
 
     class Polyline {
