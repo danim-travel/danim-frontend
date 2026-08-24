@@ -1,9 +1,8 @@
 "use client";
-import Image from "next/image";
 import { Heart, MessageCircle } from "lucide-react";
-import { EmptyState, GridSkeleton } from "@/components/common";
+import { EmptyState, GridSkeleton, GridImage, MasonryGrid } from "@/components/common";
 import { usePrefetchPostDetail } from "@/app/(main)/_hooks/usePrefetchPostDetail";
-import { GRID_ASPECT_RATIOS } from "@/lib/media/imageUtils";
+import { cardRatio } from "@/lib/media/imageUtils";
 
 /**
  * 마소너리 그리드에 필요한 최소 공약수 형태.
@@ -12,11 +11,17 @@ import { GRID_ASPECT_RATIOS } from "@/lib/media/imageUtils";
  *
  * like_count·comment_count가 함께 들어오면 카드 hover 시 탐색 페이지와 동일한
  * 통계 오버레이를 노출한다. (저장됨 탭 한정 — 게시글 탭 응답엔 통계가 없음)
+ *
+ * thumbnail_width/height는 선택 필드다. 저장됨 탭 응답(BookmarkListSerializer)에는
+ * 아직 크기가 없어서 폴백 비율로 렌더되며, 백엔드가 내려주기 시작하면
+ * 호출부 매핑만 추가하면 정확한 비율로 바뀐다.
  */
 export type PostGridItem = {
   post_id: string
   thumbnail: string
   alt?: string
+  thumbnail_width?: number | null
+  thumbnail_height?: number | null
   like_count?: number
   comment_count?: number
 }
@@ -65,37 +70,32 @@ export function PostGrid({
     );
   }
 
-  // 순환 비율 배열 — 실제 이미지 비율을 모를 때 핀터레스트 느낌을 주기 위해 사용
-  // CSS columns 기반 통일된 마소너리 그리드 (모바일 2 / 태블릿 3 / 데스크탑 4)
-
   return (
-    <div className="columns-2 md:columns-3 lg:columns-4 gap-3">
-      {posts.map((post, i) => {
-        const hasStats = post.like_count !== undefined && post.comment_count !== undefined;
-        const aspect = GRID_ASPECT_RATIOS[i % GRID_ASPECT_RATIOS.length]
+    <MasonryGrid
+      items={posts}
+      getKey={(post) => post.post_id}
+      getRatio={(post) => cardRatio(post.thumbnail_width ?? null, post.thumbnail_height ?? null)}
+      // 스크롤 복원(mypage/users 페이지가 querySelector로 찾음)과 e2e 선택자에 쓰인다.
+      getItemAttrs={(post) => ({ "data-post-id": post.post_id })}
+      onItemClick={onPostClick && ((post) => onPostClick(post.post_id))}
+      onItemHover={(post) => prefetchPostDetail(post.post_id)}
+      renderItem={(post, i) => {
+        // 구조 분해로 좁혀야 아래 StatsOverlay에서 비단정(!) 없이 통과한다.
+        const { like_count, comment_count } = post;
+        const hasStats = like_count !== undefined && comment_count !== undefined;
         return (
-          <div
-            key={post.post_id}
-            data-post-id={post.post_id}
-            className="mb-3 break-inside-avoid cursor-pointer group"
-            onClick={() => onPostClick?.(post.post_id)}
-            onMouseEnter={() => prefetchPostDetail(post.post_id)}
-          >
-            <div className={`relative rounded-xl overflow-hidden bg-bg-subtle ${aspect}`}>
-              <Image
-                src={post.thumbnail}
-                alt={post.alt ?? ""}
-                fill
-                sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
-                className={`object-cover transition-transform duration-200 ${hasStats ? "group-active:scale-95" : "[@media(hover:hover)]:group-hover:scale-[1.03] group-active:scale-95"}`}
-                priority={i < 4}
-              />
-              {hasStats && <StatsOverlay like={post.like_count!} comment={post.comment_count!} />}
-            </div>
-          </div>
+          <>
+            <GridImage
+              src={post.thumbnail}
+              alt={post.alt ?? ""}
+              priority={i < 4}
+              className={`transition-transform duration-200 ${hasStats ? "group-active:scale-95" : "[@media(hover:hover)]:group-hover:scale-[1.03] group-active:scale-95"}`}
+            />
+            {hasStats && <StatsOverlay like={like_count} comment={comment_count} />}
+          </>
         );
-      })}
-    </div>
+      }}
+    />
   );
 }
 
