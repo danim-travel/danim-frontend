@@ -4,6 +4,7 @@ import { Camera, Trash2 } from "lucide-react"
 import { Avatar, Button, FieldLabel, Modal } from "@/components/common"
 import { getApiErrorMessage } from "@/lib/apiError"
 import { uploadImage } from "@/lib/media/uploadImage"
+import { IMAGE_ACCEPT, getImageFileError } from "@/lib/media/imageConstraints"
 import { toast } from "@/store/toastStore"
 import type { MeDetailResponse } from "@/types"
 
@@ -38,6 +39,14 @@ export function ProfileSection({
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
+
+    // 미리보기를 만들기 전에 막는다. 먼저 띄우면 실패할 사진이 잠깐 보였다 사라진다.
+    const invalid = getImageFileError(file)
+    if (invalid) {
+      e.target.value = ""
+      toast.error(invalid)
+      return
+    }
 
     setPreviewUrl(URL.createObjectURL(file))
     setIsUploading(true)
@@ -102,7 +111,7 @@ export function ProfileSection({
             </div>
             <div className="flex flex-col gap-0.5 min-w-0 flex-1">
               <span className="text-body-sm font-bold text-text">프로필 사진</span>
-              <span className="text-caption text-text-muted break-keep">JPG, PNG 파일 · 정사각형 권장</span>
+              <span className="text-caption text-text-muted break-keep">JPG, PNG, WebP 파일 · 정사각형 권장</span>
             </div>
           </div>
           <div className="hidden md:flex gap-2 shrink-0">
@@ -128,7 +137,7 @@ export function ProfileSection({
               </Button>
             )}
           </div>
-          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+          <input ref={fileInputRef} type="file" accept={IMAGE_ACCEPT} className="hidden" onChange={handleFileChange} />
         </div>
 
         <label className="block">

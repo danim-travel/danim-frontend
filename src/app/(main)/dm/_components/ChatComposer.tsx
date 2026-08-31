@@ -4,6 +4,8 @@ import { useState, useRef, useCallback, useLayoutEffect, type ChangeEvent, type 
 import { useOnClickOutside } from "@/hooks/ui/useOnClickOutside"
 import { Send, ImagePlus, Smile } from "lucide-react"
 import { IconButton } from "@/components/common"
+import { IMAGE_ACCEPT, getImageFileError } from "@/lib/media/imageConstraints"
+import { toast } from "@/store/toastStore"
 
 interface Props {
   onSend: (content: string) => boolean
@@ -73,6 +75,12 @@ export function ChatComposer({ onSend, onSendImage, disabled }: Props) {
     event.target.value = ""
     if (!file || isSendDisabled) return
 
+    const invalid = getImageFileError(file)
+    if (invalid) {
+      toast.error(invalid)
+      return
+    }
+
     setEmojiOpen(false)
     setIsUploading(true)
     try {
@@ -127,7 +135,7 @@ export function ChatComposer({ onSend, onSendImage, disabled }: Props) {
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept={IMAGE_ACCEPT}
         className="hidden"
         onChange={handleImageSelect}
       />

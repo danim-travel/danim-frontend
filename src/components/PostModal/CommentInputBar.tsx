@@ -5,11 +5,13 @@ import { Plus, X } from "lucide-react";
 import { Button } from "@/components/common";
 import { getApiErrorMessage } from "@/lib/apiError";
 import { uploadImage } from "@/lib/media/uploadImage";
+import {
+  ALLOWED_COMMENT_IMAGE_TYPES,
+  COMMENT_IMAGE_ACCEPT,
+  getImageFileError,
+} from "@/lib/media/imageConstraints";
 import { toast } from "@/store/toastStore";
 import { usePostModalContext } from "./PostModalContext";
-
-const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 
 function CommentInputBar() {
   const [comment, setComment] = useState("");
@@ -39,12 +41,9 @@ function CommentInputBar() {
     e.target.value = "";
     if (!file) return;
 
-    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-      toast.error("지원하지 않는 파일 형식입니다. (JPEG, PNG, WebP, GIF만 가능)");
-      return;
-    }
-    if (file.size > MAX_IMAGE_SIZE_BYTES) {
-      toast.error("파일 크기는 5MB 이하여야 합니다.");
+    const error = getImageFileError(file, ALLOWED_COMMENT_IMAGE_TYPES);
+    if (error) {
+      toast.error(error);
       return;
     }
 
@@ -67,7 +66,11 @@ function CommentInputBar() {
     if (imageFile) {
       setIsUploading(true);
       try {
-        const { key } = await uploadImage("comments/presigned-url", imageFile);
+        const { key } = await uploadImage(
+          "comments/presigned-url",
+          imageFile,
+          ALLOWED_COMMENT_IMAGE_TYPES,
+        );
         commentImg = { original_img: imageFile.name, key };
       } catch (err) {
         toast.error(getApiErrorMessage(err, { client: "이미지 업로드에 실패했습니다." }));
@@ -150,7 +153,7 @@ function CommentInputBar() {
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept={COMMENT_IMAGE_ACCEPT}
         className="hidden"
         onChange={handleFileChange}
       />

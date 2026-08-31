@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { uploadImageWithSize } from '@/lib/media/uploadImage'
+import { getImageFileError } from '@/lib/media/imageConstraints'
 import { getApiErrorMessage } from '@/lib/apiError'
 import { toast } from '@/store/toastStore'
 import { MAX_PHOTOS } from '../_constants'
@@ -58,6 +59,18 @@ export function usePhotoManager({ spots, active, updateSpot, initialThumbnailKey
       return
     }
     const targetFiles = files.slice(0, remaining)
+
+    // 한 장이라도 규격에 안 맞으면 업로드를 시작하지 않는다. 섞어서 올리면 어느 파일이
+    // 문제였는지 알 수 없고, 중간에 실패하면 이미 올라간 것들이 그대로 버려진다.
+    const rejected = targetFiles
+      .map((file) => ({ file, error: getImageFileError(file) }))
+      .find((entry) => entry.error)
+    if (rejected) {
+      e.target.value = ''
+      toast.error(`${rejected.file.name} — ${rejected.error}`)
+      return
+    }
+
     const targetSpotId = active.id
 
     // 업로드 전에 blob URL 먼저 생성 — 실패 시 catch에서 revoke 가능하도록 추적

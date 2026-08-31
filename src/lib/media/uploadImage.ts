@@ -3,6 +3,7 @@
 import { apiClient } from '@/lib/apiClient'
 import { createApiError } from '@/lib/apiError'
 import { compressImage } from '@/lib/media/imageCompression'
+import { ALLOWED_IMAGE_TYPES, assertUploadableImage } from '@/lib/media/imageConstraints'
 
 type PresignedUrlApiResponse = {
   presigned_url: string
@@ -71,13 +72,19 @@ async function putToS3(presignedUrl: string, blob: Blob): Promise<void> {
     })
   } catch (e) {
     if (e instanceof DOMException && e.name === 'AbortError') {
-      throw new Error('이미지 업로드 시간이 초과되었습니다.')
+      // ApiError로 던져야 이 문구가 그대로 노출된다. 일반 Error면 getApiErrorMessage가
+      // "서버 오류"로 덮어써, 30초를 기다린 사용자에게 원인과 다른 안내가 나간다.
+      throw createApiError(408, '이미지 업로드 시간이 초과되었습니다. 네트워크 상태를 확인해주세요.')
     }
     throw e
   } finally {
     clearTimeout(timeoutId)
   }
-  if (!s3Res.ok) throw new Error(`S3 upload failed: ${s3Res.status}`)
+  // 상태 코드를 살려 던진다. 5xx는 getApiErrorMessage가 공통 서버 오류 문구로 바꾸고,
+  // 403(서명 불일치)처럼 재시도가 무의미한 경우는 아래 문구가 그대로 보인다.
+  if (!s3Res.ok) {
+    throw createApiError(s3Res.status, `이미지 저장에 실패했습니다. (${s3Res.status})`)
+  }
 }
 
 /**
@@ -85,7 +92,13 @@ async function putToS3(presignedUrl: string, blob: Blob): Promise<void> {
  * 크기를 측정하지 않으므로, 크기 정보가 없는 이미지도 업로드에 성공한다.
  * 프로필·댓글·DM처럼 이미지 크기를 저장하지 않는 곳에서 사용한다.
  */
-export async function uploadImage(endpoint: string, file: File): Promise<UploadResult> {
+export async function uploadImage(
+  endpoint: string,
+  file: File,
+  allowed: readonly string[] = ALLOWED_IMAGE_TYPES,
+): Promise<UploadResult> {
+  // accept는 드래그앤드롭으로 우회되고 일부 안드로이드는 무시한다. 여기가 마지막 방어선.
+  assertUploadableImage(file, allowed)
   const compressed = await compressImage(file)
   const { presigned_url, img_url, key } = await requestPresignedUrl(endpoint, compressed.name)
   await putToS3(presigned_url, compressed)
@@ -101,7 +114,9 @@ export async function uploadImage(endpoint: string, file: File): Promise<UploadR
 export async function uploadImageWithSize(
   endpoint: string,
   file: File,
+  allowed: readonly string[] = ALLOWED_IMAGE_TYPES,
 ): Promise<SizedUploadResult> {
+  assertUploadableImage(file, allowed)
   const compressed = await compressImage(file)
   const [{ width, height }, { presigned_url, img_url, key }] = await Promise.all([
     getImageDimensions(compressed),
