@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { motion, AnimatePresence, useMotionValue, useTransform, animate as motionAnimate } from "motion/react";
 import { Plane } from "lucide-react";
 import type { MainFeedItem, NearPostSpot, Post } from "@/types";
+import { groupNearbySpots } from "@/lib/map/nearbySpots";
 import { usePinColor } from "../_hooks/usePinColor";
 import { useNearbySpots } from "../_hooks/useNearbySpots";
 import type { Coords } from "../_hooks/useCurrentPosition";
@@ -36,7 +37,7 @@ interface MapPanelProps {
   onResetFocus?: () => void;
   coords: Coords | null;
   onLocationResolved: (coords: Coords) => void;
-  /** 주변 기록 칩/도트를 두 번 눌렀을 때 해당 게시글을 연다. */
+  /** 주변 장소의 카드 썸네일 또는 선택된 칩을 눌렀을 때 해당 게시글을 연다. */
   onOpenNearbyPost: (postId: string) => void;
   /** solo 모드(`?solo=`)에서는 특정 게시글 전용 화면이라 주변 기록을 띄우지 않는다. */
   isSoloMode?: boolean;
@@ -58,27 +59,31 @@ export function MapPanel({
   // 게시글이 포커스되면 번호 핀 + 폴리라인이 주인공이다. 주변 도트는 완전히 숨긴다.
   const nearbyEnabled = !focusedPost && !isSoloMode;
   const { spots } = useNearbySpots(coords, nearbyEnabled);
-  const [selectedNearbyId, setSelectedNearbyId] = useState<string | null>(null);
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
 
   const visibleSpots = nearbyEnabled ? spots : EMPTY_SPOTS;
 
+  // 좌표가 같은 기록은 핀 하나로 묶는다. 선택 식별자도 post_id가 아닌 그룹 키다 —
+  // post_id로 잡으면 같은 장소의 2번째 칩이 지도 핀 선택과 어긋난다.
+  const nearbyGroups = useMemo(() => groupNearbySpots(visibleSpots), [visibleSpots]);
+
   // 이펙트로 리셋하지 않고 파생값으로 둔다. 게시글이 포커스돼 캐러셀이 사라졌을 때,
   // 그리고 목록이 갱신돼 이전 선택이 빠졌을 때 모두 자동으로 해제된다.
-  const selectedId = visibleSpots.some((s) => s.post_id === selectedNearbyId)
-    ? selectedNearbyId
+  const selectedNearbyKey = nearbyGroups.some((group) => group.key === selectedKey)
+    ? selectedKey
     : null;
 
-  const handleNearbyTap = useCallback(
-    (postId: string) => {
-      // 1탭 = 선택(지도에서 위치만 확인), 재탭 = 열기.
-      // 한 번에 모달을 띄우면 지도 탐색이 끊긴다.
-      if (selectedId === postId) {
-        onOpenNearbyPost(postId);
-        return;
-      }
-      setSelectedNearbyId(postId);
-    },
-    [selectedId, onOpenNearbyPost],
+  // "1탭 선택 / 재탭 열기" 판단은 캐러셀이 소유한다. 여기서는 선택만 받는다.
+  const handleGroupSelect = useCallback((groupKey: string) => {
+    setSelectedKey(groupKey);
+  }, []);
+
+  const clearNearbySelection = useCallback(() => setSelectedKey(null), []);
+
+  // KakaoMap이 memo라 인라인 화살표를 넘기면 memo가 무효가 된다.
+  const handleMapPinClick = useCallback(
+    (post: Post, pinIndex: number) => onPinClick(post.post_id, pinIndex),
+    [onPinClick],
   );
 
   const [flyKey, setFlyKey] = useState(0);
@@ -146,14 +151,14 @@ export function MapPanel({
     <section ref={sectionRef} className="relative isolate flex-1 min-w-0 h-full rounded-2xl overflow-hidden shadow-sm">
       <KakaoMap
         selectedPost={mapPost}
-        onPinClick={(post, pinIndex) => onPinClick(post.post_id, pinIndex)}
+        onPinClick={handleMapPinClick}
         onCurrentLocation={onResetFocus}
         onLocationResolved={onLocationResolved}
-        nearbySpots={visibleSpots}
-        selectedNearbyId={selectedId}
-        onNearbySpotClick={handleNearbyTap}
-        onMapClick={() => setSelectedNearbyId(null)}
-        liftControls={visibleSpots.length > 0}
+        nearbyGroups={nearbyGroups}
+        selectedNearbyKey={selectedNearbyKey}
+        onNearbyGroupSelect={handleGroupSelect}
+        onNearbyPostOpen={onOpenNearbyPost}
+        onEmptyMapClick={clearNearbySelection}
       />
 
       <div className="absolute top-4 left-4 z-10 px-3 py-1.5 rounded-pill bg-bg-card shadow-md text-body-sm font-semibold text-text-primary">
@@ -161,10 +166,10 @@ export function MapPanel({
       </div>
 
       <NearbySpotsCarousel
-        spots={visibleSpots}
-        selectedId={selectedId}
-        onSelect={handleNearbyTap}
-        onOpen={onOpenNearbyPost}
+        groups={nearbyGroups}
+        selectedKey={selectedNearbyKey}
+        onSelectGroup={handleGroupSelect}
+        onOpenPost={onOpenNearbyPost}
       />
 
       <AnimatePresence>

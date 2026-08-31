@@ -97,6 +97,12 @@ export default function HomePage() {
     setPostId(id);
   }, [closePanel, setPostId]);
 
+  // MapPanel → KakaoMap(memo)까지 그대로 내려가므로 참조가 안정적이어야 한다.
+  const handleResetFocus = useCallback(() => {
+    setFocusedPost(null);
+    setSheetExpanded(false);
+  }, []);
+
   const handleCloseModal = useCallback(() => {
     setPostId(null);
     setSpotIdx(undefined);
@@ -136,7 +142,7 @@ export default function HomePage() {
           focusedPost={activeFocusedPost}
           focusedPostIndex={activeFocusedPostIndex}
           onPinClick={handlePinClick}
-          onResetFocus={() => { setFocusedPost(null); setSheetExpanded(false); }}
+          onResetFocus={handleResetFocus}
           coords={coords}
           onLocationResolved={handleLocationResolved}
           onOpenNearbyPost={handleOpenNearbyPost}
