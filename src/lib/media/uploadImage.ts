@@ -3,7 +3,7 @@
 import { apiClient } from '@/lib/apiClient'
 import { createApiError } from '@/lib/apiError'
 import { compressImage } from '@/lib/media/imageCompression'
-import { ALLOWED_IMAGE_TYPES, assertUploadableImage } from '@/lib/media/imageConstraints'
+import { assertUploadableImage, IMAGE_POLICY, type ImagePolicy } from '@/lib/media/imageConstraints'
 
 type PresignedUrlApiResponse = {
   presigned_url: string
@@ -95,10 +95,10 @@ async function putToS3(presignedUrl: string, blob: Blob): Promise<void> {
 export async function uploadImage(
   endpoint: string,
   file: File,
-  allowed: readonly string[] = ALLOWED_IMAGE_TYPES,
+  policy: ImagePolicy = IMAGE_POLICY.photo,
 ): Promise<UploadResult> {
   // accept는 드래그앤드롭으로 우회되고 일부 안드로이드는 무시한다. 여기가 마지막 방어선.
-  assertUploadableImage(file, allowed)
+  assertUploadableImage(file, policy)
   const compressed = await compressImage(file)
   const { presigned_url, img_url, key } = await requestPresignedUrl(endpoint, compressed.name)
   await putToS3(presigned_url, compressed)
@@ -114,9 +114,9 @@ export async function uploadImage(
 export async function uploadImageWithSize(
   endpoint: string,
   file: File,
-  allowed: readonly string[] = ALLOWED_IMAGE_TYPES,
+  policy: ImagePolicy = IMAGE_POLICY.photo,
 ): Promise<SizedUploadResult> {
-  assertUploadableImage(file, allowed)
+  assertUploadableImage(file, policy)
   const compressed = await compressImage(file)
   const [{ width, height }, { presigned_url, img_url, key }] = await Promise.all([
     getImageDimensions(compressed),

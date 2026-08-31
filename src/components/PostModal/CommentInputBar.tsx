@@ -5,11 +5,7 @@ import { Plus, X } from "lucide-react";
 import { Button } from "@/components/common";
 import { getApiErrorMessage } from "@/lib/apiError";
 import { uploadImage } from "@/lib/media/uploadImage";
-import {
-  ALLOWED_COMMENT_IMAGE_TYPES,
-  COMMENT_IMAGE_ACCEPT,
-  getImageFileError,
-} from "@/lib/media/imageConstraints";
+import { getImageFileError, IMAGE_POLICY } from "@/lib/media/imageConstraints";
 import { toast } from "@/store/toastStore";
 import { usePostModalContext } from "./PostModalContext";
 
@@ -41,7 +37,7 @@ function CommentInputBar() {
     e.target.value = "";
     if (!file) return;
 
-    const error = getImageFileError(file, ALLOWED_COMMENT_IMAGE_TYPES);
+    const error = getImageFileError(file, IMAGE_POLICY.comment);
     if (error) {
       toast.error(error);
       return;
@@ -66,11 +62,7 @@ function CommentInputBar() {
     if (imageFile) {
       setIsUploading(true);
       try {
-        const { key } = await uploadImage(
-          "comments/presigned-url",
-          imageFile,
-          ALLOWED_COMMENT_IMAGE_TYPES,
-        );
+        const { key } = await uploadImage("comments/presigned-url", imageFile, IMAGE_POLICY.comment);
         commentImg = { original_img: imageFile.name, key };
       } catch (err) {
         toast.error(getApiErrorMessage(err, { client: "이미지 업로드에 실패했습니다." }));
@@ -153,7 +145,7 @@ function CommentInputBar() {
       <input
         ref={fileInputRef}
         type="file"
-        accept={COMMENT_IMAGE_ACCEPT}
+        accept={IMAGE_POLICY.comment.accept}
         className="hidden"
         onChange={handleFileChange}
       />

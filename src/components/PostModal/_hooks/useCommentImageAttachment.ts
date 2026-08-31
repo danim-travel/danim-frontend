@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ALLOWED_COMMENT_IMAGE_TYPES } from "../_constants/commentImage";
-import { getImageFileError } from "@/lib/media/imageConstraints";
+import { getImageFileError, IMAGE_POLICY } from "@/lib/media/imageConstraints";
 import { toast } from "@/store/toastStore";
 
 interface UseCommentImageAttachmentOptions {
@@ -59,7 +58,7 @@ export function useCommentImageAttachment(
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
-    const error = getImageFileError(file, ALLOWED_COMMENT_IMAGE_TYPES);
+    const error = getImageFileError(file, IMAGE_POLICY.comment);
     if (error) {
       toast.error(error);
       return;
