@@ -11,6 +11,8 @@ declare namespace kakao {
       panTo(latlng: LatLng): void;
       getBounds(): LatLngBounds;
       setBounds(bounds: LatLngBounds, paddingTop?: number, paddingRight?: number, paddingBottom?: number, paddingLeft?: number): void;
+      /** 컨테이너 크기가 바뀐 뒤 지도 캔버스를 다시 계산한다. */
+      relayout(): void;
     }
 
     class LatLng {
@@ -37,6 +39,7 @@ declare namespace kakao {
       // 오버레이를 지웠다 다시 만들면 깜빡이므로, 내용·순서만 바꿀 때 쓴다.
       setContent(content: string | HTMLElement): void;
       setZIndex(zIndex: number): void;
+      setPosition(position: LatLng): void;
     }
 
     class Polyline {
@@ -117,6 +120,7 @@ declare namespace kakao {
       xAnchor?: number;
       yAnchor?: number;
       zIndex?: number;
+      clickable?: boolean;
     }
 
     interface PolylineOptions {
