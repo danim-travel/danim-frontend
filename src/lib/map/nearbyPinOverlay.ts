@@ -1,4 +1,5 @@
 import { escapeHtml } from "@/lib/escapeHtml";
+import { attachHorizontalWheel } from "@/lib/horizontalWheel";
 import type { NearPostSpot } from "@/types";
 import { formatDistance, type NearbyGroup } from "./nearbySpots";
 
@@ -161,6 +162,10 @@ export function createNearbyPinRoot(
   const { onMouseDown, onClick } = createPinClickHandler(onSelect, onOpen);
   root.addEventListener("mousedown", onMouseDown);
   root.addEventListener("click", onClick);
+  // 지도가 휠을 집어 확대/축소하기 전에 우리가 먼저 가로 스크롤로 쓴다.
+  // 해제 함수는 쓰지 않는다 — 루트는 clearNearby()에서 DOM과 함께 버려지고 재사용하지
+  // 않으므로 리스너도 같이 수거된다. 루트를 재사용하게 되면 이 반환값을 받아야 한다.
+  attachHorizontalWheel(root, (target) => target?.closest<HTMLElement>("[data-scroll]") ?? null);
 
   return root;
 }
