@@ -5,6 +5,7 @@ import { Loader2, Upload } from 'lucide-react'
 import type { SpotFormData } from '../_hooks/useWriteForm'
 import { useDragReorder } from '../_hooks/useDragReorder'
 import { MAX_PHOTOS } from '../_constants'
+import { IMAGE_ACCEPT } from '@/lib/media/imageConstraints'
 
 interface PhotosState {
   selectedPhotoIdx: number
@@ -100,7 +101,7 @@ export default function PhotoPanel({ active, photosState, photoError }: PhotoPan
                 <p className="text-nav text-text-disabled mt-1.5 leading-relaxed">
                   클릭하거나 파일을 드래그하세요
                   <br />
-                  이미지 파일 (SVG · GIF 제외) · 최대 5장
+                  JPG · PNG · WebP · 최대 5장 (장당 5MB)
                 </p>
               )}
             </div>
@@ -111,7 +112,7 @@ export default function PhotoPanel({ active, photosState, photoError }: PhotoPan
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept={IMAGE_ACCEPT}
         multiple
         className="hidden"
         onChange={onPhotoAdd}

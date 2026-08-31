@@ -1,11 +1,15 @@
 'use client'
 
 import imageCompression from 'browser-image-compression'
+import { createApiError } from '@/lib/apiError'
 
 /** 압축 결과가 이 값 이하라면 압축을 스킵한다. (작은 파일은 압축이 오히려 커질 수 있음) */
 const SKIP_COMPRESSION_THRESHOLD = 500 * 1024 // 500KB
 
-/** 압축이 부적절한 포맷 (벡터 또는 애니메이션). 원본 그대로 통과시킨다. */
+/**
+ * 압축이 부적절한 포맷 (벡터 또는 애니메이션). 원본 그대로 통과시킨다.
+ * 업로드 가능 여부는 imageConstraints가 따로 막는다 — 여기서는 압축만 판단한다.
+ */
 const SKIP_MIME_TYPES = new Set<string>(['image/svg+xml', 'image/gif'])
 
 /**
@@ -38,15 +42,23 @@ const COMPRESSION_OPTIONS = {
 /**
  * 클라이언트에서 이미지를 자동 리사이즈/압축한다.
  * - 500KB 미만 파일은 그대로 반환
- * - HEIC는 라이브러리가 JPEG로 자동 변환
  * - EXIF 회전은 라이브러리 기본 동작에 위임
  *
- * 실패 시 caller 측 try/catch에서 처리.
+ * HEIC 변환은 하지 않는다. `browser-image-compression` 번들에 HEIC 코드가 없고
+ * `heic2any` 같은 별도 의존성도 없다 — 브라우저가 디코딩하지 못하면 그대로 실패한다.
+ * (아이폰은 OS가 선택 시점에 JPEG로 바꿔 넘겨주므로 여기까지 오지 않는다)
  */
 export async function compressImage(file: File): Promise<File> {
   // SVG는 벡터라 raster 압축 시 깨지고, GIF는 정적 1프레임으로 변환되므로 원본 유지
   if (SKIP_MIME_TYPES.has(file.type)) return file
   if (file.size < SKIP_COMPRESSION_THRESHOLD) return file
 
-  return imageCompression(file, COMPRESSION_OPTIONS)
+  try {
+    return await imageCompression(file, COMPRESSION_OPTIONS)
+  } catch {
+    // 라이브러리는 브라우저가 디코딩하지 못하는 파일에 평범한 Error를 던진다.
+    // 그대로 흘리면 getApiErrorMessage가 "서버 오류"로 안내해, 재시도해도 소용없는
+    // 실패인데 사용자가 계속 재시도하게 된다.
+    throw createApiError(415, '이미지를 읽을 수 없는 파일입니다. 다른 사진을 선택해주세요.')
+  }
 }

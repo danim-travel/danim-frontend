@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ALLOWED_COMMENT_IMAGE_TYPES, MAX_COMMENT_IMAGE_SIZE_BYTES } from "../_constants/commentImage";
+import { ALLOWED_COMMENT_IMAGE_TYPES } from "../_constants/commentImage";
+import { getImageFileError } from "@/lib/media/imageConstraints";
 import { toast } from "@/store/toastStore";
 
 interface UseCommentImageAttachmentOptions {
@@ -58,12 +59,9 @@ export function useCommentImageAttachment(
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
-    if (!ALLOWED_COMMENT_IMAGE_TYPES.includes(file.type)) {
-      toast.error("지원하지 않는 파일 형식입니다. (JPEG, PNG, WebP, GIF만 가능)");
-      return;
-    }
-    if (file.size > MAX_COMMENT_IMAGE_SIZE_BYTES) {
-      toast.error("파일 크기는 5MB 이하여야 합니다.");
+    const error = getImageFileError(file, ALLOWED_COMMENT_IMAGE_TYPES);
+    if (error) {
+      toast.error(error);
       return;
     }
     if (imageFile && imagePreview) {
