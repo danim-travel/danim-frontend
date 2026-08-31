@@ -15,6 +15,7 @@ import MapPanel from "./_components/MapPanel";
 import MobileBottomSheet from "./_components/MobileBottomSheet";
 import { useMainFeed } from "./_hooks/useMainFeed";
 import { usePrefetchPostDetail } from "./_hooks/usePrefetchPostDetail";
+import { useCurrentPosition } from "./_hooks/useCurrentPosition";
 
 function toFeedItem(d: PostDetail): MainFeedItem {
   return {
@@ -43,6 +44,7 @@ export default function HomePage() {
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useMainFeed();
   const prefetchPostDetail = usePrefetchPostDetail();
+  const { coords, handleLocationResolved } = useCurrentPosition();
 
   // soloPostId가 없을 때 queryKeys.posts.detail("")로 빈 캐시 항목이 생기지 않도록 키를 조건부 구성
   const { data: soloDetail } = useQuery({
@@ -88,6 +90,19 @@ export default function HomePage() {
     setPostId(id);
   }, [closePanel, setPostId]);
 
+  // 주변 기록은 스팟 단위가 아니라 게시글 단위로 열린다 — spotIdx 없음.
+  const handleOpenNearbyPost = useCallback((id: string) => {
+    closePanel();
+    setSpotIdx(undefined);
+    setPostId(id);
+  }, [closePanel, setPostId]);
+
+  // MapPanel → KakaoMap(memo)까지 그대로 내려가므로 참조가 안정적이어야 한다.
+  const handleResetFocus = useCallback(() => {
+    setFocusedPost(null);
+    setSheetExpanded(false);
+  }, []);
+
   const handleCloseModal = useCallback(() => {
     setPostId(null);
     setSpotIdx(undefined);
@@ -127,7 +142,11 @@ export default function HomePage() {
           focusedPost={activeFocusedPost}
           focusedPostIndex={activeFocusedPostIndex}
           onPinClick={handlePinClick}
-          onResetFocus={() => { setFocusedPost(null); setSheetExpanded(false); }}
+          onResetFocus={handleResetFocus}
+          coords={coords}
+          onLocationResolved={handleLocationResolved}
+          onOpenNearbyPost={handleOpenNearbyPost}
+          isSoloMode={!!soloPostId}
         />
       </div>
 

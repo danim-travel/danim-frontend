@@ -30,4 +30,10 @@
   --shadow-bottom-sheet:    var(--shadow-floating);
   --shadow-floating-button: var(--shadow-brand-strong);
   --shadow-focus-ring:      var(--shadow-focus);
+
+  /* 지도 오버레이 — 위성/도로 타일 위에서도 떠 보여야 해 일반 UI보다 진하다 */
+  /* map-pin은 filter: drop-shadow()에도 쓰인다 — spread와 콤마로 이어진 다중 그림자를
+     넣으면 filter 전체가 무효가 되어 그림자가 통째로 사라진다. 단일 그림자로 유지할 것 */
+  --shadow-map-pin:  0 2px 5px rgba(15, 23, 32, 0.45);
+  --shadow-map-card: 0 8px 24px rgba(15, 23, 32, 0.24);
 }

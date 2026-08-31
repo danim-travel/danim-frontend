@@ -77,6 +77,10 @@
   --color-border-focus:  var(--color-primary);
   --color-border-error:  var(--color-error);
 
+  /* ── Semantic: Map ───────────────────────────── */
+  /* 핀 팔레트 primitive를 의미 역할로 재사용하지 않도록 별칭을 둔다 */
+  --color-my-location: var(--color-pin-2);
+
   /* ── Semantic: Overlay ───────────────────────── */
   --color-overlay: rgb(15 23 32 / 0.45);
 
