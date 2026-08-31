@@ -4,7 +4,7 @@ import { Camera, Trash2 } from "lucide-react"
 import { Avatar, Button, FieldLabel, Modal } from "@/components/common"
 import { getApiErrorMessage } from "@/lib/apiError"
 import { uploadImage } from "@/lib/media/uploadImage"
-import { IMAGE_ACCEPT, getImageFileError } from "@/lib/media/imageConstraints"
+import { formatMaxSize, getImageFileError, IMAGE_POLICY } from "@/lib/media/imageConstraints"
 import { toast } from "@/store/toastStore"
 import type { MeDetailResponse } from "@/types"
 
@@ -111,7 +111,9 @@ export function ProfileSection({
             </div>
             <div className="flex flex-col gap-0.5 min-w-0 flex-1">
               <span className="text-body-sm font-bold text-text">프로필 사진</span>
-              <span className="text-caption text-text-muted break-keep">JPG, PNG, WebP 파일 · 정사각형 권장</span>
+              <span className="text-caption text-text-muted break-keep">
+                JPG, PNG, WebP 파일 · 최대 {formatMaxSize(IMAGE_POLICY.photo)} · 정사각형 권장
+              </span>
             </div>
           </div>
           <div className="hidden md:flex gap-2 shrink-0">
@@ -137,7 +139,7 @@ export function ProfileSection({
               </Button>
             )}
           </div>
-          <input ref={fileInputRef} type="file" accept={IMAGE_ACCEPT} className="hidden" onChange={handleFileChange} />
+          <input ref={fileInputRef} type="file" accept={IMAGE_POLICY.photo.accept} className="hidden" onChange={handleFileChange} />
         </div>
 
         <label className="block">

@@ -4,7 +4,7 @@ import { useState, useRef, useCallback, useLayoutEffect, type ChangeEvent, type 
 import { useOnClickOutside } from "@/hooks/ui/useOnClickOutside"
 import { Send, ImagePlus, Smile } from "lucide-react"
 import { IconButton } from "@/components/common"
-import { IMAGE_ACCEPT, getImageFileError } from "@/lib/media/imageConstraints"
+import { getImageFileError, IMAGE_POLICY } from "@/lib/media/imageConstraints"
 import { toast } from "@/store/toastStore"
 
 interface Props {
@@ -135,7 +135,7 @@ export function ChatComposer({ onSend, onSendImage, disabled }: Props) {
       <input
         ref={fileInputRef}
         type="file"
-        accept={IMAGE_ACCEPT}
+        accept={IMAGE_POLICY.photo.accept}
         className="hidden"
         onChange={handleImageSelect}
       />

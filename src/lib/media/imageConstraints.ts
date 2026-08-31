@@ -7,22 +7,40 @@ import { createApiError } from '@/lib/apiError'
  * 백엔드는 파일 내용이 아니라 **파일명 확장자**로 검사하고, 그 확장자로 presigned URL의
  * `content_type`을 정한다. 그래서 프론트도 MIME과 확장자를 함께 본다.
  */
-export const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const
 
 /** 댓글만 GIF를 추가로 허용한다 (`COMMENT_ALLOWED_EXTENSIONS`). */
-export const ALLOWED_COMMENT_IMAGE_TYPES = [...ALLOWED_IMAGE_TYPES, 'image/gif'] as const
+const ALLOWED_COMMENT_IMAGE_TYPES = [...ALLOWED_IMAGE_TYPES, 'image/gif'] as const
+
+const MB = 1024 * 1024
 
 /**
- * `<input type="file" accept>` 값.
+ * 업로드 경로별 정책.
  *
- * `accept`는 **필터일 뿐 방어선이 아니다.** 드래그앤드롭으로 우회되고, 안드로이드는
- * 제조사별로 무시하는 경우가 있다. 실제 차단은 `assertUploadableImage`가 한다.
+ * 허용 형식과 크기 상한을 **한 객체로 묶는다.** 따로 넘기게 두면 한쪽만 전달하는 실수가
+ * 난다(댓글에 GIF 허용만 넘기고 상한을 빠뜨리는 식).
+ *
+ * 상한은 **압축 전 원본 크기** 기준이다. 압축은 1MB를 목표로 하지만 그 전에 걸러지므로,
+ * 상한이 낮으면 문제없이 줄어들 사진까지 거부된다. 요즘 폰 사진은 iPhone 3~6MB,
+ * 안드로이드 고화소 8~15MB라 사진 업로드는 넉넉히 잡아야 한다.
+ * 댓글은 성격이 다른 작은 첨부라 기존 5MB를 유지한다.
  */
-export const IMAGE_ACCEPT = ALLOWED_IMAGE_TYPES.join(',')
-export const COMMENT_IMAGE_ACCEPT = ALLOWED_COMMENT_IMAGE_TYPES.join(',')
+export const IMAGE_POLICY = {
+  /** 게시글 사진 · DM · 프로필 */
+  photo: {
+    types: ALLOWED_IMAGE_TYPES as readonly string[],
+    maxBytes: 20 * MB,
+    accept: ALLOWED_IMAGE_TYPES.join(','),
+  },
+  /** 댓글 첨부 (GIF 허용) */
+  comment: {
+    types: ALLOWED_COMMENT_IMAGE_TYPES as readonly string[],
+    maxBytes: 5 * MB,
+    accept: ALLOWED_COMMENT_IMAGE_TYPES.join(','),
+  },
+} as const
 
-export const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024
-const MAX_IMAGE_SIZE_LABEL = '5MB'
+export type ImagePolicy = (typeof IMAGE_POLICY)[keyof typeof IMAGE_POLICY]
 
 const EXTENSIONS_BY_TYPE: Record<string, readonly string[]> = {
   'image/jpeg': ['.jpg', '.jpeg'],
@@ -38,8 +56,9 @@ const LABEL_BY_TYPE: Record<string, string> = {
   'image/gif': 'GIF',
 }
 
-function formatAllowed(allowed: readonly string[]): string {
-  return allowed.map((type) => LABEL_BY_TYPE[type] ?? type).join(', ')
+/** 안내 문구와 검증 메시지가 같은 값을 쓰도록 여기서 계산한다. */
+export function formatMaxSize(policy: ImagePolicy): string {
+  return `${Math.round(policy.maxBytes / MB)}MB`
 }
 
 /**
@@ -48,24 +67,24 @@ function formatAllowed(allowed: readonly string[]): string {
  */
 export function getImageFileError(
   file: File,
-  allowed: readonly string[] = ALLOWED_IMAGE_TYPES,
+  policy: ImagePolicy = IMAGE_POLICY.photo,
 ): string | null {
-  const label = formatAllowed(allowed)
+  const label = policy.types.map((type) => LABEL_BY_TYPE[type] ?? type).join(', ')
 
-  if (!allowed.includes(file.type)) {
+  if (!policy.types.includes(file.type)) {
     return `지원하지 않는 형식입니다. ${label} 파일을 올려주세요.`
   }
 
   // MIME만 믿을 수 없다. 일부 안드로이드 기기는 .heic를 image/jpeg로 신고하는데,
   // 백엔드는 확장자로 검사하므로 그대로 보내면 400이 떨어진다.
-  const extensions = allowed.flatMap((type) => EXTENSIONS_BY_TYPE[type] ?? [])
+  const extensions = policy.types.flatMap((type) => EXTENSIONS_BY_TYPE[type] ?? [])
   const name = file.name.toLowerCase()
   if (!extensions.some((ext) => name.endsWith(ext))) {
     return `파일 확장자가 ${label} 중 하나여야 합니다.`
   }
 
-  if (file.size > MAX_IMAGE_SIZE_BYTES) {
-    return `파일 크기는 ${MAX_IMAGE_SIZE_LABEL} 이하여야 합니다.`
+  if (file.size > policy.maxBytes) {
+    return `파일 크기는 ${formatMaxSize(policy)} 이하여야 합니다.`
   }
 
   return null
@@ -79,11 +98,11 @@ export function getImageFileError(
  */
 export function assertUploadableImage(
   file: File,
-  allowed: readonly string[] = ALLOWED_IMAGE_TYPES,
+  policy: ImagePolicy = IMAGE_POLICY.photo,
 ): void {
-  const message = getImageFileError(file, allowed)
+  const message = getImageFileError(file, policy)
   if (!message) return
   // 415 Unsupported Media Type / 413 Payload Too Large — 어느 쪽이든 5xx가 아니라
   // getApiErrorMessage가 detail을 그대로 노출한다.
-  throw createApiError(file.size > MAX_IMAGE_SIZE_BYTES ? 413 : 415, message)
+  throw createApiError(file.size > policy.maxBytes ? 413 : 415, message)
 }
