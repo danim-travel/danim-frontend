@@ -111,7 +111,7 @@ export function ProfileSection({
             </div>
             <div className="flex flex-col gap-0.5 min-w-0 flex-1">
               <span className="text-body-sm font-bold text-text">프로필 사진</span>
-              <span className="text-caption text-text-muted break-keep">JPG, PNG 파일 · 정사각형 권장</span>
+              <span className="text-caption text-text-muted break-keep">JPG, PNG, WebP 파일 · 정사각형 권장</span>
             </div>
           </div>
           <div className="hidden md:flex gap-2 shrink-0">
